@@ -4,7 +4,7 @@ import os
 import json
 from typing import Literal
 
-AREA_NORMALIZED_THRESHOLD = 0.0015
+AREA_NORMALIZED_THRESHOLD = 0.00125
 
 def get_entity_bidict(src_json: str):
   '''
