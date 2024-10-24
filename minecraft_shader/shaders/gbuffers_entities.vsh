@@ -30,6 +30,6 @@ void main() {
 	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 	lmcoord = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
 	normal = mat3(gbufferModelViewInverse) * gl_NormalMatrix * gl_Normal;
-	glcolor = entityId == 9999 ? gl_Color : minecraft_mix_light(Light0_Direction, Light1_Direction, normal, gl_Color);
+	glcolor = entityId == 511 ? gl_Color : minecraft_mix_light(Light0_Direction, Light1_Direction, normal, gl_Color);
 	return;
 }

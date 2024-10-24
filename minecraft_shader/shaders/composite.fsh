@@ -4,7 +4,11 @@ const bool colortex0MipmapEnabled = false;
 const bool colortex1MipmapEnabled = false;
 
 uniform sampler2D colortex0;
+
 uniform sampler2D colortex1;
+uniform sampler2D colortex2;
+uniform sampler2D colortex3;
+
 uniform sampler2D depthtex0;
 uniform bool hideGUI;
 uniform mat4 gbufferProjectionInverse;
@@ -24,41 +28,49 @@ float getDistance(vec2 uv){
   return length(homPos.xyz / homPos.w) / far;
 }
 
-vec4 get_entity_buffer(vec2 uv){
-	vec4 entities = vec4(1.0) - step(texture(colortex1, uv), vec4(0.999999));
+vec4 get_rgb_buffer(vec2 uv){
+	return texture(colortex0, uv);
+}
+
+vec4 get_entity_buffer(sampler2D sampler, vec2 uv){
+	vec4 entities = vec4(1.0) - step(texture(sampler, uv), vec4(0.999999));
 	entities.a = float(entities.r == 1.0 || entities.g == 1.0 || entities.b == 1.0);
 	entities.rgb *= entities.a;
 	return entities;
 }
 
-void get_buffers(out vec4 albedo, out vec4 entities, vec2 uv, vec2 uv2) {
-	albedo = texture(colortex0, uv);
+vec4 get_entity_buffer(vec2 uv){
+	return get_entity_buffer(colortex1, uv);
+}
+
+void get_buffers(out vec4 rgb, out vec4 entities, vec2 uv, vec2 uv2) {
+	rgb = get_rgb_buffer(uv);
 	entities = get_entity_buffer(uv2);
 }
 
-void get_buffers(out vec4 albedo, out vec4 entities, vec2 uv) {
-	get_buffers(albedo, entities, uv, uv);
-}
-
-float snap(float value, float grid){
-	return floor(value * grid) / grid;
+void get_buffers(out vec4 rgb, out vec4 entities, vec2 uv) {
+	get_buffers(rgb, entities, uv, uv);
 }
 
 void main() {
 	if(hideGUI){
-		float distance = getDistance(vec2(texcoord.x * 2.0 - 1.0, texcoord.y));
-		distance = pow(distance, 1.0 / 2.2);
+		// float distance = getDistance(vec2(texcoord.x * 2.0 - 1.0, texcoord.y * 2.0));
+		// distance = pow(distance, 1.0 / 2.2);
 
-		vec4 albedo; vec4 entities;
-		get_buffers(albedo, entities,
-			vec2(texcoord.x * 2.0, texcoord.y),
-			vec2(snap(texcoord.x * 2.0 - 1.0, viewWidth/2.0), texcoord.y)
+		vec4 rgb = get_rgb_buffer(vec2(texcoord.x * 2.0, texcoord.y * 2.0 - 1.0)); // top left
+		vec4 ent1 = get_entity_buffer(colortex1, vec2(texcoord.x * 2.0 - 1.0, texcoord.y * 2.0 - 1.0)); // top right
+		vec4 ent2 = get_entity_buffer(colortex2, vec2(texcoord.x * 2.0, texcoord.y * 2.0)); // bottom left
+		vec4 ent3 = get_entity_buffer(colortex3, vec2(texcoord.x * 2.0 - 1.0, texcoord.y * 2.0)); // bottom right?
+
+		color = mix(
+			mix(rgb, ent1, float(texcoord.x > 0.5)),
+			mix(ent2, ent3, float(texcoord.x > 0.5)),
+			texcoord.y < 0.5
 		);
-		color = mix(albedo, entities + vec4(0.0, 0.0, distance, 0.0), float(texcoord.x > 0.5));
 	}else{
-		vec4 albedo; vec4 entities;
-		get_buffers(albedo, entities, texcoord);
+		vec4 rgb; vec4 entities;
+		get_buffers(rgb, entities, texcoord);
 
-		color = (heldItemId == 1 || heldItemId2 == 1) ? vec4(entities.xyz, 1.0) : albedo;
+		color = (heldItemId == 1 || heldItemId2 == 1) ? vec4(entities.xyz, 1.0) : rgb;
 	}
 }
