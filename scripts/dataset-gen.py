@@ -51,7 +51,7 @@ def create_from_image(filepath: str, argv: argparse.Namespace):
   name = '.'.join(path.basename(filepath).split('.')[:-1])
   image, labels = annotate_file(filepath, format=argv.format, debug_draw=argv.debug)
 
-  cv.imwrite(path.join(argv.output, argv.type, 'images', f'{name}.jpg'), image)
+  cv.imwrite(path.join(argv.output, argv.type, 'images', f'{name}.png'), image)
   with open(path.join(argv.output, argv.type, 'labels', f'{name}.txt'), 'w') as hfile:
     hfile.write('\n'.join([ ' '.join([ str(w) for w in v ]) for v in labels ]))
   return filepath
