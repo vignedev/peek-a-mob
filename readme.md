@@ -5,7 +5,7 @@
 You have to use the `minecraft_shader/generate_entityprop.js` file first to get `entities.json`. 
 
 ```
-usage: dataset-gen.py [-h] -i INPUT -e ENTITIES -o OUTPUT [-t {train,valid,test}] -f {center,bbox}
+usage: dataset-gen.py [-h] -i INPUT -e ENTITIES -o OUTPUT [-t {train,valid,test}] -f {center,bbox} [-n NCPU] [-d]
 
 options:
   -h, --help            show this help message and exit
@@ -19,4 +19,6 @@ options:
                         should this be a train, validation or test dataset
   -f {center,bbox}, --format {center,bbox}
                         which format to output the annotations as, or rather what should the first two normalized coordinates represent (center: center of bounding box, bbox: top-left corner of bounding box)
+  -n NCPU, --ncpu NCPU  how many threads to use for the conversion
+  -d, --debug           draws the bounding boxes onto cropped images (do not use for generating!!)
 ```
