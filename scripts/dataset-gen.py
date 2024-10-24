@@ -3,6 +3,7 @@ import argparse
 from os import path
 from utils import annotate_file, get_entity_bidict
 import cv2 as cv
+from multiprocessing import Pool
 
 def get_argv():
   parser = argparse.ArgumentParser()
@@ -34,6 +35,11 @@ def get_argv():
     choices=['center', 'bbox'],
     required=True
   )
+  parser.add_argument(
+    '-n', '--ncpu',
+    help='how many threads to use for the conversion',
+    type=int
+  )
   return parser.parse_args()
 
 def create_from_image(filepath: str, argv: argparse.Namespace):
@@ -43,6 +49,11 @@ def create_from_image(filepath: str, argv: argparse.Namespace):
   cv.imwrite(path.join(argv.output, argv.type, 'images', f'{name}.jpg'), image)
   with open(path.join(argv.output, argv.type, 'labels', f'{name}.txt'), 'w') as hfile:
     hfile.write('\n'.join([ ' '.join([ str(w) for w in v ]) for v in labels ]))
+  return filepath
+
+def create_from_image_tuple(data: tuple[str, argparse.Namespace]):
+  filepath, argv = data
+  return create_from_image(filepath, argv)
 
 if __name__ == '__main__':
   argv = get_argv()
@@ -50,6 +61,7 @@ if __name__ == '__main__':
 
   # list of files
   files: list[str] = os.listdir(argv.input)
+  n_files = len(files)
 
   # ensure that output dir structure exists
   os.makedirs(argv.output, exist_ok=True)
@@ -71,6 +83,9 @@ if __name__ == '__main__':
       ]))
 
   # lets get the show on the f-cking road
-  for file in files:
-    filepath = path.join(argv.input, file)
-    create_from_image(filepath, argv)
+  counter = 0
+  pool = Pool(processes=argv.ncpu)
+  for name in pool.imap_unordered( create_from_image_tuple, [ (path.join(argv.input, file), argv) for file in files ]):
+    counter += 1
+    if counter == n_files or counter % 100 == 0:
+      print(f'[i] finished ({counter}/{n_files}) {name}')

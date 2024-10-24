@@ -4,3 +4,7 @@
 # remove so we force the data-taker to ensure they have it up to date
 minecraft_shader/entities.json
 minecraft_shader/shaders/entity.properties
+
+# my sanity
+test
+test_output
