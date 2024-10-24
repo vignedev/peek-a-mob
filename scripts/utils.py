@@ -65,7 +65,8 @@ def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw:
       x, y, w, h = cv.boundingRect(cnt)
       area = cv.contourArea(cnt) / ( b_width * b_height )
 
-      big_enough = area > AREA_NORMALIZED_THRESHOLD
+      # TODO: check if this is useful
+      big_enough = True or area > AREA_NORMALIZED_THRESHOLD
       
       if debug_draw:
         color = (0, 255, 0) if big_enough else (0, 0, 255)
