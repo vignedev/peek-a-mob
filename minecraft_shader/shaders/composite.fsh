@@ -25,7 +25,7 @@ float getDistance(vec2 uv){
 }
 
 vec4 get_entity_buffer(vec2 uv){
-	vec4 entities = vec4(1.0) - step(texture(colortex1, uv), vec4(0.9999));
+	vec4 entities = vec4(1.0) - step(texture(colortex1, uv), vec4(0.999999));
 	entities.a = float(entities.r == 1.0 || entities.g == 1.0 || entities.b == 1.0);
 	entities.rgb *= entities.a;
 	return entities;

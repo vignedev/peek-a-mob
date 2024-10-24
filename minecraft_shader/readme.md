@@ -15,6 +15,10 @@ After activating the shader, disabling the GUI splits the screen into two halves
 
 Currently, the R channel is set to 1 if the entity is a hostile one, the G channel when it is a friendly one. The blue channel is for now reserved for depth, just in case we might need it in the future.
 
+## Limitations
+
+NVIDIA GPUs, on both Linux and Windows, for some reason does not clear the GBuffers between renders, which is why the output of those GBuffers individual channels are binary.
+
 ## Resources
 
 | Link | Description |
