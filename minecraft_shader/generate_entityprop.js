@@ -12,10 +12,10 @@ const friendly = [
   'pufferfish', 'cow', 'mooshroom', 'dolphin', 'fox', 'iron_golem', 'snow_golem', 'panda', 'parrot',
   'pig', 'polar_bear', 'rabbit', 'sheep', 'skeleton_horse', 'squid', 'glow_squid', 'strider',
   'villager', 'wandering_trader', 'wolf'
-].map((ent, idx) => [ent, idx + 128])
+].map((ent, idx) => [ent, idx + hostile.length + 1])
 const neutral = [
   'player', 'item'
-].map((ent, idx) => [ent, idx + 256])
+].map((ent, idx) => [ent, idx + hostile.length + friendly.length + 1])
 const unlit = [
   'minecraft:entity_flame'
 ].map((ent) => [ent, 511])
