@@ -36,6 +36,14 @@ def get_argv():
   )
   return parser.parse_args()
 
+def create_from_image(filepath: str, argv: argparse.Namespace):
+  name = '.'.join(path.basename(filepath).split('.')[:-1])
+  image, labels = annotate_file(filepath, format=argv.format, debug_draw=False)
+
+  cv.imwrite(path.join(argv.output, argv.type, 'images', f'{name}.jpg'), image)
+  with open(path.join(argv.output, argv.type, 'labels', f'{name}.txt'), 'w') as hfile:
+    hfile.write('\n'.join([ ' '.join([ str(w) for w in v ]) for v in labels ]))
+
 if __name__ == '__main__':
   argv = get_argv()
   entity_bidict, entity_json = get_entity_bidict(argv.entities)
@@ -65,10 +73,4 @@ if __name__ == '__main__':
   # lets get the show on the f-cking road
   for file in files:
     filepath = path.join(argv.input, file)
-    name = '.'.join(file.split('.')[:-1])
-    image, labels = annotate_file(filepath, format=argv.format, debug_draw=False)
-
-    cv.imwrite(path.join(argv.output, argv.type, 'images', f'{name}.jpg'), image)
-    with open(path.join(argv.output, argv.type, 'labels', f'{name}.txt'), 'w') as file:
-      file.write('\n'.join([ ' '.join([ str(w) for w in v ]) for v in labels ]))
-  
+    create_from_image(filepath, argv)
