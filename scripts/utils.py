@@ -15,7 +15,7 @@ def get_entity_bidict(src_json: str):
     for entity in temp_json:
       entities_bidict[entity] = temp_json[entity]
       entities_bidict[temp_json[entity]] = entity
-  return entities_bidict
+  return entities_bidict, temp_json
 
 def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw: bool = False) -> tuple[cv.typing.MatLike, list[tuple[int, float, float, float, float]]]:
   '''
@@ -94,4 +94,4 @@ def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw:
         break
     cv.destroyAllWindows()
   
-  return (image, entities_bucket)
+  return rgb, entities_bucket

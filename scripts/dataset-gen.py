@@ -1,5 +1,8 @@
+import os
 import argparse
+from os import path
 from utils import annotate_file, get_entity_bidict
+import cv2 as cv
 
 def get_argv():
   parser = argparse.ArgumentParser()
@@ -19,6 +22,12 @@ def get_argv():
     required=True
   )
   parser.add_argument(
+    '-t', '--type',
+    help='should this be a train, validation or test dataset',
+    default='train',
+    choices=['train', 'valid', 'test']
+  )
+  parser.add_argument(
     '-f', '--format',
     help='which format to output the annotations as, or rather what should the first two normalized coordinates represent\n'
          '(center: center of bounding box, bbox: top-left corner of bounding box)',
@@ -27,9 +36,39 @@ def get_argv():
   )
   return parser.parse_args()
 
-
 if __name__ == '__main__':
   argv = get_argv()
-  entity_bidict = get_entity_bidict(argv.entities)
+  entity_bidict, entity_json = get_entity_bidict(argv.entities)
+
+  # list of files
+  files: list[str] = os.listdir(argv.input)
+
+  # ensure that output dir structure exists
+  os.makedirs(argv.output, exist_ok=True)
+  os.makedirs(path.join(argv.output, argv.type, 'images'), exist_ok=True)
+  os.makedirs(path.join(argv.output, argv.type, 'labels'), exist_ok=True)
+
+  # write the intro yaml (if not existing)
+  data_path = path.join(argv.output, 'data.yaml')
+  if not path.exists(data_path):
+    with open(data_path, 'w') as file:
+      file.write('\n'.join([
+        f'path: .',
+        f'train: train/images',
+        f'val: valid/images',
+        f'test: test/images',
+        f'',
+        f'nc: {len(entity_json)}',
+        f'names: [ \'nothing\', {', '.join([ f'\'{ent}\'' for ent in entity_json ])}]'
+      ]))
+
+  # lets get the show on the f-cking road
+  for file in files:
+    filepath = path.join(argv.input, file)
+    name = '.'.join(file.split('.')[:-1])
+    image, labels = annotate_file(filepath, format=argv.format, debug_draw=False)
+
+    cv.imwrite(path.join(argv.output, argv.type, 'images', f'{name}.jpg'), image)
+    with open(path.join(argv.output, argv.type, 'labels', f'{name}.txt'), 'w') as file:
+      file.write('\n'.join([ ' '.join([ str(w) for w in v ]) for v in labels ]))
   
-  annotate_file('assets/test.png', debug_draw=False)
