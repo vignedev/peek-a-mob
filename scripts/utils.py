@@ -4,6 +4,8 @@ import os
 import json
 from typing import Literal
 
+AREA_NORMALIZED_THRESHOLD = 0.0015
+
 def get_entity_bidict(src_json: str):
   '''
   You can access ID using `entities_bidict['zombie']`
@@ -53,45 +55,55 @@ def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw:
     if id == 0: continue
     mask = np.where(entities == id, np.uint8(255), np.uint8(0))
 
-    # TODO: add hole-filing etc.
+    kernel_m = cv.getStructuringElement(cv.MORPH_RECT, (16, 16))
+    kernel_d = cv.getStructuringElement(cv.MORPH_RECT, (4, 4))
+    mask = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernel_m)
+    mask = cv.dilate(mask, kernel_d)
 
     contours, _ = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     for cnt in contours:
       x, y, w, h = cv.boundingRect(cnt)
+      area = cv.contourArea(cnt) / ( b_width * b_height )
+
+      big_enough = area > AREA_NORMALIZED_THRESHOLD
       
       if debug_draw:
-        cv.rectangle(rgb, (x,y), (x+w, y+h), (0, 255, 0), 1)
+        color = (0, 255, 0) if big_enough else (0, 0, 255)
+        cv.rectangle(rgb, (x,y), (x+w, y+h), color, 1)
         cv.putText(
           rgb,
-          f'id={id}', (x, y - 4),
+          f'id={id} area={area}', (x, y - 4),
           fontFace=cv.FONT_HERSHEY_SIMPLEX,
           fontScale=0.4,
-          color=(0, 255, 0),
+          color=color,
           thickness=1,
           lineType=cv.LINE_AA
         )
+      
+      if not big_enough:
+        continue
     
-    if format == 'bbox':
-      entities_bucket.append((
-        id,
-        x / b_width, y / b_height,
-        w / b_width, y / b_height
-      ))
-    elif format == 'center':
-      entities_bucket.append((
-        id,
-        (x + w/2) / b_width, (y + h/2) / b_height,
-        w / b_width, y / b_height
-      ))
-    else:
-      raise SyntaxError(f'Unknown output format "{format}"')
+      if format == 'bbox':
+        entities_bucket.append((
+          id,
+          x / b_width, y / b_height,
+          w / b_width, y / b_height
+        ))
+      elif format == 'center':
+        entities_bucket.append((
+          id,
+          (x + w/2) / b_width, (y + h/2) / b_height,
+          w / b_width, y / b_height
+        ))
+      else:
+        raise SyntaxError(f'Unknown output format "{format}"')
 
-  if debug_draw:
-    cv.imshow('rgb', rgb)
-    while True:
-      key = cv.waitKey(1) & 0xFF
-      if key == ord('q'):
-        break
-    cv.destroyAllWindows()
+  # if debug_draw:
+  #   cv.imshow('rgb', rgb)
+  #   while True:
+  #     key = cv.waitKey(1) & 0xFF
+  #     if key == ord('q'):
+  #       break
+  #   cv.destroyAllWindows()
   
   return rgb, entities_bucket

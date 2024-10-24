@@ -40,11 +40,16 @@ def get_argv():
     help='how many threads to use for the conversion',
     type=int
   )
+  parser.add_argument(
+    '-d', '--debug',
+    help='draws the bounding boxes onto cropped images (do not use for generating!!)',
+    action='store_true'
+  )
   return parser.parse_args()
 
 def create_from_image(filepath: str, argv: argparse.Namespace):
   name = '.'.join(path.basename(filepath).split('.')[:-1])
-  image, labels = annotate_file(filepath, format=argv.format, debug_draw=False)
+  image, labels = annotate_file(filepath, format=argv.format, debug_draw=argv.debug)
 
   cv.imwrite(path.join(argv.output, argv.type, 'images', f'{name}.jpg'), image)
   with open(path.join(argv.output, argv.type, 'labels', f'{name}.txt'), 'w') as hfile:
