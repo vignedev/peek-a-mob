@@ -23,7 +23,7 @@ in vec2 texcoord;
 
 out vec4 color;
 
-float getDistance(vec2 uv){
+float get_depth(vec2 uv){
   vec4 homPos = gbufferProjectionInverse * vec4(vec3(uv.xy, texture(depthtex0, uv).r), 1.0);
   return length(homPos.xyz / homPos.w) / far;
 }
@@ -39,24 +39,8 @@ vec4 get_entity_buffer(sampler2D sampler, vec2 uv){
 	return entities;
 }
 
-vec4 get_entity_buffer(vec2 uv){
-	return get_entity_buffer(colortex1, uv);
-}
-
-void get_buffers(out vec4 rgb, out vec4 entities, vec2 uv, vec2 uv2) {
-	rgb = get_rgb_buffer(uv);
-	entities = get_entity_buffer(uv2);
-}
-
-void get_buffers(out vec4 rgb, out vec4 entities, vec2 uv) {
-	get_buffers(rgb, entities, uv, uv);
-}
-
 void main() {
 	if(hideGUI){
-		// float distance = getDistance(vec2(texcoord.x * 2.0 - 1.0, texcoord.y * 2.0));
-		// distance = pow(distance, 1.0 / 2.2);
-
 		vec4 rgb = get_rgb_buffer(vec2(texcoord.x * 2.0, texcoord.y * 2.0 - 1.0)); // top left
 		vec4 ent1 = get_entity_buffer(colortex1, vec2(texcoord.x * 2.0 - 1.0, texcoord.y * 2.0 - 1.0)); // top right
 		vec4 ent2 = get_entity_buffer(colortex2, vec2(texcoord.x * 2.0, texcoord.y * 2.0)); // bottom left
@@ -65,12 +49,20 @@ void main() {
 		color = mix(
 			mix(rgb, ent1, float(texcoord.x > 0.5)),
 			mix(ent2, ent3, float(texcoord.x > 0.5)),
-			texcoord.y < 0.5
+			float(texcoord.y < 0.5)
 		);
 	}else{
-		vec4 rgb; vec4 entities;
-		get_buffers(rgb, entities, texcoord);
+		float distance = get_depth(texcoord);
+		distance = pow(distance, 1.0 / 2.2); //delinearize
 
-		color = (heldItemId == 1 || heldItemId2 == 1) ? vec4(entities.xyz, 1.0) : rgb;
+		vec4 rgb = get_rgb_buffer(texcoord);
+		vec4 ent1 = get_entity_buffer(colortex1, texcoord);
+		vec4 ent2 = get_entity_buffer(colortex2, texcoord);
+		vec4 ent3 = get_entity_buffer(colortex3, texcoord);
+
+		color = (heldItemId == 1 || heldItemId2 == 1) ? vec4(
+			(ent1.rgb / 3.0 + ent2.rgb / 3.0 + ent3.rgb / 3.0) + vec3(distance),
+			1.0
+		) : rgb;
 	}
 }
