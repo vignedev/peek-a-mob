@@ -25,13 +25,8 @@ float getDistance(vec2 uv){
 }
 
 vec4 get_entity_buffer(vec2 uv){
-	vec4 entities = vec4(1.0) - step(texture(colortex1, uv), vec4(0.99));
-// #if MC_GL_VENDOR_NVIDIA
-// 	entities.a = float(tex.r == 1.0 || tex.g == 1.0);
-// #else
-// 	entities.a = float(dot(entities.rgb, vec3(1.0)) == 1.0);
-// #endif
-	entities.a = 1.0 - float((entities.r == 0.0 || entities.g == 0.0) && entities.b == 1.0);
+	vec4 entities = vec4(1.0) - step(texture(colortex1, uv), vec4(0.9999));
+	entities.a = float(entities.r == 1.0 || entities.g == 1.0 || entities.b == 1.0);
 	entities.rgb *= entities.a;
 	return entities;
 }
@@ -50,10 +45,6 @@ float snap(float value, float grid){
 }
 
 void main() {
-	// vec4 tex = texture(colortex1, texcoord);
-	// color = vec4(float((tex.r == 1.0 || tex.g == 1.0) && tex.b == 0.0));
-	// return;
-
 	if(hideGUI){
 		float distance = getDistance(vec2(texcoord.x * 2.0 - 1.0, texcoord.y));
 		distance = pow(distance, 1.0 / 2.2);
@@ -63,12 +54,11 @@ void main() {
 			vec2(texcoord.x * 2.0, texcoord.y),
 			vec2(snap(texcoord.x * 2.0 - 1.0, viewWidth/2.0), texcoord.y)
 		);
-		// color = mix(albedo, mix(entities * entities.a, vec4(0.0), distance), float(texcoord.x > 0.5));
 		color = mix(albedo, entities + vec4(0.0, 0.0, distance, 0.0), float(texcoord.x > 0.5));
 	}else{
 		vec4 albedo; vec4 entities;
 		get_buffers(albedo, entities, texcoord);
 
-		color = (heldItemId == 1 || heldItemId2 == 1) ? mix(albedo, entities, entities.a) : albedo;
+		color = (heldItemId == 1 || heldItemId2 == 1) ? vec4(entities.xyz, 1.0) : albedo;
 	}
 }
