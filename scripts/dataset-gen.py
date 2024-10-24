@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
   # write the intro yaml (if not existing)
   data_path = path.join(argv.output, 'data.yaml')
-  if not path.exists(data_path):
+  if not path.exists(data_path) or True: # doesnt hurt much, right?
     with open(data_path, 'w') as file:
       file.write('\n'.join([
         f'path: .',
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         f'test: test/images',
         f'',
         f'nc: {len(entity_json)}',
-        f'names: [ \'nothing\', {', '.join([ f'\'{ent}\'' for ent in entity_json ])}]'
+        f'names: [{', '.join([ f'\'{ent}\'' for ent in entity_json ])}]'
       ]))
 
   # lets get the show on the f-cking road
