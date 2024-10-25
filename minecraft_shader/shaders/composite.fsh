@@ -8,6 +8,7 @@ uniform sampler2D colortex0;
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform sampler2D colortex3;
+uniform sampler2D colortex4;
 
 uniform sampler2D depthtex0;
 uniform bool hideGUI;
@@ -42,9 +43,9 @@ vec4 get_entity_buffer(sampler2D sampler, vec2 uv){
 void main() {
 	if(hideGUI){
 		vec4 rgb = get_rgb_buffer(vec2(texcoord.x * 2.0, texcoord.y * 2.0 - 1.0)); // top left
-		vec4 ent1 = get_entity_buffer(colortex1, vec2(texcoord.x * 2.0 - 1.0, texcoord.y * 2.0 - 1.0)); // top right
-		vec4 ent2 = get_entity_buffer(colortex2, vec2(texcoord.x * 2.0, texcoord.y * 2.0)); // bottom left
-		vec4 ent3 = get_entity_buffer(colortex3, vec2(texcoord.x * 2.0 - 1.0, texcoord.y * 2.0)); // bottom right?
+		vec4 ent1 = get_entity_buffer(colortex2, vec2(texcoord.x * 2.0 - 1.0, texcoord.y * 2.0 - 1.0)); // top right
+		vec4 ent2 = get_entity_buffer(colortex3, vec2(texcoord.x * 2.0, texcoord.y * 2.0)); // bottom left
+		vec4 ent3 = get_entity_buffer(colortex4, vec2(texcoord.x * 2.0 - 1.0, texcoord.y * 2.0)); // bottom right?
 
 		color = mix(
 			mix(rgb, ent1, float(texcoord.x > 0.5)),
@@ -56,9 +57,9 @@ void main() {
 		distance = pow(distance, 1.0 / 2.2); //delinearize
 
 		vec4 rgb = get_rgb_buffer(texcoord);
-		vec4 ent1 = get_entity_buffer(colortex1, texcoord);
-		vec4 ent2 = get_entity_buffer(colortex2, texcoord);
-		vec4 ent3 = get_entity_buffer(colortex3, texcoord);
+		vec4 ent1 = get_entity_buffer(colortex2, texcoord);
+		vec4 ent2 = get_entity_buffer(colortex3, texcoord);
+		vec4 ent3 = get_entity_buffer(colortex4, texcoord);
 
 		color = (heldItemId == 1 || heldItemId2 == 1) ? vec4(
 			(ent1.rgb / 3.0 + ent2.rgb / 3.0 + ent3.rgb / 3.0) + vec3(distance),

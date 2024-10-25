@@ -12,11 +12,12 @@ in vec2 texcoord;
 in vec4 glcolor;
 in vec3 normal;
 
-/* DRAWBUFFERS: 0123 */
+/* DRAWBUFFERS: 01234 */
 layout(location = 0) out vec4 color;
-layout(location = 1) out vec4 extra1;
-layout(location = 2) out vec4 extra2;
-layout(location = 3) out vec4 extra3;
+layout(location = 1) out vec4 _dummy;
+layout(location = 2) out vec4 extra1;
+layout(location = 3) out vec4 extra2;
+layout(location = 4) out vec4 extra3;
 
 float get_bit(int id, int bit){
 	return float((id & (1 << bit)) != 0);
@@ -52,6 +53,7 @@ void main() {
 	//	get_entity_color(entityId),
 	//	1.0
 	//);
+	_dummy = vec4(0.0, 0.0, 0.0, 1.0);
 	get_entity_color(entityId, extra1, extra2, extra3);
 
 	if (color.a < alphaTestRef)
