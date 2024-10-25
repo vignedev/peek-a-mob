@@ -30,23 +30,29 @@ def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw:
   image = cv.imread(src_image, flags=cv.IMREAD_COLOR)
   height, width, channels = image.shape
 
-  rgb       = image[        0:height//2 ,        0:width//2] # TL
-  bitplane1 = image[        0:height//2 , width//2:width   ] # TR
-  bitplane2 = image[height//2:height    ,        0:width//2] # BL (haha)
-  bitplane3 = image[height//2:height    , width//2:width   ] # BR
+  if (width % 2 != 0) or (height % 2 != 0):
+    print(f'WARNING: One of the image\'s dimension ({width}x{height}) is not divisible by two!\n\t{src_image}')
+
+  offset_x = width % 2
+  offset_y = height % 2
+
+  rgb       = image[                   0:height//2 ,                   0:width//2] # TL
+  bitplane1 = image[                   0:height//2 , width//2 + offset_x:width   ] # TR
+  bitplane2 = image[height//2 + offset_y:height    ,                   0:width//2] # BL (haha)
+  bitplane3 = image[height//2 + offset_y:height    , width//2 + offset_x:width   ] # BR
 
   b_height, b_width, b_channels = bitplane1.shape
 
   entities = np.zeros((b_height, b_width), np.uint16)
-  entities += np.sign(bitplane1[:, :, 2]) * (1 << 8)
-  entities += np.sign(bitplane1[:, :, 1]) * (1 << 7)
-  entities += np.sign(bitplane1[:, :, 0]) * (1 << 6)
-  entities += np.sign(bitplane2[:, :, 2]) * (1 << 5)
-  entities += np.sign(bitplane2[:, :, 1]) * (1 << 4)
-  entities += np.sign(bitplane2[:, :, 0]) * (1 << 3)
-  entities += np.sign(bitplane3[:, :, 2]) * (1 << 2)
-  entities += np.sign(bitplane3[:, :, 1]) * (1 << 1)
-  entities += np.sign(bitplane3[:, :, 0]) * (1 << 0)
+  entities += np.sign(bitplane1[:, :, 2], dtype=np.uint16) * (1 << 8)
+  entities += np.sign(bitplane1[:, :, 1], dtype=np.uint16) * (1 << 7)
+  entities += np.sign(bitplane1[:, :, 0], dtype=np.uint16) * (1 << 6)
+  entities += np.sign(bitplane2[:, :, 2], dtype=np.uint16) * (1 << 5)
+  entities += np.sign(bitplane2[:, :, 1], dtype=np.uint16) * (1 << 4)
+  entities += np.sign(bitplane2[:, :, 0], dtype=np.uint16) * (1 << 3)
+  entities += np.sign(bitplane3[:, :, 2], dtype=np.uint16) * (1 << 2)
+  entities += np.sign(bitplane3[:, :, 1], dtype=np.uint16) * (1 << 1)
+  entities += np.sign(bitplane3[:, :, 0], dtype=np.uint16) * (1 << 0)
 
   unique_entities = np.unique(entities)
   entities_bucket = list()
