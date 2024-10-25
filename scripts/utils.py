@@ -100,7 +100,7 @@ def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw:
         entities_bucket.append((
           id,
           (x + w/2) / b_width, (y + h/2) / b_height,
-          w / b_width, y / b_height
+          w / b_width, h / b_height
         ))
       else:
         raise SyntaxError(f'Unknown output format "{format}"')
