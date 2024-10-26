@@ -88,9 +88,6 @@ if __name__ == '__main__':
       else:
         files[i] = (_file, 'test')
 
-  for f in files: print(f)
-  exit(1)
-
   # ensure that output dir structure exists
   os.makedirs(argv.output, exist_ok=True)
   for folder in ['train', 'valid', 'test']:
