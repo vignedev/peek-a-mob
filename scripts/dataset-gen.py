@@ -24,9 +24,9 @@ def get_argv():
   )
   parser.add_argument(
     '-t', '--type',
-    help='should this be a train, validation or test dataset',
+    help='should this be a train, validation or test dataset. or random, which will spread them around in 70:20:10 ratio',
     default='train',
-    choices=['train', 'valid', 'test']
+    choices=['train', 'valid', 'test', 'random']
   )
   parser.add_argument(
     '-f', '--format',
@@ -47,18 +47,18 @@ def get_argv():
   )
   return parser.parse_args()
 
-def create_from_image(filepath: str, argv: argparse.Namespace):
+def create_from_image(filepath: str, _type: str, argv: argparse.Namespace):
   name = '.'.join(path.basename(filepath).split('.')[:-1])
   image, labels = annotate_file(filepath, format=argv.format, debug_draw=argv.debug)
 
-  cv.imwrite(path.join(argv.output, argv.type, 'images', f'{name}.png'), image)
-  with open(path.join(argv.output, argv.type, 'labels', f'{name}.txt'), 'w') as hfile:
+  cv.imwrite(path.join(argv.output, _type, 'images', f'{name}.png'), image)
+  with open(path.join(argv.output, _type, 'labels', f'{name}.txt'), 'w') as hfile:
     hfile.write('\n'.join([ ' '.join([ str(w) for w in v ]) for v in labels ]))
   return filepath
 
-def create_from_image_tuple(data: tuple[str, argparse.Namespace]):
-  filepath, argv = data
-  return create_from_image(filepath, argv)
+def create_from_image_tuple(data: tuple[str, str, argparse.Namespace]):
+  filepath, _type, argv = data
+  return create_from_image(filepath, _type, argv)
 
 if __name__ == '__main__':
   argv = get_argv()
@@ -70,15 +70,15 @@ if __name__ == '__main__':
 
   # ensure that output dir structure exists
   os.makedirs(argv.output, exist_ok=True)
-  os.makedirs(path.join(argv.output, argv.type, 'images'), exist_ok=True)
-  os.makedirs(path.join(argv.output, argv.type, 'labels'), exist_ok=True)
+  for folder in ['train', 'val', 'test']:
+    os.makedirs(path.join(argv.output, folder, 'images'), exist_ok=True)
+    os.makedirs(path.join(argv.output, folder, 'labels'), exist_ok=True)
 
   # write the intro yaml (if not existing)
   data_path = path.join(argv.output, 'data.yaml')
   if not path.exists(data_path) or True: # doesnt hurt much, right?
     with open(data_path, 'w') as file:
       file.write('\n'.join([
-        f'path: .',
         f'train: train/images',
         f'val: valid/images',
         f'test: test/images',
@@ -90,7 +90,7 @@ if __name__ == '__main__':
   # lets get the show on the f-cking road
   counter = 0
   pool = Pool(processes=argv.ncpu)
-  for name in pool.imap_unordered( create_from_image_tuple, [ (path.join(argv.input, file), argv) for file in files ]):
+  for name in pool.imap_unordered( create_from_image_tuple, [ (path.join(argv.input, file), argv.type, argv) for file in files ]):
     counter += 1
     if counter == n_files or counter % 100 == 0:
       print(f'[i] finished ({counter}/{n_files}) {name}')
