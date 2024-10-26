@@ -4,6 +4,11 @@ from os import path
 from utils import annotate_file, get_entity_bidict
 import cv2 as cv
 from multiprocessing import Pool
+import random
+
+RANDOM_TRAIN_RATIO=0.7
+RANDOM_VALID_RATIO=0.2
+RANDOM_TEST_RATIO=0.1 # ignored btw
 
 def get_argv():
   parser = argparse.ArgumentParser()
@@ -24,9 +29,9 @@ def get_argv():
   )
   parser.add_argument(
     '-t', '--type',
-    help='should this be a train, validation or test dataset. or random, which will spread them around in 70:20:10 ratio',
+    help='should this be a train, validation or test dataset. or sort/random_sort, which will spread them around in 70:20:10 ratio. random will randomize the order!',
     default='train',
-    choices=['train', 'valid', 'test', 'random']
+    choices=['train', 'valid', 'test', 'sort', 'random_sort']
   )
   parser.add_argument(
     '-f', '--format',
@@ -65,12 +70,30 @@ if __name__ == '__main__':
   entity_bidict, entity_json = get_entity_bidict(argv.entities)
 
   # list of files
-  files: list[str] = os.listdir(argv.input)
+  files: list[tuple[str, str]] = [ (file, argv.type) for file in os.listdir(argv.input) ]
   n_files = len(files)
+
+  # sorter
+  if argv.type in ['sort', 'random_sort']:
+    if argv.type == 'random_sort':
+      random.shuffle(files)
+
+    for i in range(n_files):
+      _file, _type = files[i]
+      ratio = (i+1) / n_files
+      if ratio <= RANDOM_TRAIN_RATIO:
+        files[i] = (_file, 'train')
+      elif ratio <= (RANDOM_TRAIN_RATIO + RANDOM_VALID_RATIO):
+        files[i] = (_file, 'valid')
+      else:
+        files[i] = (_file, 'test')
+
+  for f in files: print(f)
+  exit(1)
 
   # ensure that output dir structure exists
   os.makedirs(argv.output, exist_ok=True)
-  for folder in ['train', 'val', 'test']:
+  for folder in ['train', 'valid', 'test']:
     os.makedirs(path.join(argv.output, folder, 'images'), exist_ok=True)
     os.makedirs(path.join(argv.output, folder, 'labels'), exist_ok=True)
 
@@ -90,7 +113,7 @@ if __name__ == '__main__':
   # lets get the show on the f-cking road
   counter = 0
   pool = Pool(processes=argv.ncpu)
-  for name in pool.imap_unordered( create_from_image_tuple, [ (path.join(argv.input, file), argv.type, argv) for file in files ]):
+  for name in pool.imap_unordered( create_from_image_tuple, [ (path.join(argv.input, _file), _type, argv) for _file, _type in files ]):
     counter += 1
     if counter == n_files or counter % 100 == 0:
       print(f'[i] finished ({counter}/{n_files}) {name}')
