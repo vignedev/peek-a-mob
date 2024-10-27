@@ -70,7 +70,7 @@ if __name__ == '__main__':
   entity_bidict, entity_json = get_entity_bidict(argv.entities)
 
   # list of files
-  files: list[tuple[str, str]] = [ (file, argv.type) for file in os.listdir(argv.input) ]
+  files: list[tuple[str, str]] = [ (path.join(argv.input, file), argv.type) for file in os.listdir(argv.input) if os.path.isfile(path.join(argv.input, file)) ]
   n_files = len(files)
 
   # sorter
@@ -110,7 +110,7 @@ if __name__ == '__main__':
   # lets get the show on the f-cking road
   counter = 0
   pool = Pool(processes=argv.ncpu)
-  for name in pool.imap_unordered( create_from_image_tuple, [ (path.join(argv.input, _file), _type, argv) for _file, _type in files ]):
+  for name in pool.imap_unordered( create_from_image_tuple, [ (_file, _type, argv) for _file, _type in files ]):
     counter += 1
     if counter == n_files or counter % 100 == 0:
       print(f'[i] finished ({counter}/{n_files}) {name}')
