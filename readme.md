@@ -1,5 +1,13 @@
 # `peek-a-mob`
 
+## Web
+
+
+
+## Minecraft Shader
+
+Follow the [instructions](./minecraft_shader).
+
 ## Dataset generation
 
 You have to use the `minecraft_shader/generate_entityprop.js` file first to get `entities.json`. 
