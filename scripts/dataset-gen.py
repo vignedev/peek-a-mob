@@ -50,13 +50,18 @@ def get_argv():
     help='draws the bounding boxes onto cropped images (do not use for generating!!)',
     action='store_true'
   )
+  parser.add_argument(
+    '-x', '--extension',
+    help='the file extension for the final images to use (eg. for images.png use "png")',
+    default='png'
+  )
   return parser.parse_args()
 
 def create_from_image(filepath: str, _type: str, argv: argparse.Namespace):
   name = '.'.join(path.basename(filepath).split('.')[:-1])
   image, labels = annotate_file(filepath, format=argv.format, debug_draw=argv.debug)
 
-  cv.imwrite(path.join(argv.output, _type, 'images', f'{name}.png'), image)
+  cv.imwrite(path.join(argv.output, _type, 'images', f'{name}.{argv.extension}'), image)
   with open(path.join(argv.output, _type, 'labels', f'{name}.txt'), 'w') as hfile:
     hfile.write('\n'.join([ ' '.join([ str(w) for w in v ]) for v in labels ]))
   return filepath
