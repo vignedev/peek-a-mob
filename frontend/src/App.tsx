@@ -1,25 +1,31 @@
-import { useState } from 'react'
 import './App.css'
+import { Timeline } from './components/timeline'
+import InAmeSame from './assets/inamesame.jpg'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
       <div>
       </div>
-      <h1>Vite + React</h1>
+      <h1>PaM</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+
+      
+      <div style={{display: 'flex', gap: '1rem', flexDirection: 'column'}}>
+        {
+          new Array(25).fill(null).map(x => (
+            <Timeline
+              title='smash bros uwu'
+              thumbnail={InAmeSame}
+              width={640} height={32}
+              duration={600}
+              lines={new Array(100).fill(0).map(_ => Math.random() * 600)}
+              strokeStyle='#ff000060'
+            />
+          ))
+        }
+      </div>
     </>
   )
 }
