@@ -24,6 +24,11 @@ float get_bit(int id, int bit){
 }
 
 void get_entity_color(int id, out vec4 triple1, out vec4 triple2, out vec4 triple3) {
+	if(id >= 65535){
+		triple1 = triple2 = triple3 = vec4(0.0, 0.0, 0.0, 1.0);	
+		return;
+	}
+
 	triple1 = vec4(get_bit(id, 8), get_bit(id, 7), get_bit(id, 6), 1.0);
 	triple2 = vec4(get_bit(id, 5), get_bit(id, 4), get_bit(id, 3), 1.0);
 	triple3 = vec4(get_bit(id, 2), get_bit(id, 1), get_bit(id, 0), 1.0);
