@@ -4,8 +4,6 @@ import os
 import json
 from typing import Literal
 
-AREA_NORMALIZED_THRESHOLD = 0.00125
-
 def get_entity_bidict(src_json: str):
   '''
   You can access ID using `entities_bidict['zombie']`
@@ -19,7 +17,7 @@ def get_entity_bidict(src_json: str):
       entities_bidict[temp_json[entity]] = entity
   return entities_bidict, temp_json
 
-def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw: bool = False) -> tuple[cv.typing.MatLike, list[tuple[int, float, float, float, float]]]:
+def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw: bool = False, area_threshold = 0.0) -> tuple[cv.typing.MatLike, list[tuple[int, float, float, float, float]]]:
   '''
   Returns the cropped top-left quadrant and a list of entities represented as tuples in the following format:
 
@@ -62,8 +60,10 @@ def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw:
     mask = np.where(entities == id, np.uint8(255), np.uint8(0))
 
     kernel_m = cv.getStructuringElement(cv.MORPH_RECT, (16, 16))
-    kernel_d = cv.getStructuringElement(cv.MORPH_RECT, (4, 4))
+    kernel_e = cv.getStructuringElement(cv.MORPH_RECT, (4, 4))
+    kernel_d = cv.getStructuringElement(cv.MORPH_RECT, (8, 8))
     mask = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernel_m)
+    mask = cv.erode(mask, kernel_e)
     mask = cv.dilate(mask, kernel_d)
 
     contours, _ = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
@@ -72,7 +72,7 @@ def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw:
       area = cv.contourArea(cnt) / ( b_width * b_height )
 
       # TODO: check if this is useful
-      big_enough = True or area > AREA_NORMALIZED_THRESHOLD
+      big_enough = area > area_threshold
       
       if debug_draw:
         color = (0, 255, 0) if big_enough else (0, 0, 255)

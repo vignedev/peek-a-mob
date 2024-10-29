@@ -55,11 +55,17 @@ def get_argv():
     help='the file extension for the final images to use (eg. for images.png use "png")',
     default='png'
   )
+  parser.add_argument(
+    '-a', '--area_threshold',
+    help='normalized area threshold, values below this would get filtered out (set to 0.0 to disable)',
+    default=0.0,
+    type=float
+  )
   return parser.parse_args()
 
 def create_from_image(filepath: str, _type: str, argv: argparse.Namespace):
   name = '.'.join(path.basename(filepath).split('.')[:-1])
-  image, labels = annotate_file(filepath, format=argv.format, debug_draw=argv.debug)
+  image, labels = annotate_file(filepath, format=argv.format, debug_draw=argv.debug, area_threshold=argv.area)
 
   cv.imwrite(path.join(argv.output, _type, 'images', f'{name}.{argv.extension}'), image)
   with open(path.join(argv.output, _type, 'labels', f'{name}.txt'), 'w') as hfile:
