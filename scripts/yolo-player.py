@@ -49,50 +49,33 @@ if __name__ == '__main__':
   while capture.isOpened:
     if not initialFlag:
       capture.set(cv2.CAP_PROP_POS_FRAMES, argv.position)
+      cv2.setTrackbarPos('videoPos', 'player', positionFrames)
       initialFlag = True
     if isPlaying or isDirty:
       if int(capture.get(cv2.CAP_PROP_POS_FRAMES)) == vFrames:
         capture.set(cv2.CAP_PROP_POS_FRAMES, 0) # loop at end
       
       ret, frame = capture.read()
-      frame = cv2.resize(frame, (560, 315))
       if ret:
-        positionFrames = int(capture.get(cv2.CAP_PROP_POS_FRAMES))
         results = yoloModel.predict(source=frame, verbose=False)
-        
-        for result in results:
-          for box in result.boxes:
-            confidence = float(box.conf[0])
-            class_id = int(box.cls[0])
-            x, y, w, h = [ int(i) for i in box.xywh[0] ]
-            name = result.names[class_id]
-
-            cv2.rectangle(
-              frame,
-              pt1=(x-w//2, y-h//2), pt2=(x+w//2, y+h//2),
-              color=(0, 0, 255),
-              thickness=2
-            )
-            cv2.putText(
-              frame,
-              f'{name}[{confidence:.2f}]',
-              (x - w//2, y - h//2 - 4),
-              fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-              fontScale=0.4,
-              color=(0, 0, 255),
-              thickness=1,
-              lineType=cv2.LINE_AA
-            )
-
-        cv2.imshow('player', frame)
-        cv2.setTrackbarPos('videoPos', 'player', positionFrames)
+        cv2.imshow('player', results[0].plot())
       isDirty = False
 
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
       break
     elif key == ord(' '):
+      positionFrames = int(capture.get(cv2.CAP_PROP_POS_FRAMES))
+      cv2.setTrackbarPos('videoPos', 'player', positionFrames)
       isPlaying = not isPlaying
-
+      isDirty = True
+    elif key == 83:
+      positionFrames = int(capture.get(cv2.CAP_PROP_POS_FRAMES)) + 300
+      capture.set(cv2.CAP_PROP_POS_FRAMES, positionFrames)
+      isDirty = True
+    elif key == 81:
+      positionFrames = int(capture.get(cv2.CAP_PROP_POS_FRAMES)) - 300
+      capture.set(cv2.CAP_PROP_POS_FRAMES, positionFrames)
+      isDirty = True
   capture.release()
   cv2.destroyAllWindows()
