@@ -17,7 +17,7 @@ def read_dataset(dataset_path: str):
       if filename.endswith('.png') or filename.endswith('.jpeg') or filename.endswith('.jpg'):
         bucket.append(path.join(dirpath, filename))
 
-  return data_yaml['names'], bucket
+  return data_yaml['names'], sorted(bucket)
 
 class MainWindow(QtWidgets.QMainWindow):
   def __init__(self):
