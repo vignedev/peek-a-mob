@@ -1,4 +1,11 @@
 import argparse
+import time
+from os import path
+import os
+import cv2
+from ultralytics import YOLO
+import numpy as np
+import mss
 
 def get_argv():
   parser = argparse.ArgumentParser()
@@ -19,55 +26,36 @@ def get_argv():
     type=int,
     default=0
   )
+  parser.add_argument('-w', '--webcam', action='store_true', default=False)
   parser.add_argument('--conf', default=0.8, type=float)
   parser.add_argument('--iou', default=0.5, type=float)
   parser.add_argument('--imgsz', default=640, type=int)
   parser.add_argument('-r', '--rate', default=60, help='framerate', type=float)
+  parser.add_argument('-o', '--output', type=str, default=None, help='where to save frames where things were detected')
   return parser.parse_args()
 
-if __name__ == '__main__':
-  argv = get_argv()
-
-  import cv2
-  from ultralytics import YOLO
-  import numpy as np
-  import mss
-  import time
-
-  # init the model
-  yoloModel = YOLO(argv.model)
-
-  # create a cv2 dumb video player
-  cv2.namedWindow('player', cv2.WINDOW_GUI_NORMAL)
-  cv2.setNumThreads(16)
-
-  capture = mss.mss()
-  monitor = capture.monitors[argv.monitor]
-  s_interval = 1.0 / argv.rate
-
-  last_frame = time.time()
-  while True:
-    current_time = time.time()
-    diff_this_frame = current_time - last_frame
-    if argv.rate > 0 and (diff_this_frame > s_interval):
-      last_frame = current_time
+def detect_and_label(frame, yoloModel: YOLO, save: str | None=None):
+  saved_image = False
+  for result in yoloModel.predict(
+    source=frame,
+    verbose=False,
+    conf=argv.conf,
+    iou=argv.iou,
+    imgsz=argv.imgsz,
+    stream=True
+  ):
+    if save is not None:
+      if not saved_image and int(result.boxes.shape[0]) != 0:
+        ctime = time.time()
+        cv2.imwrite(path.join(save, f'monitor_{ctime}_raw.png'), frame)
+        frame = result.plot()
+        cv2.imwrite(path.join(save, f'monitor_{ctime}_annotated.png'), frame)
+        saved_image = True
+      else:
+        frame = result.plot()
     else:
-      time.sleep(s_interval - diff_this_frame)
-      continue
+      frame = result.plot()
 
-    key = cv2.waitKey(1) & 0xFF
-    if key == ord('q'):
-      break
-
-    frame = np.asarray(capture.grab(monitor))[:,:,:3]
-    results = yoloModel.predict(
-      source=frame,
-      verbose=False,
-      conf=argv.conf,
-      iou=argv.iou,
-      imgsz=argv.imgsz,
-    )
-    frame = results[0].plot()
     cv2.rectangle(
       frame,
       (0, 0),
@@ -84,6 +72,50 @@ if __name__ == '__main__':
       thickness=1,
       lineType=cv2.LINE_AA
     )
-    cv2.imshow('player', frame)
+  return frame
+
+if __name__ == '__main__':
+  argv = get_argv()
+
+  # init the model
+  yoloModel = YOLO(argv.model)
+
+  # create a cv2 dumb video player
+  cv2.namedWindow('player', cv2.WINDOW_GUI_NORMAL)
+  cv2.setNumThreads(16)
+
+  s_interval = 1.0 / argv.rate
+
+  if argv.webcam:
+    capture = cv2.VideoCapture(argv.monitor)
+    condition = capture.isOpened()
+  else:
+    capture = mss.mss()
+    monitor = capture.monitors[argv.monitor]
+    condition = True
+
+  if argv.output:
+    os.makedirs(argv.output, exist_ok=True)
+
+  last_frame = time.time()
+  while condition:
+    current_time = time.time()
+    diff_this_frame = current_time - last_frame
+    if argv.rate > 0 and (diff_this_frame > s_interval):
+      last_frame = current_time
+    else:
+      time.sleep(s_interval - diff_this_frame)
+      continue
+
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord('q'):
+      break
+
+    if argv.webcam:
+      ret, frame = capture.read()
+    else:
+      frame = np.asarray(capture.grab(monitor))[:,:,:3]
+
+    cv2.imshow('player', detect_and_label(frame, yoloModel, save=argv.output))
 
   cv2.destroyAllWindows()
