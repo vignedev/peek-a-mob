@@ -11,6 +11,7 @@ kiwisolver==1.4.7
 MarkupSafe==3.0.2
 matplotlib==3.9.2
 mpmath==1.3.0
+mss==9.0.2
 networkx==3.4.2
 numpy==2.1.2
 nvidia-cublas-cu12==12.4.5.8
@@ -32,7 +33,11 @@ pillow==11.0.0
 psutil==6.1.0
 py-cpuinfo==9.0.0
 pyparsing==3.2.0
+PyQt6==6.7.1
+PyQt6-Qt6==6.7.3
+PyQt6_sip==13.8.0
 python-dateutil==2.9.0.post0
+pytubefix==8.1.1
 pytz==2024.2
 PyYAML==6.0.2
 requests==2.32.3
