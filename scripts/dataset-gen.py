@@ -65,7 +65,7 @@ def get_argv():
 
 def create_from_image(filepath: str, _type: str, argv: argparse.Namespace):
   name = '.'.join(path.basename(filepath).split('.')[:-1])
-  image, labels = annotate_file(filepath, format=argv.format, debug_draw=argv.debug, area_threshold=argv.area)
+  image, labels = annotate_file(filepath, format=argv.format, debug_draw=argv.debug, area_threshold=argv.area_threshold)
 
   cv.imwrite(path.join(argv.output, _type, 'images', f'{name}.{argv.extension}'), image)
   with open(path.join(argv.output, _type, 'labels', f'{name}.txt'), 'w') as hfile:
