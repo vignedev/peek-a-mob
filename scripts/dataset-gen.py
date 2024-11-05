@@ -138,13 +138,14 @@ if __name__ == '__main__':
   data_path = path.join(argv.output, 'data.yaml')
   if not path.exists(data_path) or True: # doesnt hurt much, right?
     with open(data_path, 'w') as file:
+      names = ', '.join([ f'\'{ent}\'' for ent in entity_json ])
       file.write('\n'.join([
         f'train: train/images',
         f'val: valid/images',
         f'test: test/images',
         f'',
         f'nc: {len(entity_json)}',
-        f'names: [{', '.join([ f'\'{ent}\'' for ent in entity_json ])}]'
+        f'names: [{names}]'
       ]))
 
   # lets get the show on the f-cking road
