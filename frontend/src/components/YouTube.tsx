@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import YouTube, { YouTubePlayer } from 'react-youtube'
 import { Canvas } from './Canvas'
 import { Box, Flex } from '@radix-ui/themes'
+import { getDetections } from '../libs/api'
 
 type PlayerProps = {
   videoId: string
@@ -19,6 +20,9 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
     }, 500)
     return () => clearInterval(interval)
   }, [player])
+
+  // TODO: make the fetcher work "as needed"
+  const detections = getDetections(props.videoId, currentTime)
 
   const VideoOverlay = () => (
     <Canvas
@@ -50,11 +54,31 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
           h = ctx.canvas.height;
         }
 
-        ctx.lineWidth = 2
+        ctx.lineWidth = 1
         ctx.strokeStyle = 'red'
 
         let width = Math.abs(Math.sin(Date.now() / 1000.0 * Math.PI)) * 16
         ctx.strokeRect(x + width, y + width, w - width * 2, h - width * 2)
+
+        for (const name in detections) {
+          for (const entity of detections[name]) {
+            ctx.strokeStyle = 'red'
+            ctx.strokeRect(
+              x + entity.x * w,
+              y + entity.y * h,
+              entity.w * w,
+              entity.h * h
+            )
+
+            const header = `${name} ${entity.conf.toFixed(2)}`
+            const headerSize = ctx.measureText(header)
+            const headerHeight = headerSize.fontBoundingBoxAscent + headerSize.fontBoundingBoxDescent + 4
+            ctx.fillStyle = 'red'
+            ctx.fillRect(x + entity.x * w - 1, y + entity.y * h - headerHeight, headerSize.width + 4, headerHeight)
+            ctx.fillStyle = 'white'
+            ctx.fillText(header, x + entity.x * w, y + entity.y * h - 4)
+          }
+        }
       }}
     />
   )
@@ -91,7 +115,7 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
 
   return (
     <Flex direction='column'>
-      <Box height='20rem' position='relative'>
+      <Box height='40rem' position='relative'>
         <YouTube
           className='youtubeEmbed'
           videoId={props.videoId}
