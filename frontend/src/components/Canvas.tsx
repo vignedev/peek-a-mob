@@ -8,7 +8,7 @@ type MouseContext = {
 type CanvasProps = {
   className?: string,
   style?: CSSProperties,
-  onDraw?: (ctx: CanvasRenderingContext2D, mouse: MouseContext) => Promise<void>,
+  onDraw?: (ctx: CanvasRenderingContext2D, mouse: MouseContext) => Promise<void> | void,
   onMouseDown?: (event: MouseEvent, ctx: CanvasRenderingContext2D) => void
 }
 
@@ -37,6 +37,9 @@ export const Canvas = forwardRef((props: CanvasProps, ref) => {
     const handleClick = (e: MouseEvent) => {
       props.onMouseDown?.(e, ctx)
     }
+    const handleMouseLeave = () => {
+      mouse.x = mouse.y = -1
+    }
 
     const resize = () => {
       ctx.canvas.width = ctx?.canvas.clientWidth;
@@ -55,10 +58,12 @@ export const Canvas = forwardRef((props: CanvasProps, ref) => {
     window.addEventListener('resize', resize)
     ctx.canvas.addEventListener('mousemove', updateMousePosition)
     ctx.canvas.addEventListener('mousedown', handleClick)
+    ctx.canvas.addEventListener('mouseleave', handleMouseLeave)
     return () => {
       window.removeEventListener('resize', resize)
       ctx.canvas.removeEventListener('mousemove', updateMousePosition)
       ctx.canvas.removeEventListener('mousedown', handleClick)
+      ctx.canvas.removeEventListener('mouseleave', handleMouseLeave)
       keep_rendering_son = false
     }
   }, [canvasRef, props.onDraw, props.style])
