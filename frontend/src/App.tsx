@@ -1,31 +1,18 @@
-import './App.css'
-import { Timeline } from './components/timeline'
-import InAmeSame from './assets/inamesame.jpg'
+import { Blockquote, Container, Flex, Heading } from "@radix-ui/themes"
+import { YouTubeWithTimeline } from "./components/YouTube"
+import { Canvas } from "./components/Canvas"
 
 function App() {
   return (
     <>
-      <div>
-      </div>
-      <h1>PaM</h1>
-      <div className="card">
-      </div>
+      <Container p='4'>
+        <Flex direction='column' gap='4'>
+          <Heading>peek-a-mob</Heading>
+          <Blockquote>ey waddup son what dat mob doin</Blockquote>
 
-      
-      <div style={{display: 'flex', gap: '1rem', flexDirection: 'column'}}>
-        {
-          new Array(25).fill(null).map(x => (
-            <Timeline
-              title='smash bros uwu'
-              thumbnail={InAmeSame}
-              width={640} height={32}
-              duration={600}
-              lines={new Array(100).fill(0).map(_ => Math.random() * 600)}
-              strokeStyle='#ff000060'
-            />
-          ))
-        }
-      </div>
+          <YouTubeWithTimeline videoId="4Vs1wKjNuUw"/>
+        </Flex>
+      </Container>
     </>
   )
 }
