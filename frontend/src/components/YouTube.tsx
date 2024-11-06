@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import YouTube, { YouTubePlayer } from 'react-youtube'
 import { Canvas } from './Canvas'
 import { Box, Flex } from '@radix-ui/themes'
@@ -10,6 +10,15 @@ type PlayerProps = {
 export const YouTubeWithTimeline = (props: PlayerProps) => {
   const [player, setPlayer] = useState<YouTubePlayer>()
   const [duration, setDuration] = useState<number>(-1)
+  const [currentTime, setCurrentTime] = useState<number>(-1)
+
+  useEffect(() => {
+    if (!player) return;
+    const interval = setInterval(async () => {
+      setCurrentTime(await player.getCurrentTime())
+    }, 500)
+    return () => clearInterval(interval)
+  }, [player])
 
   const VideoOverlay = () => (
     <Canvas
@@ -61,7 +70,6 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
       ctx.fillText(`${ctx.canvas.width} x ${ctx.canvas.height} | ${new Date().toLocaleString()}`, 16, 16)
 
       if (!player) return;
-      const currentTime = await player.getCurrentTime()
 
       ctx.fillText(`${currentTime.toFixed(2)}/${duration} | x=${mouse.x} | y=${mouse.y}`, 16, 32)
 
