@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
         file.write(f'{frame_counter * argv.vid_stride};{name};{confidence};{x};{y};{w};{h}\n')
 
-      frame_counter += 1
+      frame_counter += argv.vid_stride
 
     file.write(f'{frame_counter * argv.vid_stride};end\n')
     file.flush()
