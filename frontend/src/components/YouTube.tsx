@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import YouTube, { YouTubePlayer } from 'react-youtube'
-import { Canvas } from './Canvas'
+import { Canvas, CanvasDrawingFunction, CanvasProps } from './Canvas'
 import { Box, Flex } from '@radix-ui/themes'
-import { getDetections } from '../libs/api'
+import { EntityDetection, getDetections } from '../libs/api'
 
 type PlayerProps = {
   videoId: string
@@ -11,18 +11,28 @@ type PlayerProps = {
 export const YouTubeWithTimeline = (props: PlayerProps) => {
   const [player, setPlayer] = useState<YouTubePlayer>()
   const [duration, setDuration] = useState<number>(-1)
-  const [currentTime, setCurrentTime] = useState<number>(-1)
+  // const [_currentTime, setCurrentTime] = useState<number>(-1)
+  const [detections, setDetections] = useState<EntityDetection>({})
+
+  let currentTime = -1
+  let rollingDetections: EntityDetection = {}
+
+  useEffect(() => {
+    getDetections(props.videoId, 0, Infinity).then(setDetections)
+  }, [])
 
   useEffect(() => {
     if (!player) return;
+
     const interval = setInterval(async () => {
-      setCurrentTime(await player.getCurrentTime())
-    }, 500)
+      // setCurrentTime(await player.getCurrentTime())
+      const newTime = await player.getCurrentTime()
+      if (Math.abs(newTime - currentTime) >= 5)
+        rollingDetections = await getDetections(props.videoId, currentTime, Infinity, 5)
+      currentTime = newTime
+    }, 16)
     return () => clearInterval(interval)
   }, [player])
-
-  // TODO: make the fetcher work "as needed"
-  const detections = getDetections(props.videoId, currentTime)
 
   const VideoOverlay = () => (
     <Canvas
@@ -60,9 +70,16 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
         let width = Math.abs(Math.sin(Date.now() / 1000.0 * Math.PI)) * 16
         ctx.strokeRect(x + width, y + width, w - width * 2, h - width * 2)
 
-        for (const name in detections) {
-          for (const entity of detections[name]) {
-            ctx.strokeStyle = 'red'
+        for (const name in rollingDetections) {
+          for (const entity of rollingDetections[name]) {
+            const dist = Math.abs(entity.time - currentTime)
+            const alpha = Math.pow(Math.max(1.0 - dist / 2, 0.0), 2.3)
+            // if (Math.abs(entity.time - currentTime) > 10)
+            //   continue
+
+            ctx.fillStyle = ctx.strokeStyle = (currentTime < entity.time) ?
+              `rgba(0, 0, 255, ${alpha})` :
+              `rgba(255, 0, 0, ${alpha})`
             ctx.strokeRect(
               x + entity.x * w,
               y + entity.y * h,
@@ -70,12 +87,11 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
               entity.h * h
             )
 
-            const header = `${name} ${entity.conf.toFixed(2)}`
+            const header = `${name} ${entity.conf.toFixed(2)} ${(currentTime - entity.time).toFixed(2)}`
             const headerSize = ctx.measureText(header)
             const headerHeight = headerSize.fontBoundingBoxAscent + headerSize.fontBoundingBoxDescent + 4
-            ctx.fillStyle = 'red'
             ctx.fillRect(x + entity.x * w - 1, y + entity.y * h - headerHeight, headerSize.width + 4, headerHeight)
-            ctx.fillStyle = 'white'
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`
             ctx.fillText(header, x + entity.x * w, y + entity.y * h - 4)
           }
         }
@@ -91,22 +107,39 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
       ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
       ctx.fillStyle = 'white'
-      ctx.fillText(`${ctx.canvas.width} x ${ctx.canvas.height} | ${new Date().toLocaleString()}`, 16, 16)
+      ctx.fillText(`${ctx.canvas.width} x ${ctx.canvas.height} | ${new Date().toLocaleString()}`, 310, 16)
 
-      if (!player) return;
+      if (!player)
+        return;
 
-      ctx.fillText(`${currentTime.toFixed(2)}/${duration} | x=${mouse.x} | y=${mouse.y}`, 16, 32)
+      ctx.fillText(`${currentTime.toFixed(2)}/${duration} | x=${mouse.x} | y=${mouse.y}`, 310, 32)
+
+      let lines = 0
+      Object.entries(detections).forEach(([entName, occurances]) => {
+        occurances.forEach(detection => {
+          ctx.strokeStyle = '#0f0'
+          ctx.lineWidth = 1
+          ctx.beginPath()
+          ctx.moveTo(detection.time / duration * ctx.canvas.width, 0)
+          ctx.lineTo(detection.time / duration * ctx.canvas.width, ctx.canvas.height)
+          ctx.stroke()
+
+
+          if (detection.time < currentTime) return
+          ctx.fillStyle = 'white'
+          ctx.fillText(`${entName} ${detection.time - currentTime}`, 300, 48 + 16 * lines++)
+        })
+      })
 
       ctx.fillStyle = '#f005'
       ctx.fillRect(0, 0, currentTime / duration * ctx.canvas.width, ctx.canvas.height)
 
-      ctx.strokeStyle = '#0ff'
+      ctx.strokeStyle = '#f00'
       ctx.lineWidth = 2
       ctx.beginPath()
       ctx.moveTo(mouse.x, 0)
       ctx.lineTo(mouse.x, ctx.canvas.height)
       ctx.stroke()
-
     }} onMouseDown={(e, ctx) => {
       if (!player) return;
       player.seekTo(duration * e.offsetX / ctx.canvas.width, true)

@@ -1,14 +1,16 @@
 import { CSSProperties, forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 
-type MouseContext = {
+export type MouseContext = {
   x: number,
   y: number
 }
 
-type CanvasProps = {
+export type CanvasDrawingFunction = (ctx: CanvasRenderingContext2D, mouse: MouseContext) => Promise<void> | void
+
+export type CanvasProps = {
   className?: string,
   style?: CSSProperties,
-  onDraw?: (ctx: CanvasRenderingContext2D, mouse: MouseContext) => Promise<void> | void,
+  onDraw?: CanvasDrawingFunction,
   onMouseDown?: (event: MouseEvent, ctx: CanvasRenderingContext2D) => void
 }
 

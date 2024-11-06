@@ -1,10 +1,12 @@
+import { lowerBound } from './utils'
+import exampleVideo1 from './yt_4Vs1wKjNuUw.json'
 
-export type Entity = {
-  conf: number,
+export type EntityOccurance = {
+  time: number, conf: number,
   x: number, y: number,
   w: number, h: number
 }
-export type EntityDetection = Record<string, Entity[]>
+export type EntityDetection = Record<string, EntityOccurance[]>
 
 // TODO: make it async, and you know... actually work
 /**
@@ -15,16 +17,23 @@ export type EntityDetection = Record<string, Entity[]>
  * @param before Back seeking if necessary (basically time-before)
  * @returns Object where keys are the detected classes, and their value is the list of bounding boxes
  */
-export function getDetections(videoId: string, time: number, after: number = 5, before: number = 0): EntityDetection {
-  return {
-    'zombie': [
-      {
-        conf: 0.8311064839363098,
-        x: 0.40599140152335167,
-        y: 0.3386853262782097,
-        w: 0.0665946677327156,
-        h: 0.14601381123065948,
-      }
-    ]
+export async function getDetections(videoId: string, time: number, after: number = 5, before: number = 0): Promise<EntityDetection> {
+  if (videoId != '4Vs1wKjNuUw')
+    return {}
+
+  const entities: EntityDetection = {}
+  const
+    lb = lowerBound(exampleVideo1, a => a.time < time - before),
+    ub = lowerBound(exampleVideo1, a => a.time < (time - before + after))
+
+  for (let i = lb; i < ub; ++i) {
+    const { class: className, confidence, x, y, w, h, time } = exampleVideo1[i]
+    if (className in entities === false)
+      entities[className] = []
+    entities[className].push({
+      conf: confidence,
+      x, y, w, h, time
+    })
   }
+  return entities
 }
