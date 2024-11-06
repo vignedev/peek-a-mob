@@ -76,7 +76,9 @@ def create_from_image(filepath: str, _type: str, argv: argparse.Namespace):
   cv.imwrite(path.join(argv.output, _type, 'images', f'{name}.{argv.extension}'), image)
   with open(path.join(argv.output, _type, 'labels', f'{name}.txt'), 'w') as hfile:
     hfile.write('\n'.join([ ' '.join([ str(w) for w in v ]) for v in labels ]))
-  return filepath
+
+  found_entities = set([ int(t[0]) for t in labels ])
+  return filepath, found_entities
 
 def create_from_image_tuple(data: tuple[str, str, argparse.Namespace]):
   filepath, _type, argv = data
@@ -134,6 +136,18 @@ if __name__ == '__main__':
     os.makedirs(path.join(argv.output, folder, 'images'), exist_ok=True)
     os.makedirs(path.join(argv.output, folder, 'labels'), exist_ok=True)
 
+  # lets get the show on the f-cking road
+  counter = 0
+  pool = Pool(processes=argv.ncpu)
+  unique_entities = set()
+  for name, found_entities in pool.imap_unordered( create_from_image_tuple, [ (_file, _type, argv) for _file, _type in files ]):
+    counter += 1
+    for ent in found_entities:
+      unique_entities.add(ent)
+
+    if counter == n_files or counter % 100 == 0:
+      print(f'[i] finished ({counter}/{n_files}) {name}')
+
   # write the intro yaml (if not existing)
   data_path = path.join(argv.output, 'data.yaml')
   if not path.exists(data_path) or True: # doesnt hurt much, right?
@@ -144,14 +158,10 @@ if __name__ == '__main__':
         f'val: valid/images',
         f'test: test/images',
         f'',
-        f'nc: {len(entity_json)}',
-        f'names: [{names}]'
+        f'names:',
+        f''
+        # f'nc: {len(entity_json)}',
+        # f'names: [{names}]'
       ]))
 
-  # lets get the show on the f-cking road
-  counter = 0
-  pool = Pool(processes=argv.ncpu)
-  for name in pool.imap_unordered( create_from_image_tuple, [ (_file, _type, argv) for _file, _type in files ]):
-    counter += 1
-    if counter == n_files or counter % 100 == 0:
-      print(f'[i] finished ({counter}/{n_files}) {name}')
+      file.write('\n'.join([ f'    {id}: {entity_bidict[id]}' for id in unique_entities ]))
