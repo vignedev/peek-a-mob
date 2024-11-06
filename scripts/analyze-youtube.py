@@ -66,8 +66,7 @@ if __name__ == '__main__':
   with open(argv.output, 'wt') as file:
     frame_pos = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
     found_total = 0
-    file.write(f'ti
-               me;class;confidence;x;y;w;h\n')
+    file.write(f'time;class;confidence;x;y;w;h\n')
     while cap.isOpened():
       ret, frame = cap.read()
       time_sum = 0
