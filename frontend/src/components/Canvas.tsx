@@ -1,4 +1,4 @@
-import { CSSProperties, forwardRef, useEffect, useImperativeHandle, useRef } from "react"
+import { CSSProperties, forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react"
 
 export type MouseContext = {
   x: number,
@@ -16,6 +16,7 @@ export type CanvasProps = {
 
 export const Canvas = forwardRef((props: CanvasProps, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [mouse, setMouse] = useState<MouseContext>({ x: -1, y: -1 })
 
   useImperativeHandle(ref, () => {
     const canvas = canvasRef.current
@@ -28,19 +29,12 @@ export const Canvas = forwardRef((props: CanvasProps, ref) => {
 
   useEffect(() => {
     const ctx = canvasRef.current!.getContext('2d')!
-    const mouse: MouseContext = {
-      x: 0, y: 0
-    }
 
     const updateMousePosition = (e: MouseEvent) => {
-      mouse.x = e.offsetX
-      mouse.y = e.offsetY
-    }
-    const handleClick = (e: MouseEvent) => {
-      props.onMouseDown?.(e, ctx)
+      setMouse({ x: e.offsetX, y: e.offsetY })
     }
     const handleMouseLeave = () => {
-      mouse.x = mouse.y = -1
+      setMouse({ x: -1, y: -1 })
     }
 
     const resize = () => {
@@ -48,6 +42,31 @@ export const Canvas = forwardRef((props: CanvasProps, ref) => {
       ctx.canvas.height = ctx?.canvas.clientHeight;
     }
     resize()
+
+    window.addEventListener('resize', resize)
+    ctx.canvas.addEventListener('mousemove', updateMousePosition)
+    ctx.canvas.addEventListener('mouseleave', handleMouseLeave)
+    return () => {
+      window.removeEventListener('resize', resize)
+      ctx.canvas.removeEventListener('mousemove', updateMousePosition)
+      ctx.canvas.removeEventListener('mouseleave', handleMouseLeave)
+    }
+  }, [canvasRef])
+
+  useEffect(() => {
+    const ctx = canvasRef.current!.getContext('2d')!
+    const handleClick = (e: MouseEvent) => {
+      props.onMouseDown?.(e, ctx)
+    }
+
+    ctx.canvas.addEventListener('mousedown', handleClick)
+    return () => {
+      ctx.canvas.removeEventListener('mousedown', handleClick)
+    }
+  }, [props.onMouseDown])
+
+  useEffect(() => {
+    const ctx = canvasRef.current!.getContext('2d')!
 
     let keep_rendering_son = true
     async function render() {
@@ -57,18 +76,10 @@ export const Canvas = forwardRef((props: CanvasProps, ref) => {
     }
     render()
 
-    window.addEventListener('resize', resize)
-    ctx.canvas.addEventListener('mousemove', updateMousePosition)
-    ctx.canvas.addEventListener('mousedown', handleClick)
-    ctx.canvas.addEventListener('mouseleave', handleMouseLeave)
     return () => {
-      window.removeEventListener('resize', resize)
-      ctx.canvas.removeEventListener('mousemove', updateMousePosition)
-      ctx.canvas.removeEventListener('mousedown', handleClick)
-      ctx.canvas.removeEventListener('mouseleave', handleMouseLeave)
       keep_rendering_son = false
     }
-  }, [canvasRef, props.onDraw, props.style])
+  }, [props.onDraw, mouse])
 
   return <canvas
     className={props.className}
