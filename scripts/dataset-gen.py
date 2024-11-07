@@ -68,6 +68,11 @@ def get_argv():
     default=0.0,
     type=float
   )
+  parser.add_argument(
+    '-s', '--seed',
+    help='if type is set to random_sort, this seed is used to shuffle it around',
+    default='seed deez nuts'
+  )
   return parser.parse_args()
 
 def create_from_image(filepath: str, _type: str, argv: argparse.Namespace):
@@ -85,14 +90,16 @@ def create_from_image_tuple(data: tuple[str, str, argparse.Namespace]):
   filepath, _type, argv = data
   return create_from_image(filepath, _type, argv)
 
-def get_dataset_images(root: str, recursive: bool = False):
+def get_dataset_images(root: str, _type: str, seed: str, recursive: bool = False):
   """
   Make sure it returns the JOINED PATH with root
   """
   if not recursive:
     return [ path.join(root, file) for file in os.listdir(root) if os.path.isfile(path.join(root, file)) ]
   else:
-    bucket = []
+    bucket: list[tuple[str, str]] = []
+    randomizer = random.Random(seed)
+
     for rootdir, subdir, files in os.walk(root):
       segments = rootdir.split(os.sep)
       has_dot = False
@@ -104,8 +111,20 @@ def get_dataset_images(root: str, recursive: bool = False):
       if has_dot:
         continue
 
-      for file in files:
-        bucket.append(path.join(rootdir, file))
+      n_files = len(files)
+      if _type == 'random_sort':
+        randomizer.shuffle(files)
+
+      for i in range(n_files):
+        ratio = (i+1) / n_files
+        if ratio <= RANDOM_TRAIN_RATIO:
+          given_type = 'train'
+        elif ratio <= (RANDOM_TRAIN_RATIO + RANDOM_VALID_RATIO):
+          given_type = 'valid'
+        else:
+          given_type = 'test'
+
+        bucket.append((path.join(rootdir, files[i]), given_type))
     return bucket
 
 def get_label_files(root: str):
@@ -142,26 +161,14 @@ if __name__ == '__main__':
   entity_bidict, entity_json = get_entity_bidict(argv.entities)
 
   # list of files
-  files: list[tuple[str, str]] = [ (file, argv.type) for file in get_dataset_images(argv.input, argv.recursive) ]
+  files: list[tuple[str, str]] = [ file for file in get_dataset_images(argv.input, argv.type, argv.seed, argv.recursive) ]
   n_files = len(files)
 
-  # sorter
-  if argv.type in ['sort', 'random_sort']:
-    if argv.type == 'random_sort':
-      random.shuffle(files)
-
-    for i in range(n_files):
-      _file, _type = files[i]
-      ratio = (i+1) / n_files
-      if ratio <= RANDOM_TRAIN_RATIO:
-        files[i] = (_file, 'train')
-      elif ratio <= (RANDOM_TRAIN_RATIO + RANDOM_VALID_RATIO):
-        files[i] = (_file, 'valid')
-      else:
-        files[i] = (_file, 'test')
+  # print(*files, sep='\n')
+  # exit(1)
 
   # ensure that output dir structure exists
-  os.makedirs(argv.output, exist_ok=True)
+  os.makedirs(argv.output, exist_ok=False)
   for folder in ['train', 'valid', 'test']:
     os.makedirs(path.join(argv.output, folder, 'images'), exist_ok=True)
     os.makedirs(path.join(argv.output, folder, 'labels'), exist_ok=True)
@@ -178,7 +185,7 @@ if __name__ == '__main__':
     if counter == n_files or counter % 100 == 0:
       sys.stdout.write(f'\r[i] finished ({counter}/{n_files}) {name}')
 
-  print('[i] dataset creation is done, performing remapping IDs')
+  print('\n[i] dataset creation is done, performing remapping IDs')
 
   # create conversion remapping
   remapper = dict()
@@ -212,4 +219,4 @@ if __name__ == '__main__':
 
       file.write('\n'.join([ f'    {remapper[id]}: {entity_bidict[id]}' for id in unique_entities ]))
   
-  print('[i] finito')
+  print('\n[i] finito 🤌')

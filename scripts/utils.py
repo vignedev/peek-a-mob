@@ -29,7 +29,7 @@ def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw:
   height, width, channels = image.shape
 
   if (width % 2 != 0) or (height % 2 != 0):
-    print(f'WARNING: One of the image\'s dimension ({width}x{height}) is not divisible by two!\n\t{src_image}')
+    print(f'\nWARNING: One of the image\'s dimension ({width}x{height}) is not divisible by two!\n\t{src_image}')
 
   offset_x = width % 2
   offset_y = height % 2
