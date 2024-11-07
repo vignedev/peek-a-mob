@@ -14,7 +14,7 @@ Follow the [instructions](./minecraft_shader).
 
 ## Dataset generation
 
-You have to use the `minecraft_shader/generate_entityprop.js` file first to get `entities.json`. 
+You have to use the [`minecraft_shader/generate_entityprop.js`](`minecraft_shader/generate_entityprop.js`) file first to get `entities.json`. 
 
 ```sh
 # example: generate the dataset
@@ -30,7 +30,7 @@ python3 scripts/dataset-gen.py \
 
 ## Training
 
-Either use `yolo` CLI tools, or the `scripts/train.py` which does the same but has some parameters set. The name is implicitly in the `pam_YYYYmmdd_HHMMSS` format. You can change the name if desired by using the `-n` parameter.
+Either use `yolo` CLI tools, or the [`scripts/train.py`](scripts/train.py) which does the same but has some parameters set. The name is implicitly in the `pam_YYYYmmdd_HHMMSS` format. You can change the name if desired by using the `-n` parameter.
 
 Replace `-m yolo11n.pt` with a different YOLO model, or an older iteration if further fine-tuning is desired.
 
