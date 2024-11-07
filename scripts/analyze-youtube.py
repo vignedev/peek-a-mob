@@ -64,8 +64,10 @@ if __name__ == '__main__':
   vFramesStr = datetime.timedelta(seconds=vFrames/vFPS)
 
   with open(argv.output, 'wt') as file:
-    frame_pos = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+    frame_pos = int(cap.get(cv2.CAP_PROP_POS_FRAMES)) # should be 0, but just to be sure
     found_total = 0
+    avg_rate = 0
+
     file.write(f'time;class;confidence;x;y;w;h\n')
     while cap.isOpened():
       ret, frame = cap.read()
@@ -90,8 +92,13 @@ if __name__ == '__main__':
           found_total += 1
         time_sum += result.speed['inference']
 
+      avg_rate = avg_rate + (time_sum - avg_rate) / (frame_pos+1)
       if frame_pos % vFPS == 0:
-        sys.stdout.write(f'\r{(frame_pos/vFrames*100.0):.2f}% | {datetime.timedelta(seconds=math.floor(frame_pos / vFPS))} - {vFramesStr} | {frame_pos}/{vFrames} | {found_total} | {(1000.0 / time_sum):.2f} FPS ({time_sum:.1f} ms) | ETA: {datetime.timedelta(seconds=math.floor((vFrames - frame_pos) * time_sum / 1000.0))}         ')
+        sys.stdout.write(f'\r{(frame_pos/vFrames*100.0):.2f}% | {datetime.timedelta(seconds=math.floor(frame_pos / vFPS))} - {vFramesStr} | {frame_pos}/{vFrames} | {found_total} | {(1000.0 / time_sum):.2f} FPS ({time_sum:.1f} ms) | {(1000.0 / avg_rate):.2f} aFPS ({avg_rate:.1f} ms) | ETA: {datetime.timedelta(seconds=math.floor((vFrames - frame_pos) * avg_rate / 1000.0))}         ')
+
+      if frame_pos % (vFPS * 100) == 0:
+        file.flush()
+
       frame_pos += 1
 
     file.flush()

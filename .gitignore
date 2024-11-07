@@ -11,3 +11,6 @@ test_output
 
 # yolo
 runs
+yolo11n.pt
+*.csv
+*.mp4

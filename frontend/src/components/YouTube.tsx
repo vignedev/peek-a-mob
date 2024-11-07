@@ -8,9 +8,8 @@ type PlayerProps = {
   videoId: string
 }
 
-export const VideoTimeline = (props: { player: YouTubePlayer | undefined, currentTime: number, duration: number, detections: EntityDetection }) => {
+export const VideoTimeline = (props: { player?: YouTubePlayer, currentTime: number, duration: number, detections: EntityDetection }) => {
   const { player, currentTime, duration, detections } = props
-  console.log(props)
 
   const onDraw = useCallback<CanvasDrawingFunction>(async (ctx, mouse) => {
     ctx.fillStyle = 'black'
@@ -18,16 +17,14 @@ export const VideoTimeline = (props: { player: YouTubePlayer | undefined, curren
 
     ctx.fillStyle = 'white'
     ctx.fillText(`${ctx.canvas.width} x ${ctx.canvas.height} | ${new Date().toLocaleString()}`, ctx.canvas.width / 2, 16)
-    ctx.fillText(`${!!player}`, ctx.canvas.width / 2, 48)
+    // ctx.fillText(`${!!player}`, ctx.canvas.width / 2, 48)
 
     if (!player)
       return;
 
-    ctx.fillText(`${currentTime.toFixed(2)}/${duration} | x=${mouse.x} | y=${mouse.y}`, ctx.canvas.width / 2, 32)
-
     let lines = 0
     Object.entries(detections).forEach(([entName, occurances]) => {
-      occurances.forEach(detection => {
+      occurances.sort((a,b) => a.time - b.time).forEach(detection => {
         ctx.strokeStyle = '#0f0'
         ctx.lineWidth = 1
         ctx.beginPath()
@@ -35,11 +32,13 @@ export const VideoTimeline = (props: { player: YouTubePlayer | undefined, curren
         ctx.lineTo(detection.time / duration * ctx.canvas.width, ctx.canvas.height)
         ctx.stroke()
 
-        if (detection.time < currentTime) return
+        if (detection.time < currentTime || lines > 5) return
         ctx.fillStyle = 'white'
         ctx.fillText(`${entName} ${detection.time - currentTime}`, ctx.canvas.width / 2, 48 + 16 * lines++)
       })
     })
+
+    ctx.fillText(`${currentTime.toFixed(4)}/${duration} | x=${mouse.x} | y=${mouse.y}`, ctx.canvas.width / 2, 32)
 
     ctx.fillStyle = '#f005'
     ctx.fillRect(0, 0, currentTime / duration * ctx.canvas.width, ctx.canvas.height)
@@ -65,6 +64,82 @@ export const VideoTimeline = (props: { player: YouTubePlayer | undefined, curren
   )
 }
 
+export const VideoOverlay = (props: { player?: YouTubePlayer, currentTime: number, rollingDetections: EntityDetection }) => {
+  const { player, currentTime, rollingDetections } = props
+
+  const onDraw = useCallback<CanvasDrawingFunction>(async (ctx, _mouse) => {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+
+    ctx.fillStyle = 'red'
+    ctx.fillText(`${currentTime}`, 16, 16)
+    ctx.fillText(`rds: ${Object.keys(rollingDetections).join(', ')}`, 16, 32)
+
+    const aspect = ctx.canvas.width / ctx.canvas.height;
+    const videoAr = 16 / 9; // TODO: constant aspect ratio, consider variable?
+    let x, y, w, h;
+
+    if (aspect > videoAr) { // wider 
+      y = 0; h = ctx.canvas.height;
+      w = ctx.canvas.width / aspect * videoAr;
+      x = (ctx.canvas.width - w) / 2;
+    } else if (aspect < videoAr) { // taller
+      x = 0; w = ctx.canvas.width;
+      h = ctx.canvas.height / videoAr * aspect;
+      y = (ctx.canvas.height - h) / 2;
+    } else { // == 16/9
+      x = y = 0;
+      w = ctx.canvas.width;
+      h = ctx.canvas.height;
+    }
+
+    ctx.lineWidth = 1
+    ctx.strokeStyle = 'red'
+
+    let width = Math.abs(Math.sin(Date.now() / 1000.0 * Math.PI)) * 16
+    ctx.strokeRect(x + width, y + width, w - width * 2, h - width * 2)
+
+    for (const name in rollingDetections) {
+      for (const entity of rollingDetections[name]) {
+        const dist = Math.abs(entity.time - currentTime)
+        // // const alpha = Math.max(1.0 - dist / 2, 0.01)
+        // const alpha = 1.0
+        // if (entity.time > currentTime || Math.abs(entity.time - currentTime) > 2)
+        //   continue
+        const alpha = (dist > 1/30) ? 0.00 : 1.0
+        if(alpha == 0) continue
+
+        ctx.fillStyle = ctx.strokeStyle = (currentTime < entity.time) ?
+          `rgba(0, 0, 255, ${alpha})` :
+          `rgba(255, 0, 0, ${alpha})`
+        ctx.strokeRect(
+          x + entity.x * w,
+          y + entity.y * h,
+          entity.w * w,
+          entity.h * h
+        )
+
+        const header = `${name} ${entity.conf.toFixed(2)} ${entity.time} ${(currentTime - entity.time).toFixed(2)}`
+        const headerSize = ctx.measureText(header)
+        const headerHeight = headerSize.fontBoundingBoxAscent + headerSize.fontBoundingBoxDescent + 4
+        ctx.fillRect(x + entity.x * w - 1, y + entity.y * h - headerHeight, headerSize.width + 4, headerHeight)
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`
+        ctx.fillText(header, x + entity.x * w, y + entity.y * h - 4)
+      }
+    }
+  }, [player, currentTime, rollingDetections])
+
+  return <Canvas
+    style={{
+      pointerEvents: 'none',
+      position: 'absolute',
+      left: 0, top: 0,
+      width: '100%',
+      height: '100%'
+    }}
+    onDraw={onDraw}
+  />
+}
+
 export const YouTubeWithTimeline = (props: PlayerProps) => {
   const [player, setPlayer] = useState<YouTubePlayer>()
   const [duration, setDuration] = useState<number>(-1)
@@ -82,81 +157,12 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
 
     const interval = setInterval(async () => {
       const newTime = await player.getCurrentTime()
-      if (Math.abs(newTime - currentTime) >= 5)
-        setRollingDetections(await getDetections(props.videoId, currentTime, Infinity, 5))
+      // if (Math.abs(newTime - currentTime) >= 5 || Object.keys(rollingDetections).length == 0)
+      setRollingDetections(await getDetections(props.videoId, currentTime, 5, 5))
       setCurrentTime(newTime)
     }, 16)
     return () => clearInterval(interval)
   }, [player])
-
-  const VideoOverlay = () => (
-    <Canvas
-      style={{
-        pointerEvents: 'none',
-        position: 'absolute',
-        left: 0, top: 0,
-        width: '100%',
-        height: '100%'
-      }}
-      onDraw={(ctx, _mouse) => {
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-
-        ctx.fillStyle = 'red'
-        ctx.fillText(`${currentTime}`, 16, 16)
-
-        const aspect = ctx.canvas.width / ctx.canvas.height;
-        const videoAr = 16 / 9; // TODO: constant aspect ratio, consider variable?
-        let x, y, w, h;
-
-        if (aspect > videoAr) { // wider 
-          y = 0; h = ctx.canvas.height;
-          w = ctx.canvas.width / aspect * videoAr;
-          x = (ctx.canvas.width - w) / 2;
-        } else if (aspect < videoAr) { // taller
-          x = 0; w = ctx.canvas.width;
-          h = ctx.canvas.height / videoAr * aspect;
-          y = (ctx.canvas.height - h) / 2;
-        } else { // == 16/9
-          x = y = 0;
-          w = ctx.canvas.width;
-          h = ctx.canvas.height;
-        }
-
-        ctx.lineWidth = 1
-        ctx.strokeStyle = 'red'
-
-        let width = Math.abs(Math.sin(Date.now() / 1000.0 * Math.PI)) * 16
-        ctx.strokeRect(x + width, y + width, w - width * 2, h - width * 2)
-
-        for (const name in rollingDetections) {
-          for (const entity of rollingDetections[name]) {
-            const dist = Math.abs(entity.time - currentTime)
-            const alpha = Math.pow(Math.max(1.0 - dist / 2, 0.0), 2.3)
-            if (Math.abs(entity.time - currentTime) > 10)
-              continue
-
-            ctx.fillStyle = ctx.strokeStyle = (currentTime < entity.time) ?
-              `rgba(0, 0, 255, ${alpha})` :
-              `rgba(255, 0, 0, ${alpha})`
-            ctx.strokeRect(
-              x + entity.x * w,
-              y + entity.y * h,
-              entity.w * w,
-              entity.h * h
-            )
-
-            const header = `${name} ${entity.conf.toFixed(2)} ${(currentTime - entity.time).toFixed(2)}`
-            const headerSize = ctx.measureText(header)
-            const headerHeight = headerSize.fontBoundingBoxAscent + headerSize.fontBoundingBoxDescent + 4
-            ctx.fillRect(x + entity.x * w - 1, y + entity.y * h - headerHeight, headerSize.width + 4, headerHeight)
-            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`
-            ctx.fillText(header, x + entity.x * w, y + entity.y * h - 4)
-          }
-        }
-      }}
-    />
-  )
-
 
   return (
     <Flex direction='column'>
@@ -174,7 +180,11 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
             }
           }}
         />
-        <VideoOverlay />
+        <VideoOverlay
+          player={player}
+          currentTime={currentTime}
+          rollingDetections={detections}
+        />
       </Box>
       <VideoTimeline
         player={player}
