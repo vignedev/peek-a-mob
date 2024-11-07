@@ -20,12 +20,6 @@ def get_argv():
     default=0,
     type=int
   )
-  parser.add_argument(
-    '-p', '--position',
-    help='position to load into',
-    type=int,
-    default=0
-  )
   parser.add_argument('-w', '--webcam', action='store_true', default=False)
   parser.add_argument('--conf', default=0.8, type=float)
   parser.add_argument('--iou', default=0.5, type=float)
