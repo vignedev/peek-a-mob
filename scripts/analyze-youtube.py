@@ -100,5 +100,8 @@ if __name__ == '__main__':
         file.flush()
 
       frame_pos += 1
+      if frame_pos == vFrames:
+        cap.release()
+        break
 
     file.flush()
