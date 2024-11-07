@@ -5,6 +5,7 @@ from utils import annotate_file, get_entity_bidict
 import cv2 as cv
 from multiprocessing import Pool
 import random
+import sys
 
 RANDOM_TRAIN_RATIO=0.7
 RANDOM_VALID_RATIO=0.2
@@ -84,7 +85,7 @@ def create_from_image_tuple(data: tuple[str, str, argparse.Namespace]):
   filepath, _type, argv = data
   return create_from_image(filepath, _type, argv)
 
-def get_files(root: str, recursive: bool = False):
+def get_dataset_images(root: str, recursive: bool = False):
   """
   Make sure it returns the JOINED PATH with root
   """
@@ -107,12 +108,41 @@ def get_files(root: str, recursive: bool = False):
         bucket.append(path.join(rootdir, file))
     return bucket
 
+def get_label_files(root: str):
+  bucket = []
+  for rootdir, subdir, files in os.walk(root):
+    segments = rootdir.split(os.sep)
+
+    if segments[-1] != 'labels':
+      continue
+
+    for file in files:
+      if file.endswith('.txt'):
+        bucket.append(path.join(rootdir, file))
+  return bucket
+
+def remap_label(path: str, remapper: dict[int, int]):
+  buckets = []
+  with open(path, 'rt') as file:
+    for line in file:
+      segments = line.split(' ')
+      segments[0] = str(remapper[int(segments[0])])
+      buckets.append(' '.join(segments))
+  with open(path, 'wt') as file:
+    file.write(''.join(buckets))
+
+  return len(buckets)
+
+def remap_label_tuple(data: tuple[str, dict[int, int]]):
+  path, remapper = data
+  return remap_label(path, remapper)
+
 if __name__ == '__main__':
   argv = get_argv()
   entity_bidict, entity_json = get_entity_bidict(argv.entities)
 
   # list of files
-  files: list[tuple[str, str]] = [ (file, argv.type) for file in get_files(argv.input, argv.recursive) ]
+  files: list[tuple[str, str]] = [ (file, argv.type) for file in get_dataset_images(argv.input, argv.recursive) ]
   n_files = len(files)
 
   # sorter
@@ -146,7 +176,23 @@ if __name__ == '__main__':
       unique_entities.add(ent)
 
     if counter == n_files or counter % 100 == 0:
-      print(f'[i] finished ({counter}/{n_files}) {name}')
+      sys.stdout.write(f'\r[i] finished ({counter}/{n_files}) {name}')
+
+  print('[i] dataset creation is done, performing remapping IDs')
+
+  # create conversion remapping
+  remapper = dict()
+  for src, dst in zip(unique_entities, range(len(unique_entities))):
+    remapper[src] = dst
+
+  # remap the existing labels
+  label_files = get_label_files(argv.output)
+  n_files = len(label_files)
+  counter = 0
+  for cnt in pool.imap_unordered( remap_label_tuple, [ (path, remapper) for path in label_files ] ):
+    counter += 1
+    if counter == n_files or counter % 100 == 0:
+      sys.stdout.write(f'\r[i] remapped {cnt} ({counter}/{n_files})')
 
   # write the intro yaml (if not existing)
   data_path = path.join(argv.output, 'data.yaml')
@@ -164,4 +210,6 @@ if __name__ == '__main__':
         # f'names: [{names}]'
       ]))
 
-      file.write('\n'.join([ f'    {id}: {entity_bidict[id]}' for id in unique_entities ]))
+      file.write('\n'.join([ f'    {remapper[id]}: {entity_bidict[id]}' for id in unique_entities ]))
+  
+  print('[i] finito')
