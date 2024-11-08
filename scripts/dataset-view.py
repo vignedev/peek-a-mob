@@ -58,6 +58,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     self.canvas_ctx = QtGui.QPixmap(image_path)
     painter = QtGui.QPainter(self.canvas_ctx)
+    pen = QtGui.QPen(QtGui.QColor(0xFF0000), 3.0)
+    pen2 = QtGui.QPen(QtGui.QColor(0x000000), 5.0)
+    pen3 = QtGui.QPen(QtGui.QColor(0xFFFFFF), 1.0)
+    brush = QtGui.QBrush(QtGui.QColor(128, 0, 0, 128))
 
     counter = 0
     with open(label_path, 'rt') as file:
@@ -70,12 +74,21 @@ class MainWindow(QtWidgets.QMainWindow):
         y = int((cy * self.canvas_ctx.height()) - h // 2)
 
         name = self.data[0][int(id)]
-        painter.setPen(QtGui.QColor(0xFF0000))
+        painter.setPen(pen2)
         painter.drawRect(x, y, w, h)
+        painter.setPen(pen)
+        painter.drawRect(x, y, w, h)
+        painter.setPen(pen3)
+        painter.drawRect(x, y, w, h)
+
+        painter.fillRect(x, y, w, h, brush)
+
+        painter.setPen(pen)
         painter.setFont(QtGui.QFont("monospace", 8))
         painter.drawText(x + 2, y + 12, f'[{counter}] {name}')
-        counter += 1
+        painter.drawText(16, 24 + 16 * counter, f'[{counter}] {name}')
 
+        counter += 1
     painter.end()
     self.canvas.setPixmap(self.canvas_ctx)
 
