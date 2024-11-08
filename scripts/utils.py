@@ -39,9 +39,9 @@ def get_modifiers_from_filename(name: str):
     elif modtype == 'm':
       morph_close_ksize = int(mod[1:])
     elif modtype == 'e':
-      morph_close_ksize = int(mod[1:])
+      erode_ksize = int(mod[1:])
     elif modtype == 'd':
-      morph_close_ksize = int(mod[1:])
+      dilate_ksize = int(mod[1:])
   
   return namedtuple('Modifier', ['is_single', 'morph_close_ksize', 'erode_ksize', 'dilate_ksize'])(is_single, morph_close_ksize, erode_ksize, dilate_ksize)
 
