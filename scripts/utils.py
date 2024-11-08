@@ -3,6 +3,7 @@ import numpy as np
 import os
 import json
 from typing import Literal
+from collections import namedtuple
 
 def get_entity_bidict(src_json: str):
   '''
@@ -16,6 +17,33 @@ def get_entity_bidict(src_json: str):
       entities_bidict[entity] = temp_json[entity]
       entities_bidict[temp_json[entity]] = entity
   return entities_bidict, temp_json
+
+def get_modifiers_from_filename(name: str):
+  """
+  name: <filename>.<modifier>.<modifier>
+  name is without extension
+  """
+  # default values
+  is_single = False
+  morph_close_ksize = 32
+  erode_ksize = 4
+  dilate_ksize = 8
+
+  modifiers = name.split('.')
+  for mod in modifiers:
+    if len(mod) == 0: continue
+    modtype = mod[0]
+
+    if modtype == 's':
+      is_single = True
+    elif modtype == 'm':
+      morph_close_ksize = int(mod[1:])
+    elif modtype == 'e':
+      morph_close_ksize = int(mod[1:])
+    elif modtype == 'd':
+      morph_close_ksize = int(mod[1:])
+  
+  return namedtuple('Modifier', ['is_single', 'morph_close_ksize', 'erode_ksize', 'dilate_ksize'])(is_single, morph_close_ksize, erode_ksize, dilate_ksize)
 
 def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw: bool = False, area_threshold = 0.0) -> tuple[cv.typing.MatLike, list[tuple[int, float, float, float, float]]]:
   '''
@@ -55,18 +83,24 @@ def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw:
   unique_entities = np.unique(entities)
   entities_bucket = list()
 
+  modifier = get_modifiers_from_filename('.'.join(os.path.basename(src_image).split('.')[:-1]))
+
   for id in unique_entities:
     if id == 0: continue
     mask = np.where(entities == id, np.uint8(255), np.uint8(0))
 
-    kernel_m = cv.getStructuringElement(cv.MORPH_RECT, (32, 32))
-    kernel_e = cv.getStructuringElement(cv.MORPH_RECT, (4, 4))
-    kernel_d = cv.getStructuringElement(cv.MORPH_RECT, (8, 8))
+    kernel_m = cv.getStructuringElement(cv.MORPH_RECT, (modifier.morph_close_ksize, modifier.morph_close_ksize))
+    kernel_e = cv.getStructuringElement(cv.MORPH_RECT, (modifier.erode_ksize, modifier.erode_ksize))
+    kernel_d = cv.getStructuringElement(cv.MORPH_RECT, (modifier.dilate_ksize, modifier.dilate_ksize))
     mask = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernel_m)
     mask = cv.erode(mask, kernel_e)
     mask = cv.dilate(mask, kernel_d)
 
     contours, _ = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+    if modifier.is_single:
+      contours = [np.vstack(contours)]
+
     for cnt in contours:
       x, y, w, h = cv.boundingRect(cnt)
       area = cv.contourArea(cnt) / ( b_width * b_height )
