@@ -73,8 +73,9 @@ def create_from_image(filepath: str, _type: str, argv: argparse.Namespace):
   name = '.'.join(path.basename(filepath).split('.')[:-1])
   image, labels = annotate_file(filepath, format=argv.format, debug_draw=argv.debug, area_threshold=argv.area_threshold)
 
-  cv.imwrite(path.join(argv.output, _type, 'images', f'{name}.{argv.extension}'), image)
-  with open(path.join(argv.output, _type, 'labels', f'{name}.txt'), 'w') as hfile:
+  basename = f'{len(labels)}x_{name}'
+  cv.imwrite(path.join(argv.output, _type, 'images', f'{basename}.{argv.extension}'), image)
+  with open(path.join(argv.output, _type, 'labels', f'{basename}.txt'), 'w') as hfile:
     hfile.write('\n'.join([ ' '.join([ str(w) for w in v ]) for v in labels ]))
 
   found_entities = set([ int(t[0]) for t in labels ])

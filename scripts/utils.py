@@ -59,7 +59,7 @@ def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw:
     if id == 0: continue
     mask = np.where(entities == id, np.uint8(255), np.uint8(0))
 
-    kernel_m = cv.getStructuringElement(cv.MORPH_RECT, (16, 16))
+    kernel_m = cv.getStructuringElement(cv.MORPH_RECT, (32, 32))
     kernel_e = cv.getStructuringElement(cv.MORPH_RECT, (4, 4))
     kernel_d = cv.getStructuringElement(cv.MORPH_RECT, (8, 8))
     mask = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernel_m)
