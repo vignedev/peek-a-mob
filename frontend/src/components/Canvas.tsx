@@ -51,7 +51,7 @@ export const Canvas = forwardRef((props: CanvasProps, ref) => {
       ctx.canvas.removeEventListener('mousemove', updateMousePosition)
       ctx.canvas.removeEventListener('mouseleave', handleMouseLeave)
     }
-  }, [canvasRef])
+  }, [canvasRef, props.style])
 
   useEffect(() => {
     const ctx = canvasRef.current!.getContext('2d')!

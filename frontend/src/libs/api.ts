@@ -28,7 +28,6 @@ export async function getDetections(videoId: string, time: number, after: number
 
   for (let i = lb; i < ub; ++i) {
     const { class: className, confidence, x, y, w, h, time } = exampleVideo1[i]
-    if(className == 'chicken') continue
     if (className in entities === false)
       entities[className] = []
     entities[className].push({

@@ -8,53 +8,72 @@ type PlayerProps = {
   videoId: string
 }
 
-export const VideoTimeline = (props: { player?: YouTubePlayer, currentTime: number, duration: number, detections: EntityDetection }) => {
+export const VideoTimeline = (props: { player?: YouTubePlayer, currentTime: number, duration: number, detections: EntityDetection, style?: React.CSSProperties }) => {
   const { player, currentTime, duration, detections } = props
 
   const onDraw = useCallback<CanvasDrawingFunction>(async (ctx, mouse) => {
     ctx.fillStyle = 'black'
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    ctx.fillStyle = 'white'
-    ctx.fillText(`${ctx.canvas.width} x ${ctx.canvas.height} | ${new Date().toLocaleString()}`, ctx.canvas.width / 2, 16)
-    // ctx.fillText(`${!!player}`, ctx.canvas.width / 2, 48)
-
     if (!player)
       return;
 
-    let lines = 0
-    Object.entries(detections).forEach(([entName, occurances]) => {
-      occurances.sort((a,b) => a.time - b.time).forEach(detection => {
-        ctx.strokeStyle = '#0f0'
-        ctx.lineWidth = 1
+    // display time in seconds as well as the progress
+    ctx.fillStyle = '#f006'
+    ctx.fillRect(0, 0, currentTime / duration * ctx.canvas.width, ctx.canvas.height)
+    ctx.fillText(currentTime.toFixed(2), currentTime / duration * ctx.canvas.width + 8, ctx.canvas.height - 12)
+
+    // print of the timelines
+    let printed = new Set()
+    let lineHeight = Math.floor(ctx.canvas.height / Object.keys(detections).length)
+    Object.entries(detections).forEach(([entName, occurances], idx) => {
+      occurances.sort((a, b) => a.time - b.time).forEach(detection => {
+        // borders
+        if (idx != 0 && !printed.has(entName)) {
+          ctx.strokeStyle = '#fffa'
+          ctx.lineWidth = 1
+          ctx.beginPath()
+          ctx.moveTo(0, lineHeight * (idx))
+          ctx.lineTo(ctx.canvas.width, lineHeight * (idx))
+          ctx.stroke()
+        }
+
+        // lines 
+        ctx.strokeStyle = '#00ff0005'
+        ctx.lineWidth = 4
         ctx.beginPath()
-        ctx.moveTo(detection.time / duration * ctx.canvas.width, 0)
-        ctx.lineTo(detection.time / duration * ctx.canvas.width, ctx.canvas.height)
+        ctx.moveTo(detection.time / duration * ctx.canvas.width + ctx.lineWidth / 2, lineHeight * idx)
+        ctx.lineTo(detection.time / duration * ctx.canvas.width + ctx.lineWidth / 2, lineHeight * (idx + 1))
         ctx.stroke()
 
-        if (detection.time < currentTime || lines > 5) return
-        ctx.fillStyle = 'white'
-        ctx.fillText(`${entName} ${detection.time - currentTime}`, ctx.canvas.width / 2, 48 + 16 * lines++)
+        // labeling
+        if (detection.time < currentTime || printed.has(entName)) return
+        const diff = detection.time - currentTime
+        printed.add(entName)
+        ctx.fillStyle = `rgba(255, 255, 255, ${Math.max((1.0 - diff / 30), 0.25)})`
+        ctx.fillText(`${entName} [${occurances.filter(x => x.time > currentTime).length}/${occurances.length}]`, 8, lineHeight * idx + 16)
+        ctx.fillText((diff).toFixed(2), 8, lineHeight * idx + 32)
       })
     })
 
-    ctx.fillText(`${currentTime.toFixed(4)}/${duration} | x=${mouse.x} | y=${mouse.y}`, ctx.canvas.width / 2, 32)
+    // seeking on cursor
+    if (mouse.x != -1) {
+      ctx.fillStyle = ctx.strokeStyle = '#f00'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(mouse.x, 0)
+      ctx.lineTo(mouse.x, ctx.canvas.height)
+      ctx.stroke()
 
-    ctx.fillStyle = '#f005'
-    ctx.fillRect(0, 0, currentTime / duration * ctx.canvas.width, ctx.canvas.height)
-
-    ctx.strokeStyle = '#f00'
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.moveTo(mouse.x, 0)
-    ctx.lineTo(mouse.x, ctx.canvas.height)
-    ctx.stroke()
+      ctx.fillText((mouse.x / ctx.canvas.width * duration).toFixed(2), mouse.x + 8, 16)
+    }
   }, [player, currentTime, duration, detections])
 
   return (
     <Canvas
       style={{
-        height: '5rem'
+        height: '24rem',
+        ...props.style
       }}
       onDraw={onDraw}
       onMouseDown={(e, ctx) => {
@@ -71,7 +90,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, currentTime: numbe
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
     ctx.fillStyle = 'red'
-    ctx.fillText(`${currentTime}`, 16, 16)
+    // ctx.fillText(`${currentTime}`, 16, 16)
     ctx.fillText(`rds: ${Object.keys(rollingDetections).join(', ')}`, 16, 32)
 
     const aspect = ctx.canvas.width / ctx.canvas.height;
@@ -92,25 +111,25 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, currentTime: numbe
       h = ctx.canvas.height;
     }
 
-    ctx.lineWidth = 1
-    ctx.strokeStyle = 'red'
-
-    let width = Math.abs(Math.sin(Date.now() / 1000.0 * Math.PI)) * 16
-    ctx.strokeRect(x + width, y + width, w - width * 2, h - width * 2)
-
     for (const name in rollingDetections) {
       for (const entity of rollingDetections[name]) {
+        const frameThreshold = 1 / 60
         const dist = Math.abs(entity.time - currentTime)
-        // // const alpha = Math.max(1.0 - dist / 2, 0.01)
-        // const alpha = 1.0
-        // if (entity.time > currentTime || Math.abs(entity.time - currentTime) > 2)
-        //   continue
-        const alpha = (dist > 1/30) ? 0.00 : 1.0
-        if(alpha == 0) continue
+        const fadeOutSeconds = 2
+        let color = 'magenta', alpha = 0.0
 
-        ctx.fillStyle = ctx.strokeStyle = (currentTime < entity.time) ?
-          `rgba(0, 0, 255, ${alpha})` :
-          `rgba(255, 0, 0, ${alpha})`
+        if (dist <= frameThreshold) {
+          alpha = 1
+          color = 'red'
+        } else if (dist <= fadeOutSeconds && currentTime > entity.time) {
+          alpha = (1 - (currentTime - entity.time) / fadeOutSeconds) * 0.05
+          color = `rgba(0, 0, 255, ${alpha})`
+        } else {
+          continue
+        }
+
+        ctx.lineWidth = 4
+        ctx.fillStyle = ctx.strokeStyle = color;
         ctx.strokeRect(
           x + entity.x * w,
           y + entity.y * h,
@@ -118,10 +137,10 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, currentTime: numbe
           entity.h * h
         )
 
-        const header = `${name} ${entity.conf.toFixed(2)} ${entity.time} ${(currentTime - entity.time).toFixed(2)}`
+        const header = `${name} ${(entity.conf * 100).toFixed(1)}%`
         const headerSize = ctx.measureText(header)
         const headerHeight = headerSize.fontBoundingBoxAscent + headerSize.fontBoundingBoxDescent + 4
-        ctx.fillRect(x + entity.x * w - 1, y + entity.y * h - headerHeight, headerSize.width + 4, headerHeight)
+        ctx.fillRect(x + entity.x * w - ctx.lineWidth / 2 - 1, y + entity.y * h - headerHeight, headerSize.width + 4 + ctx.lineWidth / 2, headerHeight)
         ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`
         ctx.fillText(header, x + entity.x * w, y + entity.y * h - 4)
       }
@@ -157,16 +176,20 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
 
     const interval = setInterval(async () => {
       const newTime = await player.getCurrentTime()
-      // if (Math.abs(newTime - currentTime) >= 5 || Object.keys(rollingDetections).length == 0)
-      setRollingDetections(await getDetections(props.videoId, currentTime, 5, 5))
+      if (
+        // Object.keys(rollingDetections).length == 0 || // empty occurances - probably no need, the cond. below should handle it
+        (Object.values(rollingDetections).flat().reduce((acc, val) => Math.max(val.time, acc), 0) - 5) > newTime || // if the last rolling -5 is too close to currentTime (seek forth)
+        (Object.values(rollingDetections).flat().reduce((acc, val) => Math.min(val.time, acc), 0) + 5) < newTime    // if the first rolling +5 is ahead (seek back)
+      )
+        setRollingDetections(await getDetections(props.videoId, newTime, 10, 10))
       setCurrentTime(newTime)
     }, 16)
     return () => clearInterval(interval)
   }, [player])
 
   return (
-    <Flex direction='column'>
-      <Box height='40rem' position='relative'>
+    <Flex direction='column' gap='1'>
+      <Box height='40rem' position='relative' style={{ borderRadius: '.5rem', overflow: 'hidden' }}>
         <YouTube
           className='youtubeEmbed'
           videoId={props.videoId}
@@ -183,7 +206,7 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
         <VideoOverlay
           player={player}
           currentTime={currentTime}
-          rollingDetections={detections}
+          rollingDetections={rollingDetections}
         />
       </Box>
       <VideoTimeline
@@ -191,6 +214,7 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
         currentTime={currentTime}
         detections={detections}
         duration={duration}
+        style={{ borderRadius: '.5rem', overflow: 'hidden' }}
       />
     </Flex>
   )
