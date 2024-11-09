@@ -1,5 +1,6 @@
 import { lowerBound } from './utils'
 import exampleVideo1 from './yt_4Vs1wKjNuUw.json'
+import exampleVideo2 from './yt_INzUhj9SRX8.json'
 
 export type EntityOccurance = {
   time: number, conf: number,
@@ -18,16 +19,22 @@ export type EntityDetection = Record<string, EntityOccurance[]>
  * @returns Object where keys are the detected classes, and their value is the list of bounding boxes
  */
 export async function getDetections(videoId: string, time: number, after: number = 5, before: number = 0): Promise<EntityDetection> {
-  if (videoId != '4Vs1wKjNuUw')
+  let video = null
+
+  if (videoId == '4Vs1wKjNuUw')
+    video = exampleVideo1
+  else if (videoId == 'INzUhj9SRX8')
+    video = exampleVideo2
+  else
     return {}
 
   const entities: EntityDetection = {}
   const
-    lb = lowerBound(exampleVideo1, a => a.time < (time - before)),
-    ub = lowerBound(exampleVideo1, a => a.time < (time + after))
+    lb = lowerBound(video, a => a.time < (time - before)),
+    ub = lowerBound(video, a => a.time < (time + after))
 
   for (let i = lb; i < ub; ++i) {
-    const { class: className, confidence, x, y, w, h, time } = exampleVideo1[i]
+    const { class: className, confidence, x, y, w, h, time } = video[i]
     if (className in entities === false)
       entities[className] = []
     entities[className].push({

@@ -122,7 +122,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, currentTime: numbe
           alpha = 1
           color = 'red'
         } else if (dist <= fadeOutSeconds && currentTime > entity.time) {
-          alpha = (1 - (currentTime - entity.time) / fadeOutSeconds) * 0.05
+          alpha = (1 - (currentTime - entity.time) / fadeOutSeconds) * 0.01
           color = `rgba(0, 0, 255, ${alpha})`
         } else {
           continue
@@ -169,7 +169,7 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
 
   useEffect(() => {
     getDetections(props.videoId, 0, Infinity).then(setDetections)
-  }, [])
+  }, [props.videoId])
 
   useEffect(() => {
     if (!player) return;
@@ -185,7 +185,7 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
       setCurrentTime(newTime)
     }, 16)
     return () => clearInterval(interval)
-  }, [player])
+  }, [player, props.videoId])
 
   return (
     <Flex direction='column' gap='1'>
@@ -196,11 +196,6 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
           onReady={async (event) => {
             setDuration(await event.target.getDuration())
             setPlayer(event.target)
-          }}
-          opts={{
-            playerVars: {
-              start: 1325
-            }
           }}
         />
         <VideoOverlay
