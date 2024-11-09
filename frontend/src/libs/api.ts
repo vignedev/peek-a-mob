@@ -1,6 +1,7 @@
 import { lowerBound } from './utils'
 import exampleVideo1 from './yt_4Vs1wKjNuUw.json'
 import exampleVideo2 from './yt_INzUhj9SRX8.json'
+import exampleVideo3 from './yt_uEvwuvod2F4.json'
 
 export type EntityOccurance = {
   time: number, conf: number,
@@ -25,6 +26,8 @@ export async function getDetections(videoId: string, time: number, after: number
     video = exampleVideo1
   else if (videoId == 'INzUhj9SRX8')
     video = exampleVideo2
+  else if (videoId == 'uEvwuvod2F4')
+    video = exampleVideo3
   else
     return {}
 

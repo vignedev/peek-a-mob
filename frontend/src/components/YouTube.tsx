@@ -27,7 +27,7 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, currentTime: numb
     let printed = new Set()
     let lineHeight = Math.floor(ctx.canvas.height / Object.keys(detections).length)
     Object.entries(detections).forEach(([entName, occurances], idx) => {
-      occurances.sort((a, b) => a.time - b.time).forEach(detection => {
+      occurances.forEach(detection => {
         // borders
         if (idx != 0 && !printed.has(entName)) {
           ctx.strokeStyle = '#fffa'
