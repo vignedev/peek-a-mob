@@ -27,7 +27,7 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, currentTime: numb
     let printed = new Set()
     let lineHeight = Math.floor(ctx.canvas.height / Object.keys(detections).length)
     Object.entries(detections).forEach(([entName, occurances], idx) => {
-      occurances.sort((a, b) => a.time - b.time).forEach(detection => {
+      occurances.forEach(detection => {
         // borders
         if (idx != 0 && !printed.has(entName)) {
           ctx.strokeStyle = '#fffa'
@@ -47,12 +47,12 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, currentTime: numb
         ctx.stroke()
 
         // labeling
-        if (detection.time < currentTime || printed.has(entName)) return
-        const diff = detection.time - currentTime
+        if (printed.has(entName)) return
         printed.add(entName)
+        const diff = Math.abs(detection.time - currentTime)
         ctx.fillStyle = `rgba(255, 255, 255, ${Math.max((1.0 - diff / 30), 0.25)})`
         ctx.fillText(`${entName} [${occurances.filter(x => x.time > currentTime).length}/${occurances.length}]`, 8, lineHeight * idx + 16)
-        ctx.fillText((diff).toFixed(2), 8, lineHeight * idx + 32)
+        ctx.fillText((detection.time < currentTime) ? (diff).toFixed(2) : '<empty>', 8, lineHeight * idx + 32)
       })
     })
 
