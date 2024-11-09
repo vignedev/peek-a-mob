@@ -29,7 +29,7 @@ if __name__ == '__main__':
     batch=argv.batch,
     verbose=argv.verbose,
 
-    workers=16,
+    # workers=16,
     deterministic=False,
     name=name,
     plots=True,
