@@ -51,7 +51,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
   def change_canvas(self, i: QtWidgets.QListWidgetItem):
     image_path = i.data
-    label_path = image_path.split('/')
+    label_path = image_path.split(os.sep)
     label_path[-2] = 'labels'
     label_path[-1] = '.'.join(label_path[-1].split('.')[:-1]) + '.txt'
     label_path = '/'.join(label_path)
