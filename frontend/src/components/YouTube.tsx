@@ -69,7 +69,7 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, duration: number,
     // display time in seconds as well as the progress
     ctx.fillStyle = '#f006'
     ctx.fillRect(0, 0, currentTime / duration * ctx.canvas.width, ctx.canvas.height)
-    ctx.fillText(currentTime.toFixed(2), currentTime / duration * ctx.canvas.width + 8, ctx.canvas.height - 12)
+    ctx.fillText(currentTime?.toFixed(2), currentTime / duration * ctx.canvas.width + 8, ctx.canvas.height - 12)
 
     // print of the timelines
     let printed = new Set()
