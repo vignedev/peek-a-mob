@@ -113,6 +113,8 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, currentTime: numbe
 
     for (const name in rollingDetections) {
       for (const entity of rollingDetections[name]) {
+        const [bx, by, bw, bh] = entity.bbox
+
         const frameThreshold = 1 / 60
         const dist = Math.abs(entity.time - currentTime)
         const fadeOutSeconds = 2
@@ -131,18 +133,18 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, currentTime: numbe
         ctx.lineWidth = 4
         ctx.fillStyle = ctx.strokeStyle = color;
         ctx.strokeRect(
-          x + entity.x * w,
-          y + entity.y * h,
-          entity.w * w,
-          entity.h * h
+          x + bx * w,
+          y + by * h,
+          bw * w,
+          bh * h
         )
 
-        const header = `${name} ${(entity.conf * 100).toFixed(1)}%`
+        const header = `${name} ${(entity.confidence * 100).toFixed(1)}%`
         const headerSize = ctx.measureText(header)
         const headerHeight = headerSize.fontBoundingBoxAscent + headerSize.fontBoundingBoxDescent + 4
-        ctx.fillRect(x + entity.x * w - ctx.lineWidth / 2 - 1, y + entity.y * h - headerHeight, headerSize.width + 4 + ctx.lineWidth / 2, headerHeight)
+        ctx.fillRect(x + bx * w - ctx.lineWidth / 2 - 1, y + by * h - headerHeight, headerSize.width + 4 + ctx.lineWidth / 2, headerHeight)
         ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`
-        ctx.fillText(header, x + entity.x * w, y + entity.y * h - 4)
+        ctx.fillText(header, x + bx * w, y + by * h - 4)
       }
     }
   }, [player, currentTime, rollingDetections])
@@ -166,9 +168,10 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
   const [detections, setDetections] = useState<EntityDetection>({})
 
   const [rollingDetections, setRollingDetections] = useState<EntityDetection>({})
+  const [lastFetch, setLastFetch] = useState<number>(Infinity)
 
   useEffect(() => {
-    getDetections(props.videoId, 0, Infinity).then(setDetections)
+    getDetections(props.videoId, 0, null, Infinity).then(setDetections)
   }, [props.videoId])
 
   useEffect(() => {
@@ -176,13 +179,14 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
 
     const interval = setInterval(async () => {
       const newTime = await player.getCurrentTime()
-      if (
-        // Object.keys(rollingDetections).length == 0 || // empty occurances - probably no need, the cond. below should handle it
-        (Object.values(rollingDetections).flat().reduce((acc, val) => Math.max(val.time, acc), 0) - 5) > newTime || // if the last rolling -5 is too close to currentTime (seek forth)
-        (Object.values(rollingDetections).flat().reduce((acc, val) => Math.min(val.time, acc), 0) + 5) < newTime    // if the first rolling +5 is ahead (seek back)
-      )
-        setRollingDetections(await getDetections(props.videoId, newTime, 10, 10))
+      // if (
+      //   // Object.keys(rollingDetections).length == 0 || // empty occurances - probably no need, the cond. below should handle it
+      //   // (Object.values(rollingDetections).flat().reduce((acc, val) => Math.max(val.time, acc), 0) - 5) > newTime || // if the last rolling -5 is too close to currentTime (seek forth)
+      //   // (Object.values(rollingDetections).flat().reduce((acc, val) => Math.min(val.time, acc), 0) + 5) < newTime    // if the first rolling +5 is ahead (seek back)
+      //   Math.abs(newTime - lastFetch) >= 7
+      // ) setRollingDetections(await getDetections(props.videoId, newTime, null, 10, 10))
       setCurrentTime(newTime)
+      setLastFetch(newTime)
     }, 16)
     return () => clearInterval(interval)
   }, [player, props.videoId])
@@ -201,7 +205,7 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
         <VideoOverlay
           player={player}
           currentTime={currentTime}
-          rollingDetections={rollingDetections}
+          rollingDetections={detections}
         />
       </Box>
       <VideoTimeline
