@@ -167,8 +167,7 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
   const [currentTime, setCurrentTime] = useState<number>(-1)
   const [detections, setDetections] = useState<EntityDetection>({})
 
-  const [rollingDetections, setRollingDetections] = useState<EntityDetection>({})
-  const [lastFetch, setLastFetch] = useState<number>(Infinity)
+  const [rollingDetections, setRollingDetections] = useState<{ detections: EntityDetection, range: number[] }>()
 
   useEffect(() => {
     getDetections(props.videoId, 0, null, Infinity).then(setDetections)
@@ -177,19 +176,33 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
   useEffect(() => {
     if (!player) return;
 
-    const interval = setInterval(async () => {
-      const newTime = await player.getCurrentTime()
-      // if (
-      //   // Object.keys(rollingDetections).length == 0 || // empty occurances - probably no need, the cond. below should handle it
-      //   // (Object.values(rollingDetections).flat().reduce((acc, val) => Math.max(val.time, acc), 0) - 5) > newTime || // if the last rolling -5 is too close to currentTime (seek forth)
-      //   // (Object.values(rollingDetections).flat().reduce((acc, val) => Math.min(val.time, acc), 0) + 5) < newTime    // if the first rolling +5 is ahead (seek back)
-      //   Math.abs(newTime - lastFetch) >= 7
-      // ) setRollingDetections(await getDetections(props.videoId, newTime, null, 10, 10))
+    let isBusy = false
+    let isActive = true
+
+    async function loop() {
+      if (!isActive) return
+
+      const newTime = await player!.getCurrentTime()
+      if (
+        (
+          !rollingDetections ||
+          newTime <= rollingDetections.range[0] ||
+          newTime >= rollingDetections.range[1]
+        ) && !isBusy
+      ) {
+        isBusy = true
+        setRollingDetections({
+          detections: await getDetections(props.videoId, newTime, null, 10, 10),
+          range: [newTime - 7, newTime + 7]
+        })
+        isBusy = false
+      }
       setCurrentTime(newTime)
-      setLastFetch(newTime)
-    }, 16)
-    return () => clearInterval(interval)
-  }, [player, props.videoId])
+      requestAnimationFrame(loop)
+    }
+    loop()
+    return () => { isActive = false }
+  }, [player, props.videoId, rollingDetections])
 
   return (
     <Flex direction='column' gap='1'>
@@ -205,7 +218,7 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
         <VideoOverlay
           player={player}
           currentTime={currentTime}
-          rollingDetections={detections}
+          rollingDetections={rollingDetections?.detections || {}}
         />
       </Box>
       <VideoTimeline
