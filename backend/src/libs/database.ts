@@ -14,9 +14,13 @@ export type DetectionQuery = {
 }
 
 export async function getDetections(youtubeId: string, modelName: string, options: DetectionQuery = {}) {
-  const entities = await (options.entityNames ? db.query.entities.findMany({
-    where: (table, op) => op.inArray(table.entityName, options.entityNames!)
-  }) : db.query.entities.findMany())
+  const entities = await (
+    (options.entityNames && options.entityNames.length != 0)
+      ? db.query.entities.findMany({
+        where: (table, op) => op.inArray(table.entityName, options.entityNames!)
+      })
+      : db.select().from(schema.entities)
+  )
   const entityIds = entities.map(x => x.entityId)
 
   const models = await db.select().from(schema.models).where(eq(schema.models.modelName, modelName)).limit(1)
