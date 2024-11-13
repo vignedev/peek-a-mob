@@ -1,8 +1,11 @@
 import restana, { Protocol } from 'restana'
-import db, { getDetections, getVideo, getAllVideos } from '../libs/database'
+import db, { getDetections, getVideo, getAllVideos, getEntities } from '../libs/database'
 
 const getApiRouter = (router: restana.Router<Protocol.HTTP>) => {
   router
+    .get('/entities', async (req, res) => {
+      return res.send(await getEntities(), 200)
+    })
     .get('/videos', async (req, res) => {
       return res.send(await getAllVideos(), 200)
     })

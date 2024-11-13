@@ -19,7 +19,7 @@ export async function getDetections(youtubeId: string, modelName: string, option
       ? db.query.entities.findMany({
         where: (table, op) => op.inArray(table.entityName, options.entityNames!)
       })
-      : db.select().from(schema.entities)
+      : getEntities()
   )
   const entityIds = entities.map(x => x.entityId)
 
@@ -46,10 +46,7 @@ export async function getDetections(youtubeId: string, modelName: string, option
       )
     )
 
-  return {
-    entities: entities.reduce((acc, val) => { acc[val.entityId] = val; return acc }, {} as Record<string, typeof entities[0]>),
-    detections
-  }
+  return detections
 }
 
 export async function getVideo(youtubeId: string) {
@@ -74,4 +71,8 @@ export async function getVideo(youtubeId: string) {
 
 export async function getAllVideos() {
   return await db.query.videos.findMany()
+}
+
+export async function getEntities() {
+  return db.select().from(schema.entities)
 }
