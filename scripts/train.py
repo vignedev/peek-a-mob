@@ -34,7 +34,7 @@ if __name__ == '__main__':
     name=name,
     plots=True,
     save=True,
-    degrees=30.0,
+    degrees=10.0,
     # perspective=0.001,
     copy_paste=1.0,
     erasing=0.6,
