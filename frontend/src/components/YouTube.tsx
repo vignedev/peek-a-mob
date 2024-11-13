@@ -11,17 +11,21 @@ type PlayerProps = {
 export const VideoTimeline = (props: { player?: YouTubePlayer, currentTime: number, duration: number, detections: EntityDetection, style?: React.CSSProperties }) => {
   const { player, currentTime, duration, detections } = props
 
-  const onDraw = useCallback<CanvasDrawingFunction>(async (ctx, mouse) => {
+  const [cachedTimeline, setCachedTimeline] = useState<HTMLCanvasElement>()
+
+  function cacheTimeline(width: number, height: number) {
+    console.log('redrwaing)')
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+
+    const ctx = canvas.getContext('2d')!
+
     ctx.fillStyle = 'black'
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     if (!player)
       return;
-
-    // display time in seconds as well as the progress
-    ctx.fillStyle = '#f006'
-    ctx.fillRect(0, 0, currentTime / duration * ctx.canvas.width, ctx.canvas.height)
-    ctx.fillText(currentTime.toFixed(2), currentTime / duration * ctx.canvas.width + 8, ctx.canvas.height - 12)
 
     // print of the timelines
     let printed = new Set()
@@ -45,7 +49,32 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, currentTime: numb
         ctx.moveTo(detection.time / duration * ctx.canvas.width + ctx.lineWidth / 2, lineHeight * idx)
         ctx.lineTo(detection.time / duration * ctx.canvas.width + ctx.lineWidth / 2, lineHeight * (idx + 1))
         ctx.stroke()
+      })
+    })
 
+    return canvas
+  }
+
+  const onDraw = useCallback<CanvasDrawingFunction>(async (ctx, mouse) => {
+    ctx.fillStyle = 'black'
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    if (!player)
+      return;
+
+    if (cachedTimeline)
+      ctx.drawImage(cachedTimeline, 0, 0)
+
+    // display time in seconds as well as the progress
+    ctx.fillStyle = '#f006'
+    ctx.fillRect(0, 0, currentTime / duration * ctx.canvas.width, ctx.canvas.height)
+    ctx.fillText(currentTime.toFixed(2), currentTime / duration * ctx.canvas.width + 8, ctx.canvas.height - 12)
+
+    // print of the timelines
+    let printed = new Set()
+    let lineHeight = Math.floor(ctx.canvas.height / Object.keys(detections).length)
+    Object.entries(detections).forEach(([entName, occurances], idx) => {
+      occurances.forEach(detection => {
         // labeling
         if (detection.time < currentTime || printed.has(entName)) return
         const diff = detection.time - currentTime
@@ -67,7 +96,7 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, currentTime: numb
 
       ctx.fillText((mouse.x / ctx.canvas.width * duration).toFixed(2), mouse.x + 8, 16)
     }
-  }, [player, currentTime, duration, detections])
+  }, [player, currentTime, duration, detections, cachedTimeline])
 
   return (
     <Canvas
@@ -79,7 +108,11 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, currentTime: numb
       onMouseDown={(e, ctx) => {
         if (!player) return;
         player.seekTo(duration * e.offsetX / ctx.canvas.width, true)
-      }} />
+      }}
+      onResize={(canvas) => {
+        setCachedTimeline(cacheTimeline(canvas.width, canvas.height))
+      }}
+    />
   )
 }
 
@@ -89,9 +122,9 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, currentTime: numbe
   const onDraw = useCallback<CanvasDrawingFunction>(async (ctx, _mouse) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
-    ctx.fillStyle = 'red'
+    // ctx.fillStyle = 'red'
     // ctx.fillText(`${currentTime}`, 16, 16)
-    ctx.fillText(`rds: ${Object.keys(rollingDetections).join(', ')}`, 16, 32)
+    // ctx.fillText(`rds: ${Object.keys(rollingDetections).join(', ')}`, 16, 32)
 
     const aspect = ctx.canvas.width / ctx.canvas.height;
     const videoAr = 16 / 9; // TODO: constant aspect ratio, consider variable?

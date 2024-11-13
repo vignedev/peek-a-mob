@@ -12,6 +12,7 @@ export type CanvasProps = {
   style?: CSSProperties,
   onDraw?: CanvasDrawingFunction,
   onMouseDown?: (event: MouseEvent, ctx: CanvasRenderingContext2D) => void
+  onResize?: (canvas: HTMLCanvasElement) => void
 }
 
 export const Canvas = forwardRef((props: CanvasProps, ref) => {
@@ -40,6 +41,7 @@ export const Canvas = forwardRef((props: CanvasProps, ref) => {
     const resize = () => {
       ctx.canvas.width = ctx?.canvas.clientWidth;
       ctx.canvas.height = ctx?.canvas.clientHeight;
+      props.onResize?.(ctx.canvas)
     }
     resize()
 
@@ -51,7 +53,7 @@ export const Canvas = forwardRef((props: CanvasProps, ref) => {
       ctx.canvas.removeEventListener('mousemove', updateMousePosition)
       ctx.canvas.removeEventListener('mouseleave', handleMouseLeave)
     }
-  }, [canvasRef, props.style])
+  }, [canvasRef, props.style, props.onResize])
 
   useEffect(() => {
     const ctx = canvasRef.current!.getContext('2d')!
