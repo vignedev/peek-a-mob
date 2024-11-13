@@ -15,21 +15,13 @@ export type CanvasProps = {
   onResize?: (canvas: HTMLCanvasElement) => void
 }
 
-export const Canvas = forwardRef((props: CanvasProps, ref) => {
+export const Canvas = (props: CanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [mouse, setMouse] = useState<MouseContext>({ x: -1, y: -1 })
 
-  useImperativeHandle(ref, () => {
-    const canvas = canvasRef.current
-    const ctx = canvasRef.current?.getContext('2d')
-    return {
-      canvas,
-      context: ctx,
-    }
-  }, [canvasRef])
-
   useEffect(() => {
-    const ctx = canvasRef.current!.getContext('2d')!
+    if (!canvasRef.current) return
+    const ctx = canvasRef.current.getContext('2d')!
 
     const updateMousePosition = (e: MouseEvent) => {
       setMouse({ x: e.offsetX, y: e.offsetY })
@@ -44,6 +36,7 @@ export const Canvas = forwardRef((props: CanvasProps, ref) => {
       props.onResize?.(ctx.canvas)
     }
     resize()
+    console.log('REMOUNT!!!')
 
     window.addEventListener('resize', resize)
     ctx.canvas.addEventListener('mousemove', updateMousePosition)
@@ -53,10 +46,11 @@ export const Canvas = forwardRef((props: CanvasProps, ref) => {
       ctx.canvas.removeEventListener('mousemove', updateMousePosition)
       ctx.canvas.removeEventListener('mouseleave', handleMouseLeave)
     }
-  }, [canvasRef, props.style, props.onResize])
+  }, [props.style, props.onResize])
 
   useEffect(() => {
-    const ctx = canvasRef.current!.getContext('2d')!
+    if (!canvasRef.current) return
+    const ctx = canvasRef.current.getContext('2d')!
     const handleClick = (e: MouseEvent) => {
       props.onMouseDown?.(e, ctx)
     }
@@ -68,7 +62,8 @@ export const Canvas = forwardRef((props: CanvasProps, ref) => {
   }, [props.onMouseDown])
 
   useEffect(() => {
-    const ctx = canvasRef.current!.getContext('2d')!
+    if (!canvasRef.current) return
+    const ctx = canvasRef.current.getContext('2d')!
 
     let keep_rendering_son = true
     async function render() {
@@ -88,4 +83,4 @@ export const Canvas = forwardRef((props: CanvasProps, ref) => {
     style={props.style}
     ref={canvasRef}
   ></canvas>
-})
+}

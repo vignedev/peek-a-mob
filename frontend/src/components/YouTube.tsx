@@ -8,11 +8,10 @@ type PlayerProps = {
   videoId: string
 }
 
-export const VideoTimeline = (props: { player?: YouTubePlayer, currentTime: number, duration: number, detections: EntityDetection, style?: React.CSSProperties }) => {
-  const { player, currentTime, duration, detections } = props
+export const VideoTimeline = (props: { player?: YouTubePlayer, duration: number, detections: EntityDetection, style?: React.CSSProperties }) => {
+  const { player, duration, detections } = props
 
-  const [cachedTimeline, setCachedTimeline] = useState<HTMLCanvasElement>()
-
+  let cachedTimeline: HTMLCanvasElement | undefined
   function cacheTimeline(width: number, height: number) {
     console.log('redrwaing)')
     const canvas = document.createElement('canvas')
@@ -62,6 +61,8 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, currentTime: numb
     if (!player)
       return;
 
+    const currentTime = await player.getCurrentTime()
+
     if (cachedTimeline)
       ctx.drawImage(cachedTimeline, 0, 0)
 
@@ -96,7 +97,7 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, currentTime: numb
 
       ctx.fillText((mouse.x / ctx.canvas.width * duration).toFixed(2), mouse.x + 8, 16)
     }
-  }, [player, currentTime, duration, detections, cachedTimeline])
+  }, [player, duration, detections, cachedTimeline])
 
   return (
     <Canvas
@@ -110,16 +111,17 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, currentTime: numb
         player.seekTo(duration * e.offsetX / ctx.canvas.width, true)
       }}
       onResize={(canvas) => {
-        setCachedTimeline(cacheTimeline(canvas.width, canvas.height))
+        cachedTimeline = cacheTimeline(canvas.width, canvas.height)
       }}
     />
   )
 }
 
-export const VideoOverlay = (props: { player?: YouTubePlayer, currentTime: number, rollingDetections: EntityDetection }) => {
-  const { player, currentTime, rollingDetections } = props
+export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections: EntityDetection }) => {
+  const { player, rollingDetections } = props
 
   const onDraw = useCallback<CanvasDrawingFunction>(async (ctx, _mouse) => {
+    if (!player) return
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
     // ctx.fillStyle = 'red'
@@ -144,6 +146,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, currentTime: numbe
       h = ctx.canvas.height;
     }
 
+    const currentTime = await player.getCurrentTime()
     for (const name in rollingDetections) {
       for (const entity of rollingDetections[name]) {
         const [bx, by, bw, bh] = entity.bbox
@@ -180,7 +183,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, currentTime: numbe
         ctx.fillText(header, x + bx * w, y + by * h - 4)
       }
     }
-  }, [player, currentTime, rollingDetections])
+  }, [player, rollingDetections])
 
   return <Canvas
     style={{
@@ -197,7 +200,6 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, currentTime: numbe
 export const YouTubeWithTimeline = (props: PlayerProps) => {
   const [player, setPlayer] = useState<YouTubePlayer>()
   const [duration, setDuration] = useState<number>(-1)
-  const [currentTime, setCurrentTime] = useState<number>(-1)
   const [detections, setDetections] = useState<EntityDetection>({})
 
   const [rollingDetections, setRollingDetections] = useState<{ detections: EntityDetection, range: number[] }>()
@@ -230,7 +232,6 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
         })
         isBusy = false
       }
-      setCurrentTime(newTime)
       requestAnimationFrame(loop)
     }
     loop()
@@ -250,13 +251,11 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
         />
         <VideoOverlay
           player={player}
-          currentTime={currentTime}
           rollingDetections={rollingDetections?.detections || {}}
         />
       </Box>
       <VideoTimeline
         player={player}
-        currentTime={currentTime}
         detections={detections}
         duration={duration}
         style={{ borderRadius: '.5rem', overflow: 'hidden' }}
