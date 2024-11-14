@@ -151,9 +151,9 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections:
       for (const entity of rollingDetections[name]) {
         const [bx, by, bw, bh] = entity.bbox
 
-        const frameThreshold = 1 / 60
+        const frameThreshold = 1 / 120
         const dist = Math.abs(entity.time - currentTime)
-        const fadeOutSeconds = 2
+        const fadeOutSeconds = 1
         let color = 'magenta', alpha = 0.0
 
         if (dist <= frameThreshold) {
@@ -166,6 +166,22 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections:
           continue
         }
 
+        const header = `${name} ${(entity.confidence * 100).toFixed(1)}%`
+        const headerSize = ctx.measureText(header)
+        const headerHeight = headerSize.fontBoundingBoxAscent + headerSize.fontBoundingBoxDescent + 4
+
+        if (alpha == 1.0) {
+          ctx.lineWidth = 8
+          ctx.fillStyle = ctx.strokeStyle = '#000000ff';
+          ctx.strokeRect(
+            x + bx * w,
+            y + by * h,
+            bw * w,
+            bh * h
+          )
+          ctx.fillRect(x + bx * w - ctx.lineWidth / 2, y + by * h - headerHeight - ctx.lineWidth / 4, headerSize.width + 4 + ctx.lineWidth / 2, headerHeight)
+        }
+
         ctx.lineWidth = 4
         ctx.fillStyle = ctx.strokeStyle = color;
         ctx.strokeRect(
@@ -174,10 +190,6 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections:
           bw * w,
           bh * h
         )
-
-        const header = `${name} ${(entity.confidence * 100).toFixed(1)}%`
-        const headerSize = ctx.measureText(header)
-        const headerHeight = headerSize.fontBoundingBoxAscent + headerSize.fontBoundingBoxDescent + 4
         ctx.fillRect(x + bx * w - ctx.lineWidth / 2 - 1, y + by * h - headerHeight, headerSize.width + 4 + ctx.lineWidth / 2, headerHeight)
         ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`
         ctx.fillText(header, x + bx * w, y + by * h - 4)

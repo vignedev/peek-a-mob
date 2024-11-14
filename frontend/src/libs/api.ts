@@ -35,7 +35,7 @@ export async function getDetections(videoId: string, time: number, model: string
     return acc
   }, {} as Record<number, string>)
   const video = await getVideo(videoId)
-  const occurances: EntityOccurance[] = await (await fetch(`/api/videos/${videoId}/detections/${model ?? video.models.pop()}?ss=${time - before}&to=${time + after}`)).json()
+  const occurances: EntityOccurance[] = await (await fetch(`/api/videos/${videoId}/detections/${model ?? video.models.shift()}?ss=${time - before}&to=${time + after}`)).json()
 
   const entities: EntityDetection = {}
   for (const occurance of occurances) {
