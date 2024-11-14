@@ -1,16 +1,18 @@
 import { createReadStream } from 'fs'
+import { readFile } from 'fs/promises'
 import db from '../libs/database'
 import * as schema from '../db/schema'
 import { createInterface } from 'readline/promises'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 
 const argv = process.argv.slice(2)
-if (argv.length != 3) {
-  console.error(`usage: ${process.argv.slice(0, 2).join(' ')} <youtube_id> <model_name> <csv_file>`)
+if (argv.length == 0) {
+  console.error(`usage: ${process.argv.slice(0, 2).join(' ')} <csv_file> <csv_file> ...`)
   process.exit(1)
 }
 
-main(argv[0], argv[1], argv[2])
+for (const arg of argv)
+  main(arg)
 
 type Result = {
   time: number,
@@ -20,29 +22,81 @@ type Result = {
   w: number, h: number
 }
 
-async function main(youtubeId: string, modelName: string, csvPath: string) {
+type VideoMetadata = {
+  video: {
+    title: string,
+    id: string,
+    width: number, height: number, fps: number
+    channel: string,
+    duration: number,
+    format: string,
+  },
+  argv: {
+    model: string,
+    output: string,
+    url: string,
+    conf: number,
+    iou: number,
+    imgsz: number
+  }
+}
+
+async function get_json_header(csvPath: string) {
+  const stream = createReadStream(csvPath)
+  const reader = createInterface({ input: stream })
+  let count = 0
+  let metadata = null
+  for await (const line of reader) {
+    if (line.startsWith('#$'))
+      metadata = JSON.parse(line.substring(2).trim()) as VideoMetadata
+    if (line[0] == '#' || line.trim().length == 0)
+      continue
+
+    ++count
+  }
+  return { metadata, count }
+}
+
+async function main(csvPath: string) {
+  // const metadata from the file
+  const { metadata, count } = await get_json_header(csvPath)
+  if (!metadata) throw new Error(`"${csvPath}" has no metadata header!`)
+  console.error(`[i] ${csvPath} =`, metadata)
+
   // prepare the videoId info and such TODO: set the duration + videoTitle
   await db.insert(schema.videos).values({
-    youtubeId: youtubeId,
-    duration: -1,
-    videoTitle: '',
-  }).onConflictDoUpdate({ target: schema.videos.youtubeId, set: { duration: -1, videoTitle: '' } })
-  const [video] = await db.select().from(schema.videos).where(eq(schema.videos.youtubeId, youtubeId))
+    youtubeId: metadata.video.id,
+    duration: metadata.video.duration,
+    videoTitle: metadata.video.title,
+  }).onConflictDoUpdate({
+    target: schema.videos.youtubeId, set: {
+      duration: metadata.video.duration,
+      videoTitle: metadata.video.title
+    }
+  })
+  const [video] = await db
+    .select()
+    .from(schema.videos)
+    .where(eq(schema.videos.youtubeId, metadata.video.id))
   console.error(`[i] video entry`, video)
 
   // prepare the model
   await db.insert(schema.models).values({
-    modelName
+    modelName: metadata.argv.model
   }).onConflictDoNothing()
-  const [model] = await db.select().from(schema.models).where(eq(schema.models.modelName, modelName))
+  const [model] = await db
+    .select()
+    .from(schema.models)
+    .where(eq(schema.models.modelName, metadata.argv.model))
   console.error(`[i] model entry`, model)
 
   // get entity mapping
   const entityMap = (await db.select().from(schema.entities)).reduce((acc, val) => { acc[val.entityName] = val.entityId; return acc }, {} as Record<string, number>)
   console.error(`[i] entity mapping`, entityMap)
 
-  // commit per-1000 batches
-  const commitEveryN = 1000
+  // commit batches
+  let commitTotal = 0
+  const commitEveryN = 4096
   let buffer: Result[] = []
   async function commit() {
     await db.insert(schema.detections).values(buffer.map(result => {
@@ -55,8 +109,8 @@ async function main(youtubeId: string, modelName: string, csvPath: string) {
         time: result.time
       }
     }))
+    console.error(`[i] committed ${buffer.length} entries (${commitTotal += buffer.length}/${count}; ${(commitTotal / count * 100).toFixed(1)}%)`)
     buffer = []
-    console.error(`[i] committed ${commitEveryN} entries`)
   }
 
   // rudimentary csv parser
@@ -64,6 +118,7 @@ async function main(youtubeId: string, modelName: string, csvPath: string) {
   const reader = createInterface({ input: stream })
   let header: string[] = []
   for await (const line of reader) {
+    if (line[0] == '#') continue
     const split = line.split(/[;,]/)
     if (header.length == 0) {
       header = split

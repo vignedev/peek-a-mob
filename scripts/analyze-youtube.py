@@ -70,6 +70,20 @@ if __name__ == '__main__':
     avg_rate = 0
     last_time = time.time()
 
+    metadata = {
+      "video": {
+        'title': video['title'],
+        'id': video['id'],
+        'width': video['width'],
+        'height': video['height'],
+        'fps': video['fps'],
+        'channel': video['channel'],
+        'duration': video['duration'],
+        'format': video['format']['format']
+      },
+      "argv": vars(argv)
+    }
+    file.write(f"#$ {json.dumps(metadata)}\n")
     file.write(f'time;class;confidence;x;y;w;h\n')
     while cap.isOpened():
       ret, frame = cap.read()
