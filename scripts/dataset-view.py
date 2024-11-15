@@ -25,13 +25,20 @@ class ImageViewer(QtWidgets.QLabel):
     self.original_pixmap = None
     self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
-  def resizeEvent(self, event):
-    # print(self.width(), self.height())
+  def setOrigPixmap(self, pixmap: QtGui.QPixmap):
+    self.original_pixmap = pixmap
+    self.repaint()
+
+  def repaint(self):
     if (self.original_pixmap is not None):
       self.setPixmap(self.original_pixmap.scaled(
         self.width(), self.height(),
         QtCore.Qt.AspectRatioMode.KeepAspectRatio)
       )
+
+  def resizeEvent(self, event):
+    # print(self.width(), self.height())
+    self.repaint()
 
 class MainWindow(QtWidgets.QMainWindow):
   def __init__(self):
@@ -111,8 +118,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         counter += 1
     painter.end()
-    self.canvas.original_pixmap = self.canvas_ctx
-    self.canvas.resizeEvent(None)
+    self.canvas.setOrigPixmap(self.canvas_ctx)
     # self.canvas.setPixmap(self.canvas_ctx)
 
 app = QtWidgets.QApplication(sys.argv)
