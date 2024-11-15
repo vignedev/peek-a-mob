@@ -19,6 +19,20 @@ def read_dataset(dataset_path: str):
 
   return data_yaml['names'], sorted(bucket)
 
+class ImageViewer(QtWidgets.QLabel):
+  def __init__(self, *args, **kwargs):
+    QtWidgets.QLabel.__init__(self)
+    self.original_pixmap = None
+    self.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
+  def resizeEvent(self, event):
+    # print(self.width(), self.height())
+    if (self.original_pixmap is not None):
+      self.setPixmap(self.original_pixmap.scaled(
+        self.width(), self.height(),
+        QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+      )
+
 class MainWindow(QtWidgets.QMainWindow):
   def __init__(self):
     super().__init__()
@@ -33,7 +47,11 @@ class MainWindow(QtWidgets.QMainWindow):
     self.widget.setLayout(self.layout)
     self.setCentralWidget(self.widget)
 
+    self.splitter = QtWidgets.QSplitter(self.widget)
+    self.layout.addWidget(self.splitter)
+
     self.list_widget = QtWidgets.QListWidget()
+    self.list_widget.setFont(QtGui.QFont('monospace'))
     for image in self.data[1]:
       item = QtWidgets.QListWidgetItem(
         '/'.join(image.split('/')[-3:]),
@@ -42,12 +60,15 @@ class MainWindow(QtWidgets.QMainWindow):
       item.data = image
       self.list_widget.addItem(item)
     self.list_widget.currentItemChanged.connect(self.change_canvas)
-    self.layout.addWidget(self.list_widget)
+    self.splitter.addWidget(self.list_widget)
 
-    self.canvas = QtWidgets.QLabel()
+    self.canvas = ImageViewer()
+    # self.canvas.setScaledContents(True)
+    self.canvas.setSizePolicy(QtWidgets.QSizePolicy.Policy.Ignored, QtWidgets.QSizePolicy.Policy.Ignored)
+    self.canvas.setWordWrap(True)
     self.canvas_ctx = QtGui.QPixmap(800, 600)
     self.canvas.setPixmap(self.canvas_ctx)
-    self.layout.addWidget(self.canvas)
+    self.splitter.addWidget(self.canvas)
 
   def change_canvas(self, i: QtWidgets.QListWidgetItem):
     image_path = i.data
@@ -90,7 +111,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         counter += 1
     painter.end()
-    self.canvas.setPixmap(self.canvas_ctx)
+    self.canvas.original_pixmap = self.canvas_ctx
+    self.canvas.resizeEvent(None)
+    # self.canvas.setPixmap(self.canvas_ctx)
 
 app = QtWidgets.QApplication(sys.argv)
 window = MainWindow()
