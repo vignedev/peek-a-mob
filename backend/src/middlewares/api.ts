@@ -19,14 +19,14 @@ const getApiRouter = (router: restana.Router<Protocol.HTTP>) => {
     })
     .get('/videos/:videoId/detections/:modelName', async (req, res) => {
       const { videoId, modelName } = req.params
-      const { entities, ss: timeStart, to: timeEnd } = req.query
+      const { entities, ss: timeStart, to: timeEnd, conf: confidence } = req.query
 
       if (Array.isArray(timeStart) || Array.isArray(timeEnd)) throw new Error('Invalid time range!')
 
       return res.send(
-        await getDetections(videoId, modelName, {
+        await getDetections(videoId, decodeURIComponent(modelName), {
           entityNames: entities ? (Array.isArray(entities) ? entities : [entities]) : [],
-          confidence: 0.65, // TODO: parametrize?
+          confidence: parseFloat(Array.isArray(confidence) ? confidence[0] : confidence) || 0.65,
           timeStart: timeStart ? parseFloat(timeStart) : 0,
           timeEnd: timeEnd ? parseFloat(timeEnd) : Infinity
         }),
