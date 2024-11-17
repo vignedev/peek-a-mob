@@ -8,6 +8,33 @@ import { tryUntil, wait } from '../libs/utils'
 type TimeInfo = [currentTime: number, duration: number]
 type ValidRange = [start: number, end: number]
 
+const EntityColors: Record<string, { line: string, box: string }> = {
+  chicken: {
+    line: 'rgba(0, 255, 0, 0.03)',
+    box: ''
+  },
+  creeper: {
+    line: 'rgba(255, 0, 0, 0.03)',
+    box: ''
+  },
+  skeleton: {
+    line: 'rgba(255, 0, 0, 0.03)',
+    box: ''
+  },
+  spider: {
+    line: 'rgba(255, 0, 0, 0.03)',
+    box: ''
+  },
+  zombie: {
+    line: 'rgba(255, 0, 0, 0.03)',
+    box: ''
+  },
+  enderman: {
+    line: 'rgba(255, 0, 0, 0.03)',
+    box: ''
+  }
+}
+
 export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInfo, detections: EntityDetection, style?: React.CSSProperties }) => {
   const { player, detections, timeInfo } = props
   const [currentTime, duration] = timeInfo
@@ -26,8 +53,8 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     // again debug
-    ctx.fillStyle = 'white'
-    ctx.fillText(`keys: ${Object.keys(detections)},${timeInfo.join(', ')}`, 256, 32)
+    // ctx.fillStyle = 'white'
+    // ctx.fillText(`keys: ${Object.keys(detections)},${timeInfo.join(', ')}`, 256, 32)
 
     if (!player)
       return;
@@ -38,8 +65,8 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
     // print of the timelines
     let printed = new Set()
     let lineHeight = Math.floor(ctx.canvas.height / Object.keys(detections).length)
-    Object.entries(detections).forEach(([entName, occurances], idx) => {
-      occurances.forEach(detection => {
+    Object.keys(detections).sort().forEach((entName, idx) => {
+      detections[entName].forEach(detection => {
         // borders
         if (idx != 0 && !printed.has(entName)) {
           ctx.strokeStyle = '#fffa'
@@ -51,15 +78,14 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
         }
 
         // lines 
-        ctx.strokeStyle = '#00ff0005'
-        ctx.lineWidth = 4
+        ctx.strokeStyle = EntityColors[entName]?.line || '#ff000005'
+        ctx.lineWidth = 2
         ctx.beginPath()
         ctx.moveTo(detection.time / duration * ctx.canvas.width + ctx.lineWidth / 2, lineHeight * idx)
         ctx.lineTo(detection.time / duration * ctx.canvas.width + ctx.lineWidth / 2, lineHeight * (idx + 1))
         ctx.stroke()
       })
     })
-
     return canvas
   }, [player, detections, timeInfo])
 
@@ -88,14 +114,30 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
     // ctx.fillText(`${currentTime} | ${duration} | ${Date.now()} | ${!!cachedTimeline}`, 32, 32)
 
     // display time in seconds as well as the progress
-    ctx.fillStyle = '#f006'
+    ctx.fillStyle = '#f094'
     ctx.fillRect(0, 0, currentTime / duration * ctx.canvas.width, ctx.canvas.height)
+
+    ctx.strokeStyle = '#0005'
+    ctx.lineWidth = 6
+    ctx.beginPath()
+    ctx.moveTo(currentTime / duration * ctx.canvas.width, 0)
+    ctx.lineTo(currentTime / duration * ctx.canvas.width, ctx.canvas.height)
+    ctx.stroke()
+    ctx.strokeStyle = '#f09'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.moveTo(currentTime / duration * ctx.canvas.width, 0)
+    ctx.lineTo(currentTime / duration * ctx.canvas.width, ctx.canvas.height)
+    ctx.stroke()
+
+    ctx.fillStyle = '#f09'
     ctx.fillText(currentTime?.toFixed(2), currentTime / duration * ctx.canvas.width + 8, ctx.canvas.height - 12)
 
     // print of the timelines
     let printed = new Set()
     let lineHeight = Math.floor(ctx.canvas.height / Object.keys(detections).length)
-    Object.entries(detections).forEach(([entName, occurances], idx) => {
+    Object.keys(detections).sort().forEach((entName, idx) => {
+      const occurances = detections[entName]
       occurances.forEach(detection => {
         // labeling
         if (detection.time < currentTime || printed.has(entName)) return
@@ -109,11 +151,18 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
 
     // display cursor if mouse is hovering on top
     if (mouse != null) {
-      ctx.fillStyle = ctx.strokeStyle = '#f00'
-      ctx.lineWidth = 1
+      ctx.strokeStyle = '#0005'
+      ctx.lineWidth = 6
       ctx.beginPath()
-      ctx.moveTo(mouse.x, 0)
-      ctx.lineTo(mouse.x, ctx.canvas.height)
+      ctx.moveTo(Math.floor(mouse.x), 0)
+      ctx.lineTo(Math.floor(mouse.x), ctx.canvas.height)
+      ctx.stroke()
+
+      ctx.fillStyle = ctx.strokeStyle = '#0ff'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(Math.floor(mouse.x), 0)
+      ctx.lineTo(Math.floor(mouse.x), ctx.canvas.height)
       ctx.stroke()
 
       ctx.fillText((mouse.x / ctx.canvas.width * duration).toFixed(2), mouse.x + 8, 16)
@@ -181,7 +230,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections:
 
         if (dist <= frameThreshold) {
           alpha = 1
-          color = 'red'
+          color = EntityColors[name]?.box || 'red'
         } else if (dist <= fadeOutSeconds && currentTime > entity.time) {
           alpha = (1 - (currentTime - entity.time) / fadeOutSeconds) * 0.01
           color = `rgba(0, 0, 255, ${alpha})`
@@ -232,7 +281,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections:
   />
 }
 
-export const YouTubeWithTimeline = (props: { videoId: string }) => {
+export const YouTubeWithTimeline = (props: { videoId: string, modelName: string }) => {
   const [player, setPlayer] = useState<YouTubePlayer>()
   const [detections, setDetections] = useState<EntityDetection>({})
   const [rollingDetections, setRollingDetections] = useState<{ detections: EntityDetection, range: ValidRange }>()
@@ -255,9 +304,14 @@ export const YouTubeWithTimeline = (props: { videoId: string }) => {
   useEffect(() => {
     setDetections({})
     setTimeInfo([0, 0])
-    getDetections(props.videoId, 0, null, Infinity)
+    getDetections(props.videoId, 0, props.modelName, Infinity)
       .then(setDetections)
-  }, [props.videoId])
+  }, [props.videoId, props.modelName])
+
+  useEffect(() => {
+    console.log('model change')
+    setRollingDetections(undefined)
+  }, [props.modelName])
 
   // loop 
   useEffect(() => {
@@ -269,7 +323,7 @@ export const YouTubeWithTimeline = (props: { videoId: string }) => {
         const newTime = await player!.getCurrentTime()
         if (!rollingDetections || newTime <= rollingDetections.range[0] || newTime >= rollingDetections.range[1]) {
           setRollingDetections({
-            detections: await getDetections(props.videoId, newTime, null, 10, 10),
+            detections: await getDetections(props.videoId, newTime, props.modelName, 10, 10),
             range: [newTime - 7, newTime + 7] // the "valid range" where this cached are is for
           })
         }
@@ -278,7 +332,7 @@ export const YouTubeWithTimeline = (props: { videoId: string }) => {
     }
     loop()
     return () => { condition = false }
-  }, [player, props.videoId, rollingDetections])
+  }, [player, props.videoId, rollingDetections, props.modelName])
 
 
   return (
