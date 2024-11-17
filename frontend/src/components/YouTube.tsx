@@ -131,7 +131,10 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
     ctx.stroke()
 
     ctx.fillStyle = '#f09'
-    ctx.fillText(currentTime?.toFixed(2), currentTime / duration * ctx.canvas.width + 8, ctx.canvas.height - 12)
+    const timestamp = currentTime?.toFixed(2)
+    const timestampDim = ctx.measureText(timestamp)
+    const offset = (currentTime / duration * ctx.canvas.width + timestampDim.width + 16) > ctx.canvas.width ? -timestampDim.width - 8 : 8
+    ctx.fillText(timestamp, currentTime / duration * ctx.canvas.width + offset, ctx.canvas.height - 12)
 
     // print of the timelines
     let printed = new Set()
@@ -165,7 +168,10 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
       ctx.lineTo(Math.floor(mouse.x), ctx.canvas.height)
       ctx.stroke()
 
-      ctx.fillText((mouse.x / ctx.canvas.width * duration).toFixed(2), mouse.x + 8, 16)
+      const timestamp = (mouse.x / ctx.canvas.width * duration).toFixed(2)
+      const timestampDim = ctx.measureText(timestamp)
+      const offset = (mouse.x + timestampDim.width + 16) > ctx.canvas.width ? -timestampDim.width - 8 : 8
+      ctx.fillText(timestamp, mouse.x + offset, 16)
     }
   }, [player, detections, timeInfo, cachedTimeline])
 
