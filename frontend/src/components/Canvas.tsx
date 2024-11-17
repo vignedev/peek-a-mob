@@ -1,17 +1,18 @@
 import { CSSProperties, useCallback, useEffect, useRef, useState } from "react"
+import { CanvasRenderingContext2DExpanded, expandContext } from "../libs/canvasEx"
 
 export type MouseContext = {
   x: number,
   y: number
 }
 
-export type CanvasDrawingFunction = (ctx: CanvasRenderingContext2D, mouse: MouseContext | null) => Promise<void> | void
+export type CanvasDrawingFunction = (ctx: CanvasRenderingContext2DExpanded, mouse: MouseContext | null) => Promise<void> | void
 
 export type CanvasProps = {
   className?: string,
   style?: CSSProperties,
   onDraw?: CanvasDrawingFunction,
-  onMouseDown?: (event: MouseEvent, ctx: CanvasRenderingContext2D) => void
+  onMouseDown?: (event: MouseEvent, ctx: CanvasRenderingContext2DExpanded) => void
   onResize?: (canvas: HTMLCanvasElement) => void
 }
 
@@ -25,7 +26,7 @@ export const Canvas = (props: CanvasProps) => {
   // handle mouse events
   useEffect(() => {
     if (!canvas) return
-    const ctx = canvas.getContext('2d')!
+    const ctx = expandContext(canvas.getContext('2d')!)
 
     const updateMousePosition = (e: MouseEvent) => setMouse({ x: e.offsetX, y: e.offsetY })
     const handleMouseLeave = () => setMouse(null)
@@ -48,7 +49,7 @@ export const Canvas = (props: CanvasProps) => {
   // rendering loop updates | update when mouse updates or onDraw updates
   useEffect(() => {
     if (!canvas) return
-    const ctx = canvas.getContext('2d')!
+    const ctx = expandContext(canvas.getContext('2d')!)
 
     props.onDraw?.(ctx, mouse)
   }, [canvas, props.onDraw, mouse])
