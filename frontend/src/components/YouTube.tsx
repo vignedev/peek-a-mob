@@ -1,19 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
 import YouTube, { YouTubePlayer } from 'react-youtube'
-import { Canvas, CanvasDrawingFunction, CanvasProps } from './Canvas'
+import { Canvas, CanvasDrawingFunction } from './Canvas'
 import { Box, Flex } from '@radix-ui/themes'
 import { EntityDetection, getDetections } from '../libs/api'
+import { tryUntil, wait } from '../libs/utils'
 
-type PlayerProps = {
-  videoId: string
-}
+type TimeInfo = [currentTime: number, duration: number]
+type ValidRange = [start: number, end: number]
 
-export const VideoTimeline = (props: { player?: YouTubePlayer, duration: number, detections: EntityDetection, style?: React.CSSProperties }) => {
-  const { player, duration, detections } = props
+export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInfo, detections: EntityDetection, style?: React.CSSProperties }) => {
+  const { player, detections, timeInfo } = props
+  const [currentTime, duration] = timeInfo
 
-  let cachedTimeline: HTMLCanvasElement | undefined
-  function cacheTimeline(width: number, height: number) {
-    console.log('redrwaing)')
+  let [cachedTimeline, setCachedTimeline] = useState<HTMLCanvasElement>()
+  const cacheTimeline = useCallback(async (width: number, height: number) => {
+    console.log('(redrawing cacheTimeline)', width, height, detections, player)
+
     const canvas = document.createElement('canvas')
     canvas.width = width
     canvas.height = height
@@ -23,8 +25,15 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, duration: number,
     ctx.fillStyle = 'black'
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
+    // again debug
+    ctx.fillStyle = 'white'
+    ctx.fillText(`keys: ${Object.keys(detections)},${timeInfo.join(', ')}`, 256, 32)
+
     if (!player)
       return;
+
+    // get the duration
+    // const duration = await tryUntil(() => player.getDuration())
 
     // print of the timelines
     let printed = new Set()
@@ -52,7 +61,9 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, duration: number,
     })
 
     return canvas
-  }
+  }, [player, detections, timeInfo])
+
+  useEffect(() => setCachedTimeline(undefined), [detections, duration])
 
   const onDraw = useCallback<CanvasDrawingFunction>(async (ctx, mouse) => {
     ctx.fillStyle = 'black'
@@ -61,10 +72,20 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, duration: number,
     if (!player)
       return;
 
-    const currentTime = await player.getCurrentTime()
+    // const currentTime = await tryUntil(() => player.getCurrentTime())
+    // const duration = await tryUntil(() => player.getDuration())
 
-    if (cachedTimeline)
+    if (!cachedTimeline) {
+      const newTimeline = await cacheTimeline(ctx.canvas.width, ctx.canvas.height)
+      setCachedTimeline(newTimeline)
+      if (newTimeline) ctx.drawImage(newTimeline, 0, 0)
+    } else {
       ctx.drawImage(cachedTimeline, 0, 0)
+    }
+
+    // debug text
+    // ctx.fillStyle = 'red'
+    // ctx.fillText(`${currentTime} | ${duration} | ${Date.now()} | ${!!cachedTimeline}`, 32, 32)
 
     // display time in seconds as well as the progress
     ctx.fillStyle = '#f006'
@@ -86,8 +107,8 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, duration: number,
       })
     })
 
-    // seeking on cursor
-    if (mouse.x != -1) {
+    // display cursor if mouse is hovering on top
+    if (mouse != null) {
       ctx.fillStyle = ctx.strokeStyle = '#f00'
       ctx.lineWidth = 1
       ctx.beginPath()
@@ -97,7 +118,7 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, duration: number,
 
       ctx.fillText((mouse.x / ctx.canvas.width * duration).toFixed(2), mouse.x + 8, 16)
     }
-  }, [player, duration, detections, cachedTimeline])
+  }, [player, detections, timeInfo, cachedTimeline])
 
   return (
     <Canvas
@@ -106,19 +127,22 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, duration: number,
         ...props.style
       }}
       onDraw={onDraw}
-      onMouseDown={(e, ctx) => {
+      onMouseDown={async (e, ctx) => {
         if (!player) return;
-        player.seekTo(duration * e.offsetX / ctx.canvas.width, true)
+        player.seekTo((await player.getDuration()) * e.offsetX / ctx.canvas.width, true)
       }}
-      onResize={(canvas) => {
-        cachedTimeline = cacheTimeline(canvas.width, canvas.height)
+      onResize={async (canvas) => {
+        console.log('[onResize called on timeline]', canvas.width, canvas.height)
+        setCachedTimeline(undefined) // force it to redraw the next cycle
+        // setCachedTimeline(await cacheTimeline(canvas.width, canvas.height))
       }}
     />
   )
 }
 
-export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections: EntityDetection }) => {
-  const { player, rollingDetections } = props
+export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections: EntityDetection, timeInfo: number[] }) => {
+  const { player, rollingDetections, timeInfo } = props
+  const [currentTime, _duration] = timeInfo
 
   const onDraw = useCallback<CanvasDrawingFunction>(async (ctx, _mouse) => {
     if (!player) return
@@ -146,7 +170,6 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections:
       h = ctx.canvas.height;
     }
 
-    const currentTime = await player.getCurrentTime()
     for (const name in rollingDetections) {
       for (const entity of rollingDetections[name]) {
         const [bx, by, bw, bh] = entity.bbox
@@ -195,7 +218,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections:
         ctx.fillText(header, x + bx * w, y + by * h - 4)
       }
     }
-  }, [player, rollingDetections])
+  }, [player, rollingDetections, timeInfo])
 
   return <Canvas
     style={{
@@ -209,46 +232,54 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections:
   />
 }
 
-export const YouTubeWithTimeline = (props: PlayerProps) => {
+export const YouTubeWithTimeline = (props: { videoId: string }) => {
   const [player, setPlayer] = useState<YouTubePlayer>()
-  const [duration, setDuration] = useState<number>(-1)
   const [detections, setDetections] = useState<EntityDetection>({})
+  const [rollingDetections, setRollingDetections] = useState<{ detections: EntityDetection, range: ValidRange }>()
+  const [timeInfo, setTimeInfo] = useState<TimeInfo>([0, 0])
 
-  const [rollingDetections, setRollingDetections] = useState<{ detections: EntityDetection, range: number[] }>()
-
+  // time retaining loop
   useEffect(() => {
-    getDetections(props.videoId, 0, null, Infinity).then(setDetections)
+    let condition = true
+    const loop = async () => {
+      while (condition) {
+        if (player) setTimeInfo([await player.getCurrentTime(), await player.getDuration()])
+        await wait(1000 / 30) // shannon theorem be damned
+      }
+    }
+    loop()
+    return () => { condition = false }
+  }, [player])
+
+  // update the detections array on new video ID update
+  useEffect(() => {
+    setDetections({})
+    setTimeInfo([0, 0])
+    getDetections(props.videoId, 0, null, Infinity)
+      .then(setDetections)
   }, [props.videoId])
 
+  // loop 
   useEffect(() => {
     if (!player) return;
 
-    let isBusy = false
-    let isActive = true
-
-    async function loop() {
-      if (!isActive) return
-
-      const newTime = await player!.getCurrentTime()
-      if (
-        (
-          !rollingDetections ||
-          newTime <= rollingDetections.range[0] ||
-          newTime >= rollingDetections.range[1]
-        ) && !isBusy
-      ) {
-        isBusy = true
-        setRollingDetections({
-          detections: await getDetections(props.videoId, newTime, null, 10, 10),
-          range: [newTime - 7, newTime + 7]
-        })
-        isBusy = false
+    let condition = true
+    const loop = async () => {
+      while (condition) {
+        const newTime = await player!.getCurrentTime()
+        if (!rollingDetections || newTime <= rollingDetections.range[0] || newTime >= rollingDetections.range[1]) {
+          setRollingDetections({
+            detections: await getDetections(props.videoId, newTime, null, 10, 10),
+            range: [newTime - 7, newTime + 7] // the "valid range" where this cached are is for
+          })
+        }
+        await wait(1000) // shannon theorem is ignored here tbh wwwwwwwwww
       }
-      requestAnimationFrame(loop)
     }
     loop()
-    return () => { isActive = false }
+    return () => { condition = false }
   }, [player, props.videoId, rollingDetections])
+
 
   return (
     <Flex direction='column' gap='1'>
@@ -257,19 +288,19 @@ export const YouTubeWithTimeline = (props: PlayerProps) => {
           className='youtubeEmbed'
           videoId={props.videoId}
           onReady={async (event) => {
-            setDuration(await event.target.getDuration())
             setPlayer(event.target)
           }}
         />
         <VideoOverlay
           player={player}
+          timeInfo={timeInfo}
           rollingDetections={rollingDetections?.detections || {}}
         />
       </Box>
       <VideoTimeline
         player={player}
+        timeInfo={timeInfo}
         detections={detections}
-        duration={duration}
         style={{ borderRadius: '.5rem', overflow: 'hidden' }}
       />
     </Flex>

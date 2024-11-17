@@ -1,11 +1,11 @@
-import { CSSProperties, forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react"
+import { CSSProperties, useCallback, useEffect, useRef, useState } from "react"
 
 export type MouseContext = {
   x: number,
   y: number
 }
 
-export type CanvasDrawingFunction = (ctx: CanvasRenderingContext2D, mouse: MouseContext) => Promise<void> | void
+export type CanvasDrawingFunction = (ctx: CanvasRenderingContext2D, mouse: MouseContext | null) => Promise<void> | void
 
 export type CanvasProps = {
   className?: string,
@@ -16,71 +16,61 @@ export type CanvasProps = {
 }
 
 export const Canvas = (props: CanvasProps) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [mouse, setMouse] = useState<MouseContext>({ x: -1, y: -1 })
+  const [canvas, setCanvas] = useState<HTMLCanvasElement>()
+  const [mouse, setMouse] = useState<MouseContext | null>(null)
 
+  // get the canvas
+  const obtainCanvas = useCallback((node: HTMLCanvasElement) => setCanvas(node), [])
+
+  // handle mouse events
   useEffect(() => {
-    if (!canvasRef.current) return
-    const ctx = canvasRef.current.getContext('2d')!
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')!
 
-    const updateMousePosition = (e: MouseEvent) => {
-      setMouse({ x: e.offsetX, y: e.offsetY })
-    }
-    const handleMouseLeave = () => {
-      setMouse({ x: -1, y: -1 })
-    }
-
-    const resize = () => {
-      ctx.canvas.width = ctx?.canvas.clientWidth;
-      ctx.canvas.height = ctx?.canvas.clientHeight;
-      props.onResize?.(ctx.canvas)
-    }
-    resize()
-    console.log('REMOUNT!!!')
-
-    window.addEventListener('resize', resize)
-    ctx.canvas.addEventListener('mousemove', updateMousePosition)
-    ctx.canvas.addEventListener('mouseleave', handleMouseLeave)
-    return () => {
-      window.removeEventListener('resize', resize)
-      ctx.canvas.removeEventListener('mousemove', updateMousePosition)
-      ctx.canvas.removeEventListener('mouseleave', handleMouseLeave)
-    }
-  }, [props.style, props.onResize])
-
-  useEffect(() => {
-    if (!canvasRef.current) return
-    const ctx = canvasRef.current.getContext('2d')!
+    const updateMousePosition = (e: MouseEvent) => setMouse({ x: e.offsetX, y: e.offsetY })
+    const handleMouseLeave = () => setMouse(null)
     const handleClick = (e: MouseEvent) => {
       props.onMouseDown?.(e, ctx)
+      props.onDraw?.(ctx, mouse) // invoke re-draw when click
     }
 
+    ctx.canvas.addEventListener('mousemove', updateMousePosition)
+    ctx.canvas.addEventListener('mouseleave', handleMouseLeave)
     ctx.canvas.addEventListener('mousedown', handleClick)
+
     return () => {
+      ctx.canvas.removeEventListener('mousemove', updateMousePosition)
+      ctx.canvas.removeEventListener('mouseleave', handleMouseLeave)
       ctx.canvas.removeEventListener('mousedown', handleClick)
     }
-  }, [props.onMouseDown])
+  }, [canvas, props.onMouseDown, props.onDraw])
 
+  // rendering loop updates | update when mouse updates or onDraw updates
   useEffect(() => {
-    if (!canvasRef.current) return
-    const ctx = canvasRef.current.getContext('2d')!
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')!
 
-    let keep_rendering_son = true
-    async function render() {
-      await props.onDraw?.(ctx, mouse)
-      if (keep_rendering_son)
-        requestAnimationFrame(render)
-    }
-    render()
+    props.onDraw?.(ctx, mouse)
+  }, [canvas, props.onDraw, mouse])
 
-    return () => {
-      keep_rendering_son = false
-    }
-  }, [props.onDraw, mouse])
+  // monitoring the size and updating the canvasSize
+  useEffect(() => {
+    const loop = setInterval(() => {
+      if (!canvas) return
+      if (canvas.width != canvas.clientWidth || canvas.height != canvas.clientHeight) {
+        canvas.width = canvas.clientWidth
+        canvas.height = canvas.clientHeight
+        props.onResize?.(canvas)
+        // props.onDraw?.(canvas.getContext('2d')!, mouse)
+      }
+    }, 16)
+    return () => clearInterval(loop)
+  }, [canvas, props.onResize])
 
+  // the canvas, wowie
   return <canvas
     className={props.className}
     style={props.style}
-    ref={canvasRef}
+    ref={obtainCanvas}
   ></canvas>
 }

@@ -21,3 +21,16 @@ export function lowerBound<T>(array: T[], isLess: (a: T) => boolean): number {
 
   return low;
 }
+
+export function wait(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+export async function tryUntil<T>(source: () => Promise<T>, tester?: (a: T) => boolean, max: number = 60, timeout: number = 16): Promise<T> {
+  let result: T
+  let count = 0
+  let _tester = tester ?? ((val) => typeof val !== 'undefined')
+  while (!_tester(result = await source()) && count++ < max)
+    await wait(timeout)
+  return result
+}

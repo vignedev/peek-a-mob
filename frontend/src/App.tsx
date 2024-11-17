@@ -1,6 +1,5 @@
 import { Blockquote, Container, Flex, Heading, Select } from "@radix-ui/themes"
 import { YouTubeWithTimeline } from "./components/YouTube"
-import { Canvas } from "./components/Canvas"
 import { useEffect, useState } from "react"
 import { getVideos, Video } from "./libs/api"
 
