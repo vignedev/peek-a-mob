@@ -1,7 +1,7 @@
 import * as env from './env'
 import * as schema from '../db/schema'
 import { drizzle } from 'drizzle-orm/node-postgres'
-import { and, eq, gt, gte, inArray, lte } from 'drizzle-orm'
+import { and, desc, eq, gt, gte, inArray, lte } from 'drizzle-orm'
 
 const db = drizzle(env.str('DATABASE_URL'), { schema })
 export default db
@@ -62,6 +62,7 @@ export async function getVideo(youtubeId: string) {
     .where(
       eq(schema.detections.videoId, video.videoId)
     )
+    .orderBy(desc(schema.models.modelName))
 
   return {
     ...video,
