@@ -30,6 +30,7 @@ type VideoMetadata = {
     channel: string,
     duration: number,
     format: string,
+    uploader_id: string
   },
   argv: {
     model: string,
@@ -63,15 +64,27 @@ async function main(csvPath: string) {
   if (!metadata) throw new Error(`"${csvPath}" has no metadata header!`)
   console.error(`[i] ${csvPath} =`, metadata)
 
+  // prepare the channel
+  await db.insert(schema.channels).values({
+    channelName: metadata.video.channel,
+    channelHandle: metadata.video.uploader_id
+  }).onConflictDoNothing()
+  const [channel] = await db
+    .select()
+    .from(schema.channels)
+    .where(eq(schema.channels.channelHandle, metadata.video.uploader_id))
+
   // prepare the videoId info and such TODO: set the duration + videoTitle
   await db.insert(schema.videos).values({
     youtubeId: metadata.video.id,
     duration: metadata.video.duration,
     videoTitle: metadata.video.title,
+    channelId: channel.channelId
   }).onConflictDoUpdate({
     target: schema.videos.youtubeId, set: {
       duration: metadata.video.duration,
-      videoTitle: metadata.video.title
+      videoTitle: metadata.video.title,
+      channelId: channel.channelId
     }
   })
   const [video] = await db

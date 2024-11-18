@@ -35,19 +35,22 @@ if __name__ == '__main__':
   from yt_dlp import YoutubeDL
   with YoutubeDL({ 'quiet': 'please' }) as ytdl:
     info = ytdl.extract_info(argv.url, download=False)
-  
+    if info is None:
+      print(f'> YouTube didn\'t return a video result, sad tako...')
+      exit(1)
+
     video = {}
-    for key in ['title', 'id', 'width', 'height', 'fps', 'channel', 'duration']:
+    for key in ['title', 'id', 'width', 'height', 'fps', 'channel', 'duration', 'uploader_id']:
       video[key] = info[key]
 
     # TODO: naive and stupid way -- yt_dlp usually selects bestvideo+bestaudio (usually highest)
     #       so we take the *first id*, which should be the video ID (could easily fail though)
     fmt = info['requested_formats'][0]
-  
+
     print(f'> Analyzing "{video['title']}" ({video['id']}, {video['width']}x{video['height']} @ {video['fps']}) from "{video['channel']}", long {video['duration']} seconds')
     print(f'> Using format_id={fmt['format_id']} aka {fmt['format_note']}')
     video['format'] = fmt
-    
+
   if video is None:
     print('Received no video... the hell?')
     exit(1)
@@ -79,7 +82,8 @@ if __name__ == '__main__':
         'fps': video['fps'],
         'channel': video['channel'],
         'duration': video['duration'],
-        'format': video['format']['format']
+        'format': video['format']['format'],
+        'uploader_id': video['uploader_id']
       },
       "argv": vars(argv)
     }
@@ -97,6 +101,10 @@ if __name__ == '__main__':
         verbose=argv.verbose,
         show=argv.show,
       ):
+        if result.boxes is None:
+          print(f'> ??? result.boxes is None?')
+          continue
+
         for box in result.boxes:
           name = result.names[int(box.cls[0])]
           confidence = float(box.conf[0])

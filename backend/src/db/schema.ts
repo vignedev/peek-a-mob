@@ -1,10 +1,17 @@
 import { integer, pgTable, serial, text, real, index } from 'drizzle-orm/pg-core'
 
+export const channels = pgTable('channels', {
+  channelId: serial('channel_id').primaryKey().notNull(),
+  channelHandle: text('channel_handle').unique().notNull(),
+  channelName: text('channel_name').notNull(),
+});
+
 export const videos = pgTable('videos', {
   videoId: serial('video_id').primaryKey().notNull(),
   youtubeId: text('video_yt_id').unique().notNull(),
   videoTitle: text('video_title').notNull(),
-  duration: real().notNull()
+  duration: real().notNull(),
+  channelId: integer('channel_id').references(() => channels.channelId)
 })
 
 export const entities = pgTable('entities', {
