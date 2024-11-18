@@ -345,7 +345,11 @@ export const YouTubeWithTimeline = (props: { videoId: string, modelName: string 
 
   return (
     <Flex direction='column' gap='1'>
-      <Box height='40rem' position='relative' style={{ borderRadius: '.5rem', overflow: 'hidden' }}>
+      <Box height='40rem' position='relative' style={{
+        borderRadius: 'max(var(--radius-2), var(--radius-full))',
+        overflow: 'hidden',
+        boxShadow: 'var(--shadow-2)'
+      }}>
         <YouTube
           className='youtubeEmbed'
           videoId={props.videoId}
@@ -363,7 +367,11 @@ export const YouTubeWithTimeline = (props: { videoId: string, modelName: string 
         player={player}
         timeInfo={timeInfo}
         detections={detections}
-        style={{ borderRadius: '.5rem', overflow: 'hidden' }}
+        style={{
+          borderRadius: 'max(var(--radius-2), var(--radius-full))',
+          overflow: 'hidden',
+          boxShadow: 'var(--shadow-2)'
+        }}
       />
     </Flex>
   )
