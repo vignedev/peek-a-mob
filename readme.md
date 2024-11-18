@@ -1,12 +1,37 @@
 # `peek-a-mob`
 
-## Web
+## Backend
+
+```sh
+cd backend
+npm install
+cp .env.example .env
+# vim .env -- edit the .env file approapriately
+npm run drizzle-gen
+npm run dev 
+```
+
+Within the `.env` file, you have to specfify the connection to a PostgreSQL database. You can use a Docker image for that as such:
+
+```sh
+docker run --name vmm-db -e POSTGRES_USER=vignette -e POSTGRES_PASSWORD=wah --restart=unless-stopped -p 127.0.0.1:5432:5432 -d postgres:alpine
+```
+
+To add videos from the `scripts/analyze-youtube.csv`, use `npm run import_csv <csv file>`, like so:
+
+```sh
+npm run import_csv '../yt_uEvwuvod2F4_[pam_20241115_200607].csv'
+```
+
+## Frontend
 
 ```sh
 cd frontend
 npm install
 npm run dev
 ```
+
+The server proxies requests from `/api` to `localhost:8080`, the location where the backend is supposedly running, so ideally, both projects should be running at the same time.
 
 ## Minecraft Shader
 
@@ -91,6 +116,8 @@ python3 scripts/analyze-youtube.py \
 
 The CSV is in the following format (values truncated and spaced out for visual clarity):
 ```csv
+# comments wowie
+#$ {}
 time   ; class   ; confidence ; x          ; y          ; w          ; h
 849.33 ; chicken ; 0.83124202 ; 0.40599769 ; 0.33868791 ; 0.06660496 ; 0.14599372
 849.35 ; chicken ; 0.84522515 ; 0.40610400 ; 0.33875331 ; 0.06572787 ; 0.14552843
@@ -103,5 +130,33 @@ time   ; class   ; confidence ; x          ; y          ; w          ; h
 ```
 
 The `time` is in *seconds*. `x`, `y`, `w`, `h` are normalized values by the original video resolution, and `(x, y)` represents the *top-left* corner of the bounding box[^1].
+
+Lines which begin with `#` are comments and should be ignored. All files have a `#$` file, where its contents is a JSON object representing the metadata of the video and analysis. The JSON has the following structure (prettified for visual clarity):
+
+```json
+{
+  "video": {
+    "title": "【Minecraft】 Together As One!!! #MythOneblock",
+    "id": "uEvwuvod2F4",
+    "width": 1920,
+    "height": 1080,
+    "fps": 60,
+    "channel": "Ninomae Ina'nis Ch. hololive-EN",
+    "duration": 8620,
+    "format": "303 - 1920x1080 (1080p60)",
+    "uploader_id": "@NinomaeInanis"
+  },
+  "argv": {
+    "model": "runs/detect/pam_20241115_200607/weights/best.pt",
+    "output": "yt_uEvwuvod2F4_[pam_20241115_200607].csv",
+    "url": "https://www.youtube.com/watch?v=uEvwuvod2F4",
+    "conf": 0.6,
+    "iou": 0.5,
+    "imgsz": 736,
+    "verbose": false,
+    "show": false
+  }
+}
+```
 
 [^1]: Unlike YOLO's dataset format, which specifies `(x, y)` as the center of the bounding box.
