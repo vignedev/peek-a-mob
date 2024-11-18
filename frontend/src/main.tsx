@@ -7,7 +7,7 @@ import { Theme, ThemePanel } from '@radix-ui/themes'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Theme>
+    <Theme appearance='dark'>
       <App />
       {/* <ThemePanel/> */}
     </Theme>

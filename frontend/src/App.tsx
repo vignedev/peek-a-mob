@@ -28,7 +28,7 @@ function App() {
 
   return (
     <>
-      <Container p='4' mt='8'>
+      <Container p='4' pt='8'>
         <Flex direction='column' gap='4'>
           <Heading>peek-a-mob</Heading>
           <Blockquote size='4'>
