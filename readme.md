@@ -31,7 +31,9 @@ npm install
 npm run dev
 ```
 
-The server proxies requests from `/api` to `localhost:8080`, the location where the backend is supposedly running, so ideally, both projects should be running at the same time.
+The server proxies requests from `/api` to `http://127.0.0.1:8080`, the location where the backend is supposedly running, so ideally, both projects should be running at the same time. 
+
+If it is running elsewhere, change the `PROXY_API` environmental variable in `.env`.
 
 ## Minecraft Shader
 
