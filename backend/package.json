@@ -8,7 +8,7 @@
     "dev": "tsx --watch --env-file=.env src/",
     "start": "npm run dev",
     "import_csv": "tsx --env-file=.env src/scripts/importer.ts",
-    "drizzle-gen": "drizzle-kit push"
+    "drizzle-push": "drizzle-kit push"
   },
   "author": "",
   "license": "MIT",

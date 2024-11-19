@@ -7,7 +7,7 @@ cd backend
 npm install
 cp .env.example .env
 # vim .env -- edit the .env file approapriately
-npm run drizzle-gen
+npm run drizzle-push
 npm run dev 
 ```
 
