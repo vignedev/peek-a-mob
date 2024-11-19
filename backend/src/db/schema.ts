@@ -1,4 +1,4 @@
-import { integer, pgTable, serial, text, real, index } from 'drizzle-orm/pg-core'
+import { boolean, integer, pgTable, serial, text, real, index } from 'drizzle-orm/pg-core'
 
 export const channels = pgTable('channels', {
   channelId: serial('channel_id').primaryKey().notNull(),
@@ -24,6 +24,7 @@ export const models = pgTable('models', {
   modelId: serial('model_id').primaryKey().notNull(),
   modelPath: text('model_path').unique().notNull(),
   modelName: text('model_name'),
+  modelAvailable: boolean('model_available').default(false)
 })
 
 export const detections = pgTable('detections', {
