@@ -58,18 +58,18 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
   ) => res.send({ error: 'Not Implemented... yet?' }, 501)
 
   router
-    .get('/job', NotImplementedYet)            // get all jobs
-    .get('/job/:id', NotImplementedYet)        // get specific job
-    .post('/job', NotImplementedYet)           // create a new job
-    .delete('/job/:id', NotImplementedYet)     // delete / cancel job
-    .get('/job/:id/logs', NotImplementedYet)   // get job's logs (200 always, empty if not found)
-    .get('/job/:id/result', NotImplementedYet) // get job's result (200 on OK, 404 if not ready)
+    .get('/jobs', NotImplementedYet)            // get all jobs
+    .get('/jobs/:id', NotImplementedYet)        // get specific job
+    .post('/jobs', NotImplementedYet)           // create a new job
+    .delete('/jobs/:id', NotImplementedYet)     // delete / cancel job
+    .get('/jobs/:id/logs', NotImplementedYet)   // get job's logs (200 always, empty if not found)
+    .get('/jobs/:id/result', NotImplementedYet) // get job's result (200 on OK, 404 if not ready)
 
   router
-    .get('/model', async (_req, res) => {       // get all available models
+    .get('/models', async (_req, res) => {       // get all available models
       res.send(await database.models.getAll())
     })
-    .get('/model/:id', async (req, res) => {   // get a specific model
+    .get('/models/:id', async (req, res) => {   // get a specific model
       const { id } = req.params
       const modelId = parseInt(id, 10)
 
@@ -82,8 +82,7 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
 
       res.send(model, 200)
     })
-    .post('/model', async (req, res) => {      // upload a new model (accept *.pt files, require name)
-      return NotImplementedYet(req, res)
+    .post('/models', async (req, res) => {      // upload a new model (accept *.pt files, require name)
     })
 
   return router
