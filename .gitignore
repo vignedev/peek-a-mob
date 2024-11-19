@@ -1,5 +1,6 @@
 .venv
 *.pyc
+.env
 
 # remove so we force the data-taker to ensure they have it up to date
 minecraft_shader/entities.json
