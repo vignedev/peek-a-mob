@@ -22,7 +22,8 @@ export const entities = pgTable('entities', {
 
 export const models = pgTable('models', {
   modelId: serial('model_id').primaryKey().notNull(),
-  modelName: text('model_name').unique().notNull()
+  modelPath: text('model_path').unique().notNull(),
+  modelName: text('model_name'),
 })
 
 export const detections = pgTable('detections', {

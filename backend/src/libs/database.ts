@@ -82,3 +82,17 @@ export const detections = {
     return detections
   }
 }
+
+export const models = {
+  async getAll() {
+    return await db.query.models.findMany()
+  },
+  async get(modelId: number) {
+    const result = await db.select().from(schema.models).where(eq(schema.models.modelId, modelId)).limit(1)
+    return result.length == 0 ? null : result[0]
+  },
+  async new(path: string, name: string) {
+    throw new Error('Not implemented yet!')
+    // TODO: file has to exists on fs (ala locateable)
+  }
+}

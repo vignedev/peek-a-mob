@@ -51,8 +51,47 @@ const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
     })
 }
 
+const adminApi = (router: restana.Router<Protocol.HTTP>) => {
+  const NotImplementedYet = (
+    _req: restana.Request<Protocol.HTTP>,
+    res: restana.Response<Protocol.HTTP>
+  ) => res.send({ error: 'Not Implemented... yet?' }, 501)
+
+  router
+    .get('/job', NotImplementedYet)            // get all jobs
+    .get('/job/:id', NotImplementedYet)        // get specific job
+    .post('/job', NotImplementedYet)           // create a new job
+    .delete('/job/:id', NotImplementedYet)     // delete / cancel job
+    .get('/job/:id/logs', NotImplementedYet)   // get job's logs (200 always, empty if not found)
+    .get('/job/:id/result', NotImplementedYet) // get job's result (200 on OK, 404 if not ready)
+
+  router
+    .get('/model', async (_req, res) => {       // get all available models
+      res.send(await database.models.getAll())
+    })
+    .get('/model/:id', async (req, res) => {   // get a specific model
+      const { id } = req.params
+      const modelId = parseInt(id, 10)
+
+      if (isNaN(modelId))
+        return res.send({ error: 'ID is not numeric.' }, 400)
+
+      const model = await database.models.get(modelId)
+      if (!model)
+        return res.send({ error: 'Model by that ID not found.' }, 404)
+
+      res.send(model, 200)
+    })
+    .post('/model', async (req, res) => {      // upload a new model (accept *.pt files, require name)
+      return NotImplementedYet(req, res)
+    })
+
+  return router
+}
+
 const getApiRouter = (router: restana.Router<Protocol.HTTP>) => {
   detectionsApi(router)
+  adminApi(router)
 
   return router
 }
