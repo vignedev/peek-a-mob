@@ -11,7 +11,7 @@ npm run drizzle-push
 npm run dev 
 ```
 
-Within the `.env` file, you have to specfify the connection to a PostgreSQL database ***and*** the `MODEL_ROOT_PATH` path, where the uploaded models would be stored. You can use a Docker image for that as such:
+Within the `.env` file, you have to specfify the connection to a PostgreSQL database ***and*** the `MODEL_ROOT_PATH` path, where the uploaded models would be stored. Oh, ***and also*** the `PROJECT_ROOT`, which should point to the cloned *repository*, where all the projects are. You can use a Docker image for that as such:
 
 ```sh
 docker run --name vmm-db -e POSTGRES_USER=vignette -e POSTGRES_PASSWORD=wah --restart=unless-stopped -p 127.0.0.1:5432:5432 -d postgres:alpine

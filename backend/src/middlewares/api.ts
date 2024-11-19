@@ -8,6 +8,7 @@ import { pipeline } from 'stream/promises'
 import path from 'path'
 import runner from '../libs/runner'
 import { buffer } from 'node:stream/consumers'
+import { tmpdir } from 'os'
 
 const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
   return router
@@ -67,11 +68,11 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
 
   router
     .get('/jobs', (_req, res) => {              // get all jobs 
-      return res.send(runner.getAll())
+      return res.send(runner.getAll().map(({ logs, ...rest }) => rest))
     })
     .get('/jobs/:id', (req, res) => {           // get specific job
-      const { _id } = req.params
-      const id = parseFloat(_id)
+      const { id: jobId } = req.params
+      const id = parseInt(jobId, 10)
 
       if (isNaN(id))
         return res.send({ error: 'Invalid job ID' }, 400)
@@ -80,7 +81,8 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
       if (!job)
         return res.send({ error: 'Job not found' }, 404)
 
-      return res.send(job)
+      const { logs, ...rest } = job
+      return res.send(rest)
     })
     .post('/jobs', async (req, res) => {        // create a new job
       const rawData = await buffer(req)
@@ -89,13 +91,13 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
       catch (err) { return res.send({ error: 'Invalid JSON request' }, 400) }
 
       if (!data || !data.modelId || !data.videoUrl)
-        return res.send({ error: 'Invalid JSON request' }, 400)
+        return res.send({ error: 'Invalid JSON request (missing data)' }, 400)
 
       res.send(runner.addJob(data.videoUrl, data.modelId))
     })
     .get('/jobs/:id/logs', async (req, res) => {// get job's logs (200 always, empty if not found)
-      const { _id } = req.params
-      const id = parseFloat(_id)
+      const { id: jobId } = req.params
+      const id = parseInt(jobId, 10)
 
       if (isNaN(id))
         return res.send({ error: 'Invalid job ID' }, 400)
@@ -141,7 +143,7 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
       if (Array.isArray(modelName))
         return res.send('PAM-Model-Name specified too many times... Wait, that can happen?', 400)
 
-      const tmpFolder = await mkdtemp('pam-')
+      const tmpFolder = await mkdtemp(path.join(tmpdir(), 'pam-'))
       const tmpFilename = path.resolve(path.join(tmpFolder, 'model.pt'))
 
       const realFolder = path.resolve(env.str('MODEL_ROOT_PATH'))

@@ -7,6 +7,7 @@ import { pipeline } from 'stream/promises'
 import path from 'path'
 import { createInterface } from 'readline'
 import { error } from './log'
+import { tmpdir } from 'os'
 
 export type JobStatus = 'waiting' | 'cancelled' | 'active' | 'failed' | 'finished'
 
@@ -29,7 +30,7 @@ export type Job = {
 // internal state
 const jobList: Job[] = []
 let lastIndex = 0
-let currentJob: { id: number, process: ChildProcess } | null = null
+let currentJob: { id: number } | null = null
 
 // call this whenever a job is added/cancelled/finished
 async function onJobUpdate(fromIndex: number) {
@@ -43,6 +44,7 @@ async function onJobUpdate(fromIndex: number) {
     return // no more jobs/no jobs
 
   const idx = lastIndex++  // the index of the current job + increment it
+  currentJob = { id: idx }
 
   // the current job is invalid, move forwards
   if (jobList[idx].status != 'waiting') {
@@ -55,17 +57,16 @@ async function onJobUpdate(fromIndex: number) {
   const job = jobList[idx]
 
   //create temporary folder
-  const folder = await mkdtemp('pam-import-')
+  const folder = await mkdtemp(path.join(tmpdir(), 'pam-import-'))
   const filename = path.join(folder, 'temp.csv')
 
   const child = spawn('python3', [
-    // 'analyze-youtube.py',
-    // job.videoUrl,
-    // '-m', (await database.models.get(job.modelId))!.modelPath,
-    // '-o', filename,
-    // '--json', '--conf', '0.6'
-    '-c', 'print("oh hi :D")'
-  ])
+    'scripts/analyze-youtube.py',
+    job.videoUrl,
+    '-m', (await database.models.get(job.modelId))!.modelPath,
+    '-o', filename,
+    '--json', '--conf', '0.6'
+  ], { cwd: env.str('PROJECT_ROOT') })
   child.stderr.on('data', chunk => jobList[idx].logs.push(chunk))
 
   const logReader = createInterface(child.stdout)
@@ -84,30 +85,33 @@ async function onJobUpdate(fromIndex: number) {
 
   child.once('error', (err) => {
     jobList[idx].status = 'failed'
-    jobList[idx].logs.push(Buffer.from('\n Arbitrary spawning issue: ' + JSON.stringify(err)))
+    jobList[idx].logs.push(Buffer.from(`\n[pam/backend] Arbitrary spawning issue for analysis: ${JSON.stringify(err)}\n`))
+    currentJob = null
     onJobUpdate(idx)
   }).once('exit', (code, signal) => {
     // update the job list
-    jobList[idx].logs.push(Buffer.from(`\n Analysis exited with code=${code} signal=${signal}`))
+    jobList[idx].logs.push(Buffer.from(`\n[pam/backend] Analysis exited with code=${code} signal=${signal}\n`))
 
     // on success, import the csv into the system
     if (code == 0) {
       const importer = spawn('npm', [
-        // 'run', 'import_csv', filename
-        '-c', 'print("oh hi :D")'
-      ])
+        'run', 'import_csv', filename
+      ], { cwd: path.join(env.str('PROJECT_ROOT'), 'frotnend') })
       importer.stdout.on('data', chunk => jobList[idx].logs.push(chunk))
       importer.stderr.on('data', chunk => jobList[idx].logs.push(chunk))
       importer.once('error', (err) => {
         jobList[idx].status = 'failed'
-        jobList[idx].logs.push(Buffer.from('\n Arbitrary spawning issue for import: ' + JSON.stringify(err)))
+        jobList[idx].logs.push(Buffer.from(`\n[pam/backend] Arbitrary spawning issue for import: ${JSON.stringify(err)}\n`))
+        currentJob = null
         onJobUpdate(idx)
       }).once('exit', (code, signal) => {
         jobList[idx].status = code == 0 ? 'finished' : 'failed'
-        jobList[idx].logs.push(Buffer.from(`\n Importing exited with code=${code} signal=${signal}`))
+        jobList[idx].logs.push(Buffer.from(`\n[pam/backend] Importing exited with code=${code} signal=${signal}\n`))
+        currentJob = null
         onJobUpdate(idx)
       })
     } else {
+      currentJob = null
       onJobUpdate(idx)
     }
   })
@@ -129,7 +133,8 @@ export const Runner = {
       logs: [], status: 'waiting',
       progress: null
     })
-    onJobUpdate(id)
+
+    onJobUpdate(id - 1)
     return jobList[id]
   }
 }
