@@ -5,7 +5,7 @@ import { DetailedVideo, getVideo, getVideos, Video } from "../libs/api"
 import meow from '../assets/plink-cat.gif'
 
 function DebugPage() {
-  const [modelName, setModelName] = useState<string>()
+  const [modelId, setModelId] = useState<number>()
   const [videoId, setVideoId] = useState<string>()
   const [videoOptions, setVideoOptions] = useState<Video[]>()
   const [videoInfo, setVideoInfo] = useState<DetailedVideo>()
@@ -21,7 +21,7 @@ function DebugPage() {
     getVideo(videoId)
       .then(info => {
         setVideoInfo(info)
-        setModelName(info.models[0])
+        setModelId(info.models[0].modelId)
       })
       .catch(console.error)
   }, [videoId])
@@ -42,7 +42,7 @@ function DebugPage() {
         </Select.Root>
 
         <Text align='right' ml='4' color='gray'>owo which model:</Text>
-        <Select.Root value={modelName} onValueChange={setModelName}>
+        <Select.Root value={(modelId || '').toString()} onValueChange={value => setModelId(+value)}>
           <Select.Trigger
             placeholder={videoInfo ? 'Select a model as well | uwu)7' : (!videoId ? 'tsk tsk' : 'NOW LOADING')}
             disabled={!videoInfo}
@@ -50,7 +50,13 @@ function DebugPage() {
           <Select.Content>
             {
               videoInfo ? (
-                videoInfo.models.map(model => <Select.Item key={model} value={model}>{model}</Select.Item>)
+                videoInfo.models.map(model => (
+                  <Select.Item
+                    key={model.modelId}
+                    value={model.modelId.toString()}>
+                    {model.modelName || model.modelPath}
+                  </Select.Item>
+                ))
               ) : null
             }
           </Select.Content>
@@ -58,8 +64,8 @@ function DebugPage() {
       </Grid>
 
       {
-        (videoId && modelName) ?
-          <YouTubeWithTimeline videoId={videoId} modelName={modelName} /> :
+        (videoId && modelId != null && typeof modelId !== 'undefined') ?
+          <YouTubeWithTimeline videoId={videoId} modelId={modelId} /> :
           <Box style={{
             aspectRatio: '16 / 9',
             boxShadow: 'var(--shadow-3)',

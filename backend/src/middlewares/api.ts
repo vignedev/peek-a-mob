@@ -27,8 +27,8 @@ const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
 
       return res.send(video)
     })
-    .get('/videos/:videoId/detections/:modelName', async (req, res) => {
-      const { videoId, modelName } = req.params
+    .get('/videos/:videoId/detections/:modelId', async (req, res) => {
+      const { videoId, modelId } = req.params
       const { entities, ss, to, conf } = req.query
 
       if (Array.isArray(ss) || Array.isArray(to))
@@ -48,8 +48,8 @@ const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
       if (isNaN(confidence))
         return res.send({ error: 'Confidence value could not be parsed' }, 400)
 
-      return res.send(
-        await database.detections.get(videoId, decodeURIComponent(modelName), {
+      return res.send( // TODO: handle invalid modelId
+        await database.detections.get(videoId, parseInt(modelId, 10), {
           entityNames: entities ? (Array.isArray(entities) ? entities : [entities]) : [],
           confidence: confidence,
           timeStart: timeStart,

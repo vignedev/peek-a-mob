@@ -20,7 +20,11 @@ export const videos = {
 
     if (!video) return video
     const availableModels = await db
-      .select({ modelId: schema.models.modelId, modelName: schema.models.modelName })
+      .select({
+        modelId: schema.models.modelId,
+        modelName: schema.models.modelName,
+        modelPath: schema.models.modelPath
+      })
       .from(schema.detections)
       .innerJoin(schema.models, eq(schema.detections.modelId, schema.models.modelId))
       .groupBy(schema.models.modelId)
@@ -31,7 +35,7 @@ export const videos = {
 
     return {
       ...video,
-      models: availableModels.map(x => x.modelName)
+      models: availableModels
     }
   },
   async getAll() {
@@ -46,7 +50,7 @@ export const entities = {
 }
 
 export const detections = {
-  async get(youtubeId: string, modelName: string, options: DetectionQuery = {}) {
+  async get(youtubeId: string, modelId: number, options: DetectionQuery = {}) {
     const entities_list = await (
       (options.entityNames && options.entityNames.length != 0)
         ? db.query.entities.findMany({
@@ -56,7 +60,7 @@ export const detections = {
     )
     const entityIds = entities_list.map(entity => entity.entityId)
 
-    const models = await db.select().from(schema.models).where(eq(schema.models.modelName, modelName)).limit(1)
+    const models = await db.select().from(schema.models).where(eq(schema.models.modelId, modelId)).limit(1)
     if (models.length == 0) return []
 
     const detections = await db
