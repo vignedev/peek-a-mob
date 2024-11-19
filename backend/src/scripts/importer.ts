@@ -95,12 +95,12 @@ async function main(csvPath: string) {
 
   // prepare the model
   await db.insert(schema.models).values({
-    modelName: metadata.argv.model
+    modelPath: metadata.argv.model
   }).onConflictDoNothing()
   const [model] = await db
     .select()
     .from(schema.models)
-    .where(eq(schema.models.modelName, metadata.argv.model))
+    .where(eq(schema.models.modelPath, metadata.argv.model))
   console.error(`[i] model entry`, model)
 
   // get entity mapping

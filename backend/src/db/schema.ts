@@ -1,4 +1,4 @@
-import { integer, pgTable, serial, text, real, index } from 'drizzle-orm/pg-core'
+import { boolean, integer, pgTable, serial, text, real, index } from 'drizzle-orm/pg-core'
 
 export const channels = pgTable('channels', {
   channelId: serial('channel_id').primaryKey().notNull(),
@@ -22,7 +22,9 @@ export const entities = pgTable('entities', {
 
 export const models = pgTable('models', {
   modelId: serial('model_id').primaryKey().notNull(),
-  modelName: text('model_name').unique().notNull()
+  modelPath: text('model_path').unique().notNull(),
+  modelName: text('model_name'),
+  modelAvailable: boolean('model_available').default(false)
 })
 
 export const detections = pgTable('detections', {
@@ -33,7 +35,7 @@ export const detections = pgTable('detections', {
 
   time: real('time').notNull(),
   confidence: real('confidence').notNull(),
-  bbox: real('bbox').array(4)
+  bbox: real('bbox').array()
 }, (table => ([
   index('ytId_modelId_idx').on(table.videoId, table.modelId),
   index('ytId_time_idx').on(table.videoId, table.modelId, table.time),
