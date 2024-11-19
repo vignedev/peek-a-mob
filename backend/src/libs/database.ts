@@ -1,7 +1,7 @@
 import * as env from './env'
 import * as schema from '../db/schema'
 import { drizzle } from 'drizzle-orm/node-postgres'
-import { and, desc, eq, gt, gte, inArray, lte } from 'drizzle-orm'
+import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm'
 
 const db = drizzle(env.str('DATABASE_URL'), { schema })
 export default db
@@ -81,33 +81,4 @@ export const detections = {
 
     return detections
   }
-}
-
-export async function getVideo(youtubeId: string) {
-  const videos = await db.select().from(schema.videos).where(eq(schema.videos.youtubeId, youtubeId)).limit(1)
-  const video = videos.length == 0 ? null : videos[0]
-
-  if (!video) return video
-  const availableModels = await db
-    .select({ modelId: schema.models.modelId, modelName: schema.models.modelName })
-    .from(schema.detections)
-    .innerJoin(schema.models, eq(schema.detections.modelId, schema.models.modelId))
-    .groupBy(schema.models.modelId)
-    .where(
-      eq(schema.detections.videoId, video.videoId)
-    )
-    .orderBy(desc(schema.models.modelName))
-
-  return {
-    ...video,
-    models: availableModels.map(x => x.modelName)
-  }
-}
-
-export async function getAllVideos() {
-  return await db.query.videos.findMany()
-}
-
-export async function getEntities() {
-  return db.select().from(schema.entities)
 }
