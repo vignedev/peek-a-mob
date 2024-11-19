@@ -13,40 +13,74 @@ export type DetectionQuery = {
   timeEnd?: number
 }
 
-export async function getDetections(youtubeId: string, modelName: string, options: DetectionQuery = {}) {
-  const entities = await (
-    (options.entityNames && options.entityNames.length != 0)
-      ? db.query.entities.findMany({
-        where: (table, op) => op.inArray(table.entityName, options.entityNames!)
-      })
-      : getEntities()
-  )
-  const entityIds = entities.map(x => x.entityId)
+export const videos = {
+  async get(youtubeId: string) {
+    const videos = await db.select().from(schema.videos).where(eq(schema.videos.youtubeId, youtubeId)).limit(1)
+    const video = videos.length == 0 ? null : videos[0]
 
-  const models = await db.select().from(schema.models).where(eq(schema.models.modelName, modelName)).limit(1)
-  if (models.length == 0) return []
-
-  const detections = await db
-    .select({
-      time: schema.detections.time,
-      confidence: schema.detections.confidence,
-      bbox: schema.detections.bbox,
-      entityId: schema.detections.entityId
-    })
-    .from(schema.detections)
-    .rightJoin(schema.videos, eq(schema.videos.videoId, schema.detections.videoId))
-    .where(
-      and(
-        eq(schema.videos.youtubeId, youtubeId),
-        inArray(schema.detections.entityId, entityIds),
-        gte(schema.detections.time, options.timeStart || 0),
-        lte(schema.detections.time, options.timeEnd || Infinity),
-        gte(schema.detections.confidence, options.confidence || 0.65),
-        eq(schema.detections.modelId, models[0].modelId)
+    if (!video) return video
+    const availableModels = await db
+      .select({ modelId: schema.models.modelId, modelName: schema.models.modelName })
+      .from(schema.detections)
+      .innerJoin(schema.models, eq(schema.detections.modelId, schema.models.modelId))
+      .groupBy(schema.models.modelId)
+      .where(
+        eq(schema.detections.videoId, video.videoId)
       )
-    )
+      .orderBy(desc(schema.models.modelName))
 
-  return detections
+    return {
+      ...video,
+      models: availableModels.map(x => x.modelName)
+    }
+  },
+  async getAll() {
+    return await db.query.videos.findMany()
+  }
+}
+
+export const entities = {
+  async getAll() {
+    return db.select().from(schema.entities)
+  }
+}
+
+export const detections = {
+  async get(youtubeId: string, modelName: string, options: DetectionQuery = {}) {
+    const entities_list = await (
+      (options.entityNames && options.entityNames.length != 0)
+        ? db.query.entities.findMany({
+          where: (table, op) => op.inArray(table.entityName, options.entityNames!)
+        })
+        : entities.getAll()
+    )
+    const entityIds = entities_list.map(entity => entity.entityId)
+
+    const models = await db.select().from(schema.models).where(eq(schema.models.modelName, modelName)).limit(1)
+    if (models.length == 0) return []
+
+    const detections = await db
+      .select({
+        time: schema.detections.time,
+        confidence: schema.detections.confidence,
+        bbox: schema.detections.bbox,
+        entityId: schema.detections.entityId
+      })
+      .from(schema.detections)
+      .rightJoin(schema.videos, eq(schema.videos.videoId, schema.detections.videoId))
+      .where(
+        and(
+          eq(schema.videos.youtubeId, youtubeId),
+          inArray(schema.detections.entityId, entityIds),
+          gte(schema.detections.time, options.timeStart || 0),
+          lte(schema.detections.time, options.timeEnd || Infinity),
+          gte(schema.detections.confidence, options.confidence || 0.65),
+          eq(schema.detections.modelId, models[0].modelId)
+        )
+      )
+
+    return detections
+  }
 }
 
 export async function getVideo(youtubeId: string) {

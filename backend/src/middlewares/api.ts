@@ -1,13 +1,13 @@
 import restana, { Protocol } from 'restana'
-import db, { getDetections, getVideo, getAllVideos, getEntities } from '../libs/database'
+import { detections, videos, entities } from '../libs/database'
 
-const getApiRouter = (router: restana.Router<Protocol.HTTP>) => {
-  router
+const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
+  return router
     .get('/entities', async (req, res) => {
-      return res.send(await getEntities(), 200)
+      return res.send(await entities.getAll(), 200)
     })
     .get('/videos', async (req, res) => {
-      return res.send(await getAllVideos(), 200)
+      return res.send(await videos.getAll(), 200)
     })
     .get('/videos/:id', async (req, res) => {
       const { id: videoId } = req.params
@@ -15,7 +15,7 @@ const getApiRouter = (router: restana.Router<Protocol.HTTP>) => {
       if (!videoId) throw new Error('Missing video (?v=) query string!')
       if (Array.isArray(videoId)) throw new Error('Multiple videos (?v=) in query string!')
 
-      return res.send(await getVideo(videoId), 200)
+      return res.send(await videos.get(videoId), 200)
     })
     .get('/videos/:videoId/detections/:modelName', async (req, res) => {
       const { videoId, modelName } = req.params
@@ -24,7 +24,7 @@ const getApiRouter = (router: restana.Router<Protocol.HTTP>) => {
       if (Array.isArray(timeStart) || Array.isArray(timeEnd)) throw new Error('Invalid time range!')
 
       return res.send(
-        await getDetections(videoId, decodeURIComponent(modelName), {
+        await detections.get(videoId, decodeURIComponent(modelName), {
           entityNames: entities ? (Array.isArray(entities) ? entities : [entities]) : [],
           confidence: parseFloat(Array.isArray(confidence) ? confidence[0] : confidence) || 0.65,
           timeStart: timeStart ? parseFloat(timeStart) : 0,
@@ -33,6 +33,10 @@ const getApiRouter = (router: restana.Router<Protocol.HTTP>) => {
         200
       )
     })
+}
+
+const getApiRouter = (router: restana.Router<Protocol.HTTP>) => {
+  detectionsApi(router)
 
   return router
 }
