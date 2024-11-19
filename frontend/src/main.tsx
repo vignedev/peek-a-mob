@@ -2,13 +2,37 @@ import './index.css'
 import '@radix-ui/themes/styles.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import { Theme, ThemePanel } from '@radix-ui/themes'
+import { Container, Flex, Theme, ThemePanel } from '@radix-ui/themes'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { PeekAMobHeading, VigTheorem } from './components/Branding.tsx'
+
+import DebugPage from './routes/debug.tsx'
+import HomePage from './routes/home.tsx'
+import RootPage from './routes/root.tsx'
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <RootPage />,
+    children: [
+      {
+        index: true,
+        element: <HomePage />
+      },
+      {
+        path: 'debug',
+        element: <DebugPage />
+      }
+    ]
+  }
+])
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Theme appearance='dark'>
-      <App />
+      <Container p='4' pt='8'>
+        <RouterProvider router={router} />
+      </Container>
       <ThemePanel defaultOpen={false} />
     </Theme>
   </StrictMode>,
