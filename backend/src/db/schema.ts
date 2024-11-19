@@ -34,7 +34,7 @@ export const detections = pgTable('detections', {
 
   time: real('time').notNull(),
   confidence: real('confidence').notNull(),
-  bbox: real('bbox').array(4)
+  bbox: real('bbox').array()
 }, (table => ([
   index('ytId_modelId_idx').on(table.videoId, table.modelId),
   index('ytId_time_idx').on(table.videoId, table.modelId, table.time),
