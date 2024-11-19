@@ -7,7 +7,7 @@ def get_argv():
   parser.add_argument('-d', '--data', help='path to dataset data.yaml', required=True)
 
   parser.add_argument('-e', '--epochs', help='number of epochs', default=100, type=int)
-  parser.add_argument('-s', '--imgsz', help='image size downscaling', default=640, type=int)
+  parser.add_argument('-s', '--imgsz', help='image size downscaling', default=736, type=int)
   parser.add_argument('-b', '--batch', help='(for gpu) memory budget percentage', default=0.7, type=float)
   parser.add_argument('-v', '--verbose', default=True, action='store_true')
   parser.add_argument('-n', '--name', help='name of the model, defaults to pam_YYYYmmdd_HHMMSS')
