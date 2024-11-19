@@ -6,7 +6,8 @@ const RouterTabNav = () => {
 
   const routeMap = {
     '/': 'Home',
-    '/debug': 'Debug'
+    '/debug': 'Debug',
+    '/request': 'Request'
   }
 
   return (

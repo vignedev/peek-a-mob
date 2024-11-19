@@ -2,13 +2,13 @@ import './index.css'
 import '@radix-ui/themes/styles.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Container, Flex, Theme, ThemePanel } from '@radix-ui/themes'
+import { Container, Theme, ThemePanel } from '@radix-ui/themes'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { PeekAMobHeading, VigTheorem } from './components/Branding.tsx'
 
 import DebugPage from './routes/debug.tsx'
 import HomePage from './routes/home.tsx'
 import RootPage from './routes/root.tsx'
+import RequestPage from './routes/request.tsx'
 
 const router = createBrowserRouter([
   {
@@ -22,6 +22,10 @@ const router = createBrowserRouter([
       {
         path: 'debug',
         element: <DebugPage />
+      },
+      {
+        path: 'request',
+        element: <RequestPage />
       }
     ]
   }

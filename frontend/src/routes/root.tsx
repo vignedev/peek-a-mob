@@ -1,4 +1,3 @@
-import { ReactNode } from "react";
 import { PeekAMobHeading, VigTheorem } from "../components/Branding";
 import RouterTabNav from "../components/TabNav";
 import { Flex } from "@radix-ui/themes";
