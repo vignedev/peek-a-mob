@@ -92,7 +92,13 @@ export const models = {
     return result.length == 0 ? null : result[0]
   },
   async new(path: string, name: string) {
-    throw new Error('Not implemented yet!')
-    // TODO: file has to exists on fs (ala locateable)
+    const model = await db.insert(schema.models).values({
+      modelPath: path,
+      modelName: name,
+      modelAvailable: true
+    }).returning()
+    if (model.length == 0)
+      throw new Error('New model has no returning value, this should not happen!')
+    return model[0]
   }
 }
