@@ -6,6 +6,8 @@ import { createWriteStream } from 'fs'
 import { mkdir, mkdtemp, rename, rm, rmdir } from 'fs/promises'
 import { pipeline } from 'stream/promises'
 import path from 'path'
+import runner from '../libs/runner'
+import { buffer } from 'node:stream/consumers'
 
 const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
   return router
@@ -64,11 +66,52 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
   ) => res.send({ error: 'Not Implemented... yet?' }, 501)
 
   router
-    .get('/jobs', NotImplementedYet)            // get all jobs
-    .get('/jobs/:id', NotImplementedYet)        // get specific job
-    .post('/jobs', NotImplementedYet)           // create a new job
+    .get('/jobs', (_req, res) => {              // get all jobs 
+      return res.send(runner.getAll())
+    })
+    .get('/jobs/:id', (req, res) => {           // get specific job
+      const { _id } = req.params
+      const id = parseFloat(_id)
+
+      if (isNaN(id))
+        return res.send({ error: 'Invalid job ID' }, 400)
+
+      const job = runner.get(id)
+      if (!job)
+        return res.send({ error: 'Job not found' }, 404)
+
+      return res.send(job)
+    })
+    .post('/jobs', async (req, res) => {        // create a new job
+      const rawData = await buffer(req)
+      let data: { modelId: number, videoUrl: string } | null = null
+      try { data = JSON.parse(rawData.toString()) }
+      catch (err) { return res.send({ error: 'Invalid JSON request' }, 400) }
+
+      if (!data || !data.modelId || !data.videoUrl)
+        return res.send({ error: 'Invalid JSON request' }, 400)
+
+      res.send(runner.addJob(data.videoUrl, data.modelId))
+    })
+    .get('/jobs/:id/logs', async (req, res) => {// get job's logs (200 always, empty if not found)
+      const { _id } = req.params
+      const id = parseFloat(_id)
+
+      if (isNaN(id))
+        return res.send({ error: 'Invalid job ID' }, 400)
+
+      const job = runner.get(id)
+      if (!job)
+        return res.send({ error: 'Job not found' }, 404)
+
+      const write = (buffer: Buffer) => new Promise((resolve) => res.write(buffer, resolve))
+      res.statusCode = 200
+      for (const buffer of job.logs)
+        await write(buffer)
+
+      res.end()
+    })
     .delete('/jobs/:id', NotImplementedYet)     // delete / cancel job
-    .get('/jobs/:id/logs', NotImplementedYet)   // get job's logs (200 always, empty if not found)
 
   router
     .get('/models', async (_req, res) => {       // get all available models
