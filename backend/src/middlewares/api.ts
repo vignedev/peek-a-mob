@@ -69,7 +69,6 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
     .post('/jobs', NotImplementedYet)           // create a new job
     .delete('/jobs/:id', NotImplementedYet)     // delete / cancel job
     .get('/jobs/:id/logs', NotImplementedYet)   // get job's logs (200 always, empty if not found)
-    .get('/jobs/:id/result', NotImplementedYet) // get job's result (200 on OK, 404 if not ready)
 
   router
     .get('/models', async (_req, res) => {       // get all available models
