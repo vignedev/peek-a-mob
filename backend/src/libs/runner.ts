@@ -96,7 +96,7 @@ async function onJobUpdate(fromIndex: number) {
     if (code == 0) {
       const importer = spawn('npm', [
         'run', 'import_csv', filename
-      ], { cwd: path.join(env.str('PROJECT_ROOT'), 'frotnend') })
+      ], { cwd: path.join(env.str('PROJECT_ROOT'), 'frontend') })
       importer.stdout.on('data', chunk => jobList[idx].logs.push(chunk))
       importer.stderr.on('data', chunk => jobList[idx].logs.push(chunk))
       importer.once('error', (err) => {
