@@ -1,4 +1,4 @@
-import { Badge, BadgeProps, Box, Button, Code, ContextMenu, Dialog, Flex, Grid, Heading, IconButton, Progress, Select, Spinner, Table, Text, TextField } from "@radix-ui/themes"
+import { Badge, BadgeProps, Box, Button, Code, Dialog, Flex, Grid, Heading, Progress, Select, Spinner, Table, Text, TextField, Tooltip } from "@radix-ui/themes"
 import Link from "../components/Link"
 import { getJobs, getModels, Job, Model, newJob } from "../libs/api"
 import { useEffect, useMemo, useState } from "react"
@@ -40,7 +40,10 @@ const JobTableRow = (props: { data: Job }) => {
         </Flex>
       </Table.Cell>
       <Table.Cell>
-        {(eta == null) ? 'No ETA' : `${eta.toFixed(1)} s`}
+        {data.progress ? (1.0 / data.progress.rate.average).toFixed(2) : null}
+      </Table.Cell>
+      <Table.Cell>
+        {(eta == null) ? 'No ETA' : <Tooltip content={<span>in {eta.toFixed(1)} seconds<br />{new Date(Date.now() + eta * 1000).toLocaleString()}</span>}><Text>{new Date(eta * 1000).toISOString().substring(11, 19)}</Text></Tooltip>}
       </Table.Cell>
     </Table.Row>
   )
@@ -178,6 +181,7 @@ const RequestPage = () => {
             <Table.ColumnHeaderCell>Video URL</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Model</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>FPS</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>ETA</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
