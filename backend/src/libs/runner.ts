@@ -67,6 +67,7 @@ async function onJobUpdate(fromIndex: number) {
     '-o', filename,
     '--json', '--conf', '0.6'
   ], { cwd: env.str('PROJECT_ROOT') })
+  child.stdout.on('data', chunk => jobList[idx].logs.push(chunk))
   child.stderr.on('data', chunk => jobList[idx].logs.push(chunk))
 
   const logReader = createInterface(child.stdout)
@@ -79,7 +80,7 @@ async function onJobUpdate(fromIndex: number) {
       jobList[idx].progress = data
     } catch (err) {
       jobList[idx].logs.push(Buffer.from(line), Buffer.from('\n'))
-      error('Failed to parse data from analyzer', err)
+      error('Failed to parse data from analyzer', line, err)
     }
   })
 
@@ -95,8 +96,9 @@ async function onJobUpdate(fromIndex: number) {
     // on success, import the csv into the system
     if (code == 0) {
       const importer = spawn('npm', [
-        'run', 'import_csv', filename
-      ], { cwd: path.join(env.str('PROJECT_ROOT'), 'frontend') })
+        'run',
+        'import_csv', filename
+      ], { cwd: path.join(env.str('PROJECT_ROOT'), 'backend') })
       importer.stdout.on('data', chunk => jobList[idx].logs.push(chunk))
       importer.stderr.on('data', chunk => jobList[idx].logs.push(chunk))
       importer.once('error', (err) => {
