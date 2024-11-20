@@ -21,7 +21,7 @@ const SearchHeader = () => {
       <Flex gap="2" width="100%">
         <Search />
 
-        <HeaderButton color='iris'>
+        <HeaderButton color='iris' onClick={() => { navigate("search-detail") }}>
           <MagnifyingGlassIcon /> Search
         </HeaderButton>
 
