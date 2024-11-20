@@ -75,8 +75,9 @@ export async function getDetections(videoId: string, time: number, modelId: numb
   return entities
 }
 
-export async function getVideos(): Promise<Video[]> {
-  return (await strictFetch('/api/videos')).json()
+export async function getVideos(entities?: string[]): Promise<Video[]> {
+  const queryString = entities ? `?${entities.map(e => `e=${e}`).join('&')}` : ''
+  return (await strictFetch(`/api/videos${queryString}`)).json()
 }
 
 export async function getVideo(youtubeId: string): Promise<DetailedVideo> {
