@@ -147,14 +147,15 @@ const NewJobDialog = (props: { onCreation: () => void }) => {
 
 const RequestPage = () => {
   const [jobs, setJobs] = useState<Job[] | null>(null)
-  const [models, setModels] = useState<Model[] | null>(null)
+  const [models, setModels] = useState<Record<number, Model>>({})
   const [error, setError] = useState<any>()
+
 
   function fetchJobList() {
     return getJobs()
       .then(jobs => {
         setJobs(jobs)
-        if (!models || jobs.find(x => !models.find(y => y.modelId === x.modelId)))
+        if (!models || jobs.findIndex(x => !models[x.modelId]) != -1)
           fetchModelList()
       })
       .catch(error => {
@@ -165,7 +166,12 @@ const RequestPage = () => {
 
   function fetchModelList() {
     getModels()
-      .then(setModels)
+      .then(models => {
+        setModels(Object.values(models).reduce((acc, val) => {
+          acc[val.modelId] = val
+          return acc
+        }, {} as Record<number, Model>))
+      })
       .catch(console.error)
   }
 
@@ -180,11 +186,6 @@ const RequestPage = () => {
     }, 2500)
     return () => clearInterval(interval)
   }, [])
-
-  const modelDictionary = models ? Object.values(models).reduce((acc, val) => {
-    acc[val.modelId] = val
-    return acc
-  }, {} as Record<number, Model>) : {}
 
   return (
     <Flex direction='column' gapY='4'>
@@ -207,7 +208,7 @@ const RequestPage = () => {
         <Table.Body>
           {
             jobs ?
-              jobs.map(job => <JobTableRow key={job.id} data={job} models={modelDictionary} />) :
+              jobs.map(job => <JobTableRow key={job.id} data={job} models={models} />) :
               <Table.Row><Table.Cell><Spinner /></Table.Cell></Table.Row>
           }
         </Table.Body>
