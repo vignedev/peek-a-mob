@@ -11,7 +11,8 @@ export type Video = {
   videoId: number,
   youtubeId: string,
   videoTitle: string,
-  duration: number
+  duration: number,
+  aspectRatio: number
 }
 export type Entity = {
   entityId: number,
