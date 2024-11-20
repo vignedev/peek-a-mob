@@ -99,7 +99,8 @@ if __name__ == '__main__':
       ret, frame = cap.read()
 
       if ret is False:
-        continue
+        sys.stderr.writable('> ??? we got no frame? literally no cap')
+        break
 
       for result in yoloModel.predict(
         source=frame,
@@ -120,7 +121,7 @@ if __name__ == '__main__':
           x, y, w, h = [ float(i) for i in box.xywhn[0] ]
           x = x - w/2.0
           y = y - h/2.0
-          file.write(f'{frame_pos / vFPS};{name};{confidence};{x};{y};{w};{h}\n')
+          file.write(f'{(frame_pos / vFrames) * video['duration']};{name};{confidence};{x};{y};{w};{h}\n')
           found_total += 1
 
       now_time = time.time()
