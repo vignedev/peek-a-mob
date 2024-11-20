@@ -370,7 +370,8 @@ export const YouTubeWithTimeline = (props: { videoId: string, modelId: number })
         style={{
           borderRadius: 'max(var(--radius-2), var(--radius-full))',
           overflow: 'hidden',
-          boxShadow: 'var(--shadow-2)'
+          boxShadow: 'var(--shadow-2)',
+          height: `${Object.keys(detections).length * 3}rem`
         }}
       />
     </Flex>
