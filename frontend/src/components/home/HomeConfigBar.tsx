@@ -3,9 +3,8 @@ import { Box, Container } from "@radix-ui/themes"
 const HomeConfigBar = () => {
   return (
     <Box style={{
-      width: "20rem", 
+      width: "24rem", 
       height: "100%", 
-      backgroundColor: "red",
       borderRadius: "max(var(--radius-2), var(--radius-full))",
       background: "var(--gray-a2)"
     }}>

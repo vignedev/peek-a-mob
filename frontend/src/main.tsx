@@ -10,6 +10,7 @@ import HomePage from './routes/home.tsx'
 import RootPage from './routes/root.tsx'
 import RequestPage from './routes/request.tsx'
 import AdminPage from './routes/admin.tsx'
+import SearchDetailPage from './routes/search-detail.tsx'
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
       {
         path: 'admin',
         element: <AdminPage />
+      },
+      {
+        path: 'search-detail',
+        element: <SearchDetailPage />
       }
     ]
   }

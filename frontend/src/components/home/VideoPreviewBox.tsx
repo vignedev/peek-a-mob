@@ -6,15 +6,16 @@ const VideoPreviewBox = () => {
   return (
     <Flex 
       direction="column" 
-      onClick={() => navigate("/debug")
-    }>
+      onClick={() => navigate("/search-detail")}
+      gap="1"  
+    >
       <img 
-        src="https://img.youtube.com/vi/uEvwuvod2F4/mqdefault.jpg" 
+        src="https://img.youtube.com/vi/uEvwuvod2F4/maxresdefault.jpg" 
         width="100%"
         style={{
           borderRadius:"max(var(--radius-2), var(--radius-full))"
         }}
-      />
+      /> 
       <Text>【Minecraft】 Together As One!!! #MythOneblock</Text>
       <Flex gap="2" wrap="wrap">
         <Text style={{
