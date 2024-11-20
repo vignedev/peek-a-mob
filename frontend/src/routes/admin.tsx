@@ -85,39 +85,35 @@ const AdminPage = () => {
 
   return (
     <Flex direction='column' gapY='4'>
-      <Heading>uwu admin page</Heading>
+      <Flex justify='between'>
+        <Heading>Models</Heading>
+        <UploadButtonDialog onUpload={fetchModelList} />
+      </Flex>
+      <Table.Root>
+        <Table.Header>
+          <Table.Row>
+            <Table.RowHeaderCell>Model ID</Table.RowHeaderCell>
+            <Table.RowHeaderCell>Model Name</Table.RowHeaderCell>
+            <Table.RowHeaderCell>Model Path</Table.RowHeaderCell>
+            <Table.RowHeaderCell>Available</Table.RowHeaderCell>
+          </Table.Row>
+        </Table.Header>
 
-      <Card>
-        <Flex justify='between'>
-          <Heading>Models</Heading>
-          <UploadButtonDialog onUpload={fetchModelList} />
-        </Flex>
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.RowHeaderCell>Model ID</Table.RowHeaderCell>
-              <Table.RowHeaderCell>Model Name</Table.RowHeaderCell>
-              <Table.RowHeaderCell>Model Path</Table.RowHeaderCell>
-              <Table.RowHeaderCell>Available</Table.RowHeaderCell>
-            </Table.Row>
-          </Table.Header>
-
-          <Table.Body>
-            {
-              models ? models.map(model => {
-                return <Fragment key={model.modelPath}>
-                  <Table.Row>
-                    <Table.Cell>{model.modelId}</Table.Cell>
-                    <Table.Cell>{model.modelName}</Table.Cell>
-                    <Table.Cell><Code>{model.modelPath}</Code></Table.Cell>
-                    <Table.Cell><Badge color={model.modelAvailable ? 'green' : 'gray'}>{model.modelAvailable ? 'Available' : 'Offline'}</Badge></Table.Cell>
-                  </Table.Row>
-                </Fragment>
-              }) : null
-            }
-          </Table.Body>
-        </Table.Root>
-      </Card>
+        <Table.Body>
+          {
+            models ? models.map(model => {
+              return <Fragment key={model.modelPath}>
+                <Table.Row>
+                  <Table.Cell>{model.modelId}</Table.Cell>
+                  <Table.Cell>{model.modelName}</Table.Cell>
+                  <Table.Cell><Code>{model.modelPath}</Code></Table.Cell>
+                  <Table.Cell><Badge color={model.modelAvailable ? 'green' : 'gray'}>{model.modelAvailable ? 'Available' : 'Offline'}</Badge></Table.Cell>
+                </Table.Row>
+              </Fragment>
+            }) : null
+          }
+        </Table.Body>
+      </Table.Root>
     </Flex>
   )
 }

@@ -1,6 +1,6 @@
 import { Button, ButtonProps, Flex } from "@radix-ui/themes";
 import { PeekAMobHeading } from "./Branding";
-import { MagnifyingGlassIcon, FilePlusIcon, PersonIcon, RocketIcon } from "@radix-ui/react-icons"
+import { MagnifyingGlassIcon, FilePlusIcon, RocketIcon, CameraIcon } from "@radix-ui/react-icons"
 import Search from "./Search";
 import { useNavigate } from "react-router-dom";
 
@@ -30,7 +30,7 @@ const SearchHeader = () => {
         </HeaderButton>
 
         <HeaderButton color='purple' onClick={() => navigate('/admin')}>
-          <PersonIcon /> Admin
+          <CameraIcon /> Models
         </HeaderButton>
 
         <HeaderButton color='red' onClick={() => navigate('/debug')}>
