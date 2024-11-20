@@ -240,8 +240,8 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, aspectRatio: numbe
           alpha = 1
           color = EntityColors[name]?.box || 'red'
         } else if (dist <= fadeOutSeconds && currentTime > entity.time) {
-          alpha = (1 - (currentTime - entity.time) / fadeOutSeconds) * 0.01
-          color = `rgba(0, 0, 255, ${alpha})`
+          alpha = (1 - (currentTime - entity.time) / fadeOutSeconds) * 0.015
+          color = `rgba(255, 0, 255, ${alpha})`
         } else {
           continue
         }
