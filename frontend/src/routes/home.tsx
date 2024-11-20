@@ -1,6 +1,10 @@
+import { VigTheorem } from "../components/Branding"
+import RouterTabNav from "../components/TabNav"
+
 const HomePage = () => (
   <>
-    hey welcome
+    <VigTheorem />
+    <RouterTabNav />
   </>
 )
 
