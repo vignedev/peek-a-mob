@@ -7,8 +7,8 @@ import ErrorCallout from "../components/ErrorCallouts"
 // https://stackoverflow.com/a/6904504
 const YOUTUBE_REGEX = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i
 
-const JobTableRow = (props: { data: Job }) => {
-  const { data } = props
+const JobTableRow = (props: { data: Job, models: Record<number, Model> }) => {
+  const { data, models } = props
 
   const percentage: number = data.progress ? (data.progress.currentFrame / data.progress.totalFrames * 100) : 0
   const eta: number | null = data.progress ? (data.progress.totalFrames - data.progress.currentFrame) * data.progress.rate.average : null
@@ -21,6 +21,8 @@ const JobTableRow = (props: { data: Job }) => {
     waiting: 'gray'
   }
 
+  const model: Model | undefined = models[data.modelId]
+
   return (
     <Table.Row>
       <Table.Cell>
@@ -29,7 +31,7 @@ const JobTableRow = (props: { data: Job }) => {
       <Table.Cell>
         <Link to={data.videoUrl}>{data.videoUrl}</Link>
       </Table.Cell>
-      <Table.Cell><Code>{data.modelId}</Code></Table.Cell>
+      <Table.Cell><Code>{model?.modelName || model?.modelPath || data.modelId}</Code></Table.Cell>
       <Table.Cell>
         <Flex align='center' gapX='4'>
           <Badge color={colorMapping[data.status]}>{data.status}</Badge>
@@ -145,15 +147,26 @@ const NewJobDialog = (props: { onCreation: () => void }) => {
 
 const RequestPage = () => {
   const [jobs, setJobs] = useState<Job[] | null>(null)
+  const [models, setModels] = useState<Model[] | null>(null)
   const [error, setError] = useState<any>()
 
   function fetchJobList() {
     return getJobs()
-      .then(setJobs)
+      .then(jobs => {
+        setJobs(jobs)
+        if (!models || jobs.find(x => !models.find(y => y.modelId === x.modelId)))
+          fetchModelList()
+      })
       .catch(error => {
         console.error(error)
         setError(error)
       })
+  }
+
+  function fetchModelList() {
+    getModels()
+      .then(setModels)
+      .catch(console.error)
   }
 
   useEffect(() => {
@@ -167,6 +180,11 @@ const RequestPage = () => {
     }, 2500)
     return () => clearInterval(interval)
   }, [])
+
+  const modelDictionary = models ? Object.values(models).reduce((acc, val) => {
+    acc[val.modelId] = val
+    return acc
+  }, {} as Record<number, Model>) : {}
 
   return (
     <Flex direction='column' gapY='4'>
@@ -188,7 +206,7 @@ const RequestPage = () => {
         <Table.Body>
           {
             jobs ?
-              jobs.map(job => <JobTableRow key={job.id} data={job} />) :
+              jobs.map(job => <JobTableRow key={job.id} data={job} models={modelDictionary} />) :
               <Table.Row><Table.Cell><Spinner /></Table.Cell></Table.Row>
           }
         </Table.Body>
