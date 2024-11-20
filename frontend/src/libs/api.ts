@@ -25,6 +25,24 @@ export type DetailedVideo = Video & {
   models: Model[]
 }
 
+export type JobStatus = 'waiting' | 'cancelled' | 'active' | 'failed' | 'finished'
+
+export type Job = {
+  id: number,
+  videoUrl: string,
+  modelId: number,
+  status: JobStatus,
+  logs?: Buffer[],
+  progress: {
+    currentFrame: number,
+    totalFrames: number,
+    rate: {
+      average: number,
+      last: number
+    }
+  } | null
+}
+
 /**
  * Returns a list of detections and bounding boxes
  * @param videoId Video ID to get the mobs of
@@ -63,4 +81,39 @@ export async function getVideo(youtubeId: string): Promise<DetailedVideo> {
 
 export async function getEntities(): Promise<Entity[]> {
   return (await fetch(`/api/entities`)).json()
+}
+
+export async function getJobs(): Promise<Job[]> {
+  return (await fetch(`/api/jobs`)).json()
+}
+
+export async function getJob(jobId: number): Promise<Job> {
+  return (await fetch(`/api/jobs/${jobId}`)).json()
+}
+
+export async function getJobLogs(jobId: number): Promise<string> {
+  return (await fetch(`/api/jobs/${jobId}/logs`)).text()
+}
+
+export async function newJob(videoUrl: string, modelId: number): Promise<Job> {
+  return (await fetch(`/api/jobs`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ videoUrl, modelId })
+  })).json()
+}
+
+export async function getModels(): Promise<Model[]> {
+  return (await fetch(`/api/models`)).json()
+}
+
+export async function getModel(modelId: number): Promise<Model> {
+  return (await fetch(`/api/models/${modelId}`)).json()
+}
+
+export async function newModel(modelName: string, data: File): Promise<Model> {
+  return (await fetch(`/api/jobs`, {
+    method: 'POST',
+    headers: { 'PAM-Model-Name': modelName },
+    body: data
+  })).json()
 }
