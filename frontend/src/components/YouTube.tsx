@@ -349,7 +349,7 @@ export const YouTubeWithTimeline = (props: { videoId: string, modelId: number, a
 
   return (
     <Flex direction='column' gap='1'>
-      <Box height='40rem' position='relative' style={{
+      <Box height='26rem' position='relative' style={{
         borderRadius: 'max(var(--radius-2), var(--radius-full))',
         overflow: 'hidden',
         boxShadow: 'var(--shadow-2)'
