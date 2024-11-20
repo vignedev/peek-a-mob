@@ -1,7 +1,9 @@
 import { Blockquote, Em, Heading, Text } from "@radix-ui/themes";
 
 export const PeekAMobHeading = () => (
-  <Heading>peek-a-mob</Heading>
+  <Heading style={{whiteSpace: "nowrap"}}>
+    peek-a-mob
+  </Heading>
 )
 
 export const VigTheorem = () => (
