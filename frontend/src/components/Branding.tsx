@@ -1,10 +1,20 @@
 import { Blockquote, Em, Heading, Text } from "@radix-ui/themes";
+import { useNavigate } from "react-router-dom";
 
-export const PeekAMobHeading = () => (
-  <Heading style={{whiteSpace: "nowrap"}}>
-    peek-a-mob
-  </Heading>
-)
+export const PeekAMobHeading = () => {
+  const navigate = useNavigate();
+
+  return (
+    <Heading style={{
+      whiteSpace: "nowrap", 
+      alignContent:"center",
+      cursor: "pointer",
+      }}
+      onClick={ () => { navigate("/") }}>
+      Peek a mob
+    </Heading>
+  );
+}
 
 export const VigTheorem = () => (
   <Blockquote size='4'>
