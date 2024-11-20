@@ -3,7 +3,7 @@ import YouTube, { YouTubePlayer } from 'react-youtube'
 import { Canvas, CanvasDrawingFunction } from './Canvas'
 import { Box, Flex } from '@radix-ui/themes'
 import { EntityDetection, getDetections } from '../libs/api'
-import { tryUntil, wait } from '../libs/utils'
+import { wait } from '../libs/utils'
 import { expandContext } from '../libs/canvasEx'
 
 type TimeInfo = [currentTime: number, duration: number]
@@ -12,27 +12,31 @@ type ValidRange = [start: number, end: number]
 const EntityColors: Record<string, { line: string, box: string }> = {
   chicken: {
     line: 'rgba(0, 255, 0, 0.03)',
-    box: ''
+    box: '#ff6900'
+  },
+  cow: {
+    line: 'rgba(0, 255, 0, 0.03',
+    box: '#4F2E19'
   },
   creeper: {
     line: 'rgba(255, 0, 0, 0.03)',
-    box: ''
+    box: '#0A6D14'
   },
   skeleton: {
     line: 'rgba(255, 0, 0, 0.03)',
-    box: ''
+    box: '#888888'
   },
   spider: {
     line: 'rgba(255, 0, 0, 0.03)',
-    box: ''
+    box: '#181D24'
   },
   zombie: {
     line: 'rgba(255, 0, 0, 0.03)',
-    box: ''
+    box: '#479814'
   },
   enderman: {
     line: 'rgba(255, 0, 0, 0.03)',
-    box: ''
+    box: '#6D2CD9'
   }
 }
 
