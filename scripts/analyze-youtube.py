@@ -41,7 +41,7 @@ if __name__ == '__main__':
       exit(1)
 
     video = {}
-    for key in ['title', 'id', 'width', 'height', 'fps', 'channel', 'duration', 'uploader_id']:
+    for key in ['title', 'id', 'width', 'height', 'fps', 'channel', 'duration', 'uploader_id', 'channel_id']:
       video[key] = info[key]
 
     # TODO: naive and stupid way -- yt_dlp usually selects bestvideo+bestaudio (usually highest)
@@ -89,7 +89,8 @@ if __name__ == '__main__':
         'channel': video['channel'],
         'duration': video['duration'],
         'format': video['format']['format'],
-        'uploader_id': video['uploader_id']
+        'uploader_id': video['uploader_id'],
+        'channel_id': video['channel_id']
       },
       "argv": vars(argv)
     }
