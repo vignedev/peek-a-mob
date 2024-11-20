@@ -29,7 +29,7 @@ function DebugPage() {
   return (
     <Flex direction='column' gap='4'>
       <Grid columns='max-content 1fr' gap='1' gapX='3' justify='end' align='center'>
-        <Text align='right' ml='4' color='gray'>uwu select a video:</Text>
+        <Text color='gray'>uwu select a video:</Text>
         <Select.Root value={videoId} onValueChange={setVideoId}>
           <Select.Trigger placeholder={videoOptions ? 'Select a video! |o wo)b' : 'NOW LOADING'} />
           <Select.Content>
@@ -41,7 +41,7 @@ function DebugPage() {
           </Select.Content>
         </Select.Root>
 
-        <Text align='right' ml='4' color='gray'>owo which model:</Text>
+        <Text color='gray'>owo which model:</Text>
         <Select.Root value={(modelId || '').toString()} onValueChange={value => setModelId(+value)}>
           <Select.Trigger
             placeholder={videoInfo ? 'Select a model as well | uwu)7' : (!videoId ? 'tsk tsk' : 'NOW LOADING')}
