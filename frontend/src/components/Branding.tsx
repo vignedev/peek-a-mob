@@ -6,12 +6,12 @@ export const PeekAMobHeading = () => {
 
   return (
     <Heading style={{
-      whiteSpace: "nowrap", 
-      alignContent:"center",
+      whiteSpace: "nowrap",
+      alignContent: "center",
       cursor: "pointer",
-      }}
-      onClick={ () => { navigate("/") }}>
-      Peek a mob
+    }}
+      onClick={() => { navigate("/") }}>
+      Peek A Mob
     </Heading>
   );
 }

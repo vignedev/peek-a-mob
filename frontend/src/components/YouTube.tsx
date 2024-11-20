@@ -231,7 +231,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections:
       for (const entity of rollingDetections[name]) {
         const [bx, by, bw, bh] = entity.bbox
 
-        const frameThreshold = 1 / 120
+        const frameThreshold = 1 / 60
         const dist = Math.abs(entity.time - currentTime)
         const fadeOutSeconds = 1
         let color = 'magenta', alpha = 0.0

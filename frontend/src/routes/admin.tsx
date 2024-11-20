@@ -1,18 +1,8 @@
-import { Badge, Button, Callout, Card, Code, Dialog, Flex, Grid, Heading, Spinner, Table, Text, TextField } from "@radix-ui/themes"
+import { Badge, Button, Card, Code, Dialog, Flex, Grid, Heading, Spinner, Table, Text, TextField } from "@radix-ui/themes"
 import { Fragment, useEffect, useRef, useState } from "react"
 import { Model, newModel } from "../libs/api"
 import { getModels } from "../libs/api"
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons"
-
-const ErrorCallout = (props: { error: any }) => {
-  if (!props.error) return null
-  return (
-    <Callout.Root color='red' style={{ marginTop: '1rem' }}>
-      <Callout.Icon><ExclamationTriangleIcon /></Callout.Icon>
-      <Callout.Text>Whoopsie! Something has gone awry.<br />{props.error.message || JSON.stringify(props.error)}</Callout.Text>
-    </Callout.Root>
-  )
-}
+import ErrorCallout from "../components/ErrorCallouts"
 
 const UploadButtonDialog = (props: { onUpload: () => void }) => {
   const [open, setOpen] = useState(false)
@@ -55,7 +45,7 @@ const UploadButtonDialog = (props: { onUpload: () => void }) => {
         <Dialog.Description>The expected file is a <Code>best.pt</Code>, limited to 10 MB.</Dialog.Description>
 
         <Flex direction='column' gapY='3' py='6'>
-          <Grid columns='min-content 1fr' gapX='4' gapY='2'>
+          <Grid columns='max-content 1fr' gapX='4' gapY='2' align='center'>
             <Text>Name: </Text>
             <TextField.Root value={name} onChange={e => setName(e.target.value)} disabled={busy} placeholder='Model name' />
 
