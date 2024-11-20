@@ -15,8 +15,10 @@ const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
     .get('/entities', async (_req, res) => {
       return res.send(await database.entities.getAll(), 200)
     })
-    .get('/videos', async (_req, res) => {
-      return res.send(await database.videos.getAll(), 200)
+    .get('/videos', async (req, res) => {
+      const { e: entities } = req.query
+      const entityArray = entities ? (Array.isArray(entities) ? entities : [entities]) : []
+      return res.send(await database.videos.getAll(entityArray), 200)
     })
     .get('/videos/:id', async (req, res) => {
       const { id: videoId } = req.params
@@ -29,7 +31,7 @@ const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
     })
     .get('/videos/:videoId/detections/:modelId', async (req, res) => {
       const { videoId, modelId } = req.params
-      const { entities, ss, to, conf } = req.query
+      const { e: entities, ss, to, conf } = req.query
 
       if (Array.isArray(ss) || Array.isArray(to))
         return res.send({ error: 'Invalid time range (multiple ranges?)' }, 400)

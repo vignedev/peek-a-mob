@@ -38,8 +38,18 @@ export const videos = {
       models: availableModels
     }
   },
-  async getAll() {
-    return await db.query.videos.findMany()
+  async getAll(entities?: string[]) {
+    if (!entities || entities.length == 0)
+      return await db.query.videos.findMany()
+
+    const { videoId, youtubeId, videoTitle, duration, channelId, aspectRatio } = schema.videos
+    return await db
+      .select({ videoId, youtubeId, videoTitle, duration, channelId, aspectRatio })
+      .from(schema.detections)
+      .fullJoin(schema.entities, eq(schema.detections.entityId, schema.entities.entityId))
+      .fullJoin(schema.videos, eq(schema.detections.videoId, schema.videos.videoId))
+      .where(inArray(schema.entities.entityName, entities))
+      .groupBy(schema.videos.videoId)
   }
 }
 
