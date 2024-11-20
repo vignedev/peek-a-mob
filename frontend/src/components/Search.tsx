@@ -18,17 +18,18 @@ const Search = () => {
                     ...baseStyles,
                     backgroundColor: grayDark.gray3,
                     borderColor: grayDark.gray8,
-                    borderRadius: 30,
+                    borderRadius: "max(var(--radius-2), var(--radius-full))",
                     color: grayDark.gray11,
                 }),
                 menu: (baseStyles) => ({
                     ...baseStyles,
                     backgroundColor: grayDark.gray4,
-                    borderRadius: 16
+                    borderRadius: "max(var(--radius-2), var(--radius-full))",
+                    boxShadow: "var(--shadow-3)"
                 }),
                 option: (baseStyles, state) => ({
                     ...baseStyles,
-                    borderRadius: 16,
+                    borderRadius: "max(var(--radius-2), var(--radius-full))",
                     backgroundColor: state.isFocused
                         ? grayDark.gray8
                         : grayDark.gray4,
@@ -44,7 +45,7 @@ const Search = () => {
                 multiValue: (baseStyles) => ({
                     ...baseStyles,
                     backgroundColor: grayDark.gray8,
-                    borderRadius: 16,
+                    borderRadius: "max(var(--radius-2), var(--radius-full))",
                     
                 }),
                 multiValueLabel: (baseStyles) => ({
@@ -53,9 +54,8 @@ const Search = () => {
                 }),
                 multiValueRemove: (baseStyles) => ({
                     ...baseStyles,
-                    borderRadius: 16
+                    borderRadius: "max(var(--radius-2), var(--radius-full))"
                 }),
-                
         }}/>
     )
 }
