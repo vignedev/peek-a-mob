@@ -3,7 +3,7 @@ import * as database from '../libs/database'
 import * as log from '../libs/log'
 import * as env from '../libs/env'
 import { createWriteStream } from 'fs'
-import { mkdir, mkdtemp, rename, rm, rmdir } from 'fs/promises'
+import { copyFile, mkdir, mkdtemp, rm, rmdir } from 'fs/promises'
 import { pipeline } from 'stream/promises'
 import path from 'path'
 import runner from '../libs/runner'
@@ -151,7 +151,9 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
 
       await mkdir(realFolder, { recursive: true })         // create the "real destination folder"
       await pipeline(req, createWriteStream(tmpFilename))  // save it to the temp (in case it fails, we dont pollute our real folder)
-      await rename(tmpFilename, realFilename)              // move it from temp to real
+      // await rename(tmpFilename, realFilename)           // move it from temp to real (can't due to EXDEV)
+      await copyFile(tmpFilename, realFilename)            // copy it from temp to real
+      await rm(tmpFilename)                                // remove the original
       await rmdir(tmpFolder)                               // remove the temporary folder
 
       try {
