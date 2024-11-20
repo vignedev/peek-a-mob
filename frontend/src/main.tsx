@@ -9,6 +9,7 @@ import DebugPage from './routes/debug.tsx'
 import HomePage from './routes/home.tsx'
 import RootPage from './routes/root.tsx'
 import RequestPage from './routes/request.tsx'
+import AdminPage from './routes/admin.tsx'
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
       {
         path: 'request',
         element: <RequestPage />
+      },
+      {
+        path: 'admin',
+        element: <AdminPage />
       }
     ]
   }

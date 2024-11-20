@@ -34,3 +34,9 @@ export async function tryUntil<T>(source: () => Promise<T>, tester?: (a: T) => b
     await wait(timeout)
   return result
 }
+
+export async function strictFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const response = await fetch(input, init)
+  if (!response.ok) throw await response.json()
+  return response
+}
