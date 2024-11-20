@@ -197,8 +197,8 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
   )
 }
 
-export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections: EntityDetection, timeInfo: number[] }) => {
-  const { player, rollingDetections, timeInfo } = props
+export const VideoOverlay = (props: { player?: YouTubePlayer, aspectRatio: number, rollingDetections: EntityDetection, timeInfo: number[] }) => {
+  const { player, rollingDetections, timeInfo, aspectRatio } = props
   const [currentTime, _duration] = timeInfo
 
   const onDraw = useCallback<CanvasDrawingFunction>(async (ctx, _mouse) => {
@@ -210,7 +210,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections:
     // ctx.fillText(`rds: ${Object.keys(rollingDetections).join(', ')}`, 16, 32)
 
     const aspect = ctx.canvas.width / ctx.canvas.height;
-    const videoAr = 16 / 9; // TODO: constant aspect ratio, consider variable?
+    const videoAr = aspectRatio;
     let x, y, w, h;
 
     if (aspect > videoAr) { // wider 
@@ -289,7 +289,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, rollingDetections:
   />
 }
 
-export const YouTubeWithTimeline = (props: { videoId: string, modelId: number }) => {
+export const YouTubeWithTimeline = (props: { videoId: string, modelId: number, aspectRatio?: number }) => {
   const [player, setPlayer] = useState<YouTubePlayer>()
   const [detections, setDetections] = useState<EntityDetection>({})
   const [rollingDetections, setRollingDetections] = useState<{ detections: EntityDetection, range: ValidRange }>()
@@ -359,6 +359,7 @@ export const YouTubeWithTimeline = (props: { videoId: string, modelId: number })
         />
         <VideoOverlay
           player={player}
+          aspectRatio={props.aspectRatio || 16 / 9}
           timeInfo={timeInfo}
           rollingDetections={rollingDetections?.detections || {}}
         />

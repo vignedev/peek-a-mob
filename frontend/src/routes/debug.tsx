@@ -65,7 +65,7 @@ function DebugPage() {
 
       {
         (videoId && modelId != null && typeof modelId !== 'undefined') ?
-          <YouTubeWithTimeline videoId={videoId} modelId={modelId} /> :
+          <YouTubeWithTimeline videoId={videoId} modelId={modelId} aspectRatio={videoInfo!.aspectRatio} /> :
           <Box style={{
             aspectRatio: '16 / 9',
             boxShadow: 'var(--shadow-3)',
