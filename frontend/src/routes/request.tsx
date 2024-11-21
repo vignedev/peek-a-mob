@@ -154,6 +154,7 @@ const RequestPage = () => {
   function fetchJobList() {
     return api.jobs.getAll()
       .then(jobs => {
+        setError(null)
         setJobs(jobs)
         if (!models || jobs.findIndex(x => !models[x.modelId]) != -1)
           fetchModelList()

@@ -113,6 +113,7 @@ async function onJobUpdate(fromIndex: number) {
         onJobUpdate(idx)
       })
     } else {
+      jobList[idx].status = 'failed'
       currentJob = null
       onJobUpdate(idx)
     }
