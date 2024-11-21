@@ -42,8 +42,7 @@ const SearchDetailVideoSearch = () => {
         (videoId && modelId != null && typeof modelId !== 'undefined' && videoInfo) &&
         <YouTubeWithTimeline 
           modelId={modelId} 
-          videoId={videoInfo.youtubeId} 
-          aspectRatio={videoInfo.aspectRatio}
+            videoInfo={videoInfo}
         />
         }
       </Container>

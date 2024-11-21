@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import YouTube, { YouTubePlayer } from 'react-youtube'
 import { Canvas, CanvasDrawingFunction } from './Canvas'
 import { Box, Flex } from '@radix-ui/themes'
-import { EntityDetection, getDetections } from '../libs/api'
+import { EntityDetection, getDetections, Video } from '../libs/api'
 import { wait } from '../libs/utils'
 import { expandContext } from '../libs/canvasEx'
 
@@ -201,7 +201,7 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
   )
 }
 
-export const VideoOverlay = (props: { player?: YouTubePlayer, aspectRatio: number, rollingDetections: EntityDetection, timeInfo: number[] }) => {
+export const VideoOverlay = (props: { player?: YouTubePlayer, aspectRatio: number, rollingDetections: EntityDetection, timeInfo: TimeInfo }) => {
   const { player, rollingDetections, timeInfo, aspectRatio } = props
   const [currentTime, _duration] = timeInfo
 
@@ -293,13 +293,15 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, aspectRatio: numbe
   />
 }
 
-export const YouTubeWithTimeline = (props: { videoId: string, modelId: number, aspectRatio?: number }) => {
+export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number }) => {
+  const { videoInfo, modelId } = props
+
   const [player, setPlayer] = useState<YouTubePlayer>()
   const [detections, setDetections] = useState<EntityDetection>({})
   const [rollingDetections, setRollingDetections] = useState<{ detections: EntityDetection, range: ValidRange }>()
   const [timeInfo, setTimeInfo] = useState<TimeInfo>([0, 0])
 
-  // time retaining loop
+  // loop - time retaining, keeps timeInfo
   useEffect(() => {
     let condition = true
     const loop = async () => {
@@ -316,16 +318,14 @@ export const YouTubeWithTimeline = (props: { videoId: string, modelId: number, a
   useEffect(() => {
     setDetections({})
     setTimeInfo([0, 0])
-    getDetections(props.videoId, 0, props.modelId, Infinity)
-      .then(setDetections)
-  }, [props.videoId, props.modelId])
-
-  useEffect(() => {
-    console.log('model change')
     setRollingDetections(undefined)
-  }, [props.modelId])
 
-  // loop 
+    if (videoInfo)
+      getDetections(videoInfo.youtubeId, 0, modelId, Infinity)
+        .then(setDetections)
+  }, [videoInfo, modelId])
+
+  // loop - for rolling detections
   useEffect(() => {
     if (!player) return;
 
@@ -335,7 +335,7 @@ export const YouTubeWithTimeline = (props: { videoId: string, modelId: number, a
         const newTime = await player!.getCurrentTime()
         if (!rollingDetections || newTime <= rollingDetections.range[0] || newTime >= rollingDetections.range[1]) {
           setRollingDetections({
-            detections: await getDetections(props.videoId, newTime, props.modelId, 10, 10),
+            detections: await getDetections(videoInfo.youtubeId, newTime, modelId, 10, 10),
             range: [newTime - 7, newTime + 7] // the "valid range" where this cached are is for
           })
         }
@@ -344,30 +344,32 @@ export const YouTubeWithTimeline = (props: { videoId: string, modelId: number, a
     }
     loop()
     return () => { condition = false }
-  }, [player, props.videoId, rollingDetections, props.modelId])
-
+  }, [player, videoInfo, rollingDetections, modelId])
 
   return (
     <Flex direction='column' gap='1'>
-      <Box height='26rem' position='relative' style={{
+      <Box style={{
+        position: 'relative',
         borderRadius: 'max(var(--radius-2), var(--radius-full))',
         overflow: 'hidden',
-        boxShadow: 'var(--shadow-2)'
+        boxShadow: 'var(--shadow-2)',
+        aspectRatio: videoInfo.aspectRatio
       }}>
         <YouTube
           className='youtubeEmbed'
-          videoId={props.videoId}
+          videoId={videoInfo.youtubeId}
           onReady={async (event) => {
             setPlayer(event.target)
           }}
         />
         <VideoOverlay
           player={player}
-          aspectRatio={props.aspectRatio || 16 / 9}
+          aspectRatio={videoInfo.aspectRatio || 16 / 9}
           timeInfo={timeInfo}
           rollingDetections={rollingDetections?.detections || {}}
         />
       </Box>
+
       <VideoTimeline
         player={player}
         timeInfo={timeInfo}

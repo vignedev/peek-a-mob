@@ -64,8 +64,8 @@ function DebugPage() {
       </Grid>
 
       {
-        (videoId && modelId != null && typeof modelId !== 'undefined') ?
-          <YouTubeWithTimeline videoId={videoId} modelId={modelId} aspectRatio={videoInfo!.aspectRatio} /> :
+        (videoInfo && modelId != null && typeof modelId !== 'undefined') ?
+          <YouTubeWithTimeline videoInfo={videoInfo} modelId={modelId} /> :
           <Box style={{
             aspectRatio: '16 / 9',
             boxShadow: 'var(--shadow-3)',
