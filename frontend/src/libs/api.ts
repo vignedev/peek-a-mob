@@ -30,7 +30,7 @@ export type DetailedVideo = Video & {
   models: Model[]
 }
 
-export type JobStatus = 'waiting' | 'cancelled' | 'active' | 'failed' | 'finished'
+export type JobStatus = 'waiting' | 'cancelled' | 'active' | 'failed' | 'finished' | 'importing'
 
 export type Job = {
   id: number,

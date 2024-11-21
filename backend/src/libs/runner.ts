@@ -9,7 +9,7 @@ import { createInterface } from 'readline'
 import { error } from './log'
 import { tmpdir } from 'os'
 
-export type JobStatus = 'waiting' | 'cancelled' | 'active' | 'failed' | 'finished'
+export type JobStatus = 'waiting' | 'cancelled' | 'active' | 'failed' | 'finished' | 'importing'
 
 export type Job = {
   id: number,
@@ -95,6 +95,7 @@ async function onJobUpdate(fromIndex: number) {
 
     // on success, import the csv into the system
     if (code == 0) {
+      jobList[idx].status = 'importing'
       const importer = spawn('npm', [
         'run',
         'import_csv', filename

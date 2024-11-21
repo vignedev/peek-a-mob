@@ -18,7 +18,8 @@ const JobTableRow = (props: { data: Job, models: Record<number, Model> }) => {
     cancelled: 'gray',
     failed: 'red',
     finished: 'green',
-    waiting: 'gray'
+    waiting: 'gray',
+    importing: 'amber'
   }
 
   const model: Model | undefined = models[data.modelId]
@@ -184,7 +185,7 @@ const RequestPage = () => {
       if (!fetched) return
       fetched = false
       fetchJobList().finally(() => { fetched = true })
-    }, 2500)
+    }, 1000)
     return () => clearInterval(interval)
   }, [])
 
