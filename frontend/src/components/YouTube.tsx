@@ -235,7 +235,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, aspectRatio: numbe
       for (const entity of rollingDetections[name]) {
         const [bx, by, bw, bh] = entity.bbox
 
-        const frameThreshold = 1 / 60
+        const frameThreshold = 1 / (30 * 1.5) // TODO: save sampling rate
         const dist = Math.abs(entity.time - currentTime)
         const fadeOutSeconds = 1
         let color = 'magenta', alpha = 0.0
