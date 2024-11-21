@@ -177,6 +177,19 @@ const RequestPage = () => {
       .catch(console.error)
   }
 
+  function killActiveJob() {
+    if (!jobs) return
+    const job = jobs.find(job => job.status === 'active')
+
+    if (!job) return
+    api.jobs.stop(job.id)
+      .then(() => fetchJobList())
+      .catch(err => {
+        console.error(err)
+        setError(err)
+      })
+  }
+
   useEffect(() => {
     fetchJobList()
 
@@ -193,7 +206,11 @@ const RequestPage = () => {
     <Flex direction='column' gapY='4'>
       <Flex justify='between'>
         <Heading>Requests</Heading>
-        <NewJobDialog onCreation={fetchJobList} />
+
+        <Flex gapX='2'>
+          <Button color='red' onClick={killActiveJob} disabled={!jobs || !jobs.find(job => job.status === 'active')}>Kill</Button>
+          <NewJobDialog onCreation={fetchJobList} />
+        </Flex>
       </Flex>
       <Table.Root>
         <Table.Header>

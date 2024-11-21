@@ -108,6 +108,12 @@ async function newJob(youtubeId: string, modelId: number): Promise<Job> {
   })).json()
 }
 
+async function stopJob(modelId: number): Promise<{}> {
+  return (await strictFetch(`/api/jobs/${modelId}`, {
+    method: 'DELETE'
+  })).json()
+}
+
 async function getModels(): Promise<Model[]> {
   return (await strictFetch(`/api/models`)).json()
 }
@@ -143,7 +149,8 @@ export const api = {
     get: getJob,
     getAll: getJobs,
     new: newJob,
-    getLogs: getJobLogs
+    getLogs: getJobLogs,
+    stop: stopJob
   },
   videos: {
     get: getVideo,
