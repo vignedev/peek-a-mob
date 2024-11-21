@@ -6,7 +6,10 @@ export const ErrorCallout = (props: { error: any }) => {
   return (
     <Callout.Root color='red' style={{ marginTop: '1rem' }}>
       <Callout.Icon><ExclamationTriangleIcon /></Callout.Icon>
-      <Callout.Text>Whoopsie! Something has gone awry.<br />{props.error.message || JSON.stringify(props.error)}</Callout.Text>
+      <Callout.Text>
+        <b>Whoopsie! Something has gone awry.</b><br />
+        {props.error.message || props.error.error || JSON.stringify(props.error)}
+      </Callout.Text>
     </Callout.Root>
   )
 }
