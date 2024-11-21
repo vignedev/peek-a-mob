@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 const HeaderButton = ({ style, ...props }: ButtonProps) => (
   <Button
     variant={props.variant || 'surface'}
-    style={{ height: 'auto', cursor: 'pointer', ...style }}
+    style={{ height: 'auto', ...style }}
     {...props}
   />
 )
