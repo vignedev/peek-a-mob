@@ -1,7 +1,7 @@
 import { Box, Flex, Grid, Select, Text } from "@radix-ui/themes"
 import { YouTubeWithTimeline } from "../components/YouTube"
 import { useEffect, useState } from "react"
-import { DetailedVideo, getVideo, getVideos, Video } from "../libs/api"
+import { DetailedVideo, Video, api } from "../libs/api"
 import meow from '../assets/plink-cat.gif'
 
 function DebugPage() {
@@ -11,14 +11,14 @@ function DebugPage() {
   const [videoInfo, setVideoInfo] = useState<DetailedVideo>()
 
   useEffect(() => {
-    getVideos()
+    api.videos.getAll()
       .then(setVideoOptions)
       .catch(console.error)
   }, [])
 
   useEffect(() => {
     if (!videoId) return;
-    getVideo(videoId)
+    api.videos.get(videoId)
       .then(info => {
         setVideoInfo(info)
         setModelId(info.models[0].modelId)

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import YouTube, { YouTubePlayer } from 'react-youtube'
 import { Canvas, CanvasDrawingFunction } from './Canvas'
 import { Box, Flex } from '@radix-ui/themes'
-import { EntityDetection, getDetections, Video } from '../libs/api'
+import { EntityDetection, Video, api } from '../libs/api'
 import { wait } from '../libs/utils'
 import { expandContext } from '../libs/canvasEx'
 
@@ -321,7 +321,7 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number }
     setRollingDetections(undefined)
 
     if (videoInfo)
-      getDetections(videoInfo.youtubeId, 0, modelId, Infinity)
+      api.videos.getDetections(videoInfo.youtubeId, 0, modelId, Infinity)
         .then(setDetections)
   }, [videoInfo, modelId])
 
@@ -335,7 +335,7 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number }
         const newTime = await player!.getCurrentTime()
         if (!rollingDetections || newTime <= rollingDetections.range[0] || newTime >= rollingDetections.range[1]) {
           setRollingDetections({
-            detections: await getDetections(videoInfo.youtubeId, newTime, modelId, 10, 10),
+            detections: await api.videos.getDetections(videoInfo.youtubeId, newTime, modelId, 10, 10),
             range: [newTime - 7, newTime + 7] // the "valid range" where this cached are is for
           })
         }

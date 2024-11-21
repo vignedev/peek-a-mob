@@ -1,6 +1,6 @@
 import { Badge, BadgeProps, Box, Button, Code, Dialog, Flex, Grid, Heading, Progress, Select, Spinner, Table, Text, TextField, Tooltip } from "@radix-ui/themes"
 import Link from "../components/Link"
-import { getJobs, getModels, Job, Model, newJob } from "../libs/api"
+import { Job, Model, api } from "../libs/api"
 import { useEffect, useMemo, useState } from "react"
 import ErrorCallout from "../components/ErrorCallouts"
 
@@ -65,7 +65,7 @@ const NewJobDialog = (props: { onCreation: () => void }) => {
   const [modelId, setModelId] = useState<number | null>(null)
 
   useEffect(() => {
-    getModels()
+    api.models.getAll()
       .then(setModels)
       .catch(console.error)
   }, [])
@@ -75,7 +75,7 @@ const NewJobDialog = (props: { onCreation: () => void }) => {
       return
 
     setBusy(true)
-    newJob(`https://youtube.com/watch?v=${videoId}`, modelId)
+    api.jobs.new(`https://youtube.com/watch?v=${videoId}`, modelId)
       .then(_job => {
         console.log(_job)
         props.onCreation()
@@ -152,7 +152,7 @@ const RequestPage = () => {
 
 
   function fetchJobList() {
-    return getJobs()
+    return api.jobs.getAll()
       .then(jobs => {
         setJobs(jobs)
         if (!models || jobs.findIndex(x => !models[x.modelId]) != -1)
@@ -165,7 +165,7 @@ const RequestPage = () => {
   }
 
   function fetchModelList() {
-    getModels()
+    api.models.getAll()
       .then(models => {
         setModels(Object.values(models).reduce((acc, val) => {
           acc[val.modelId] = val

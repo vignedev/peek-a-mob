@@ -1,5 +1,5 @@
 import { Box, Container, Flex, Text } from "@radix-ui/themes";
-import { DetailedVideo, getVideos, getVideo, Video } from "../../libs/api";
+import { DetailedVideo, Video, api } from "../../libs/api";
 import { useEffect, useState } from "react";
 import { YouTubeWithTimeline } from "../YouTube";
 
@@ -10,10 +10,10 @@ const SearchDetailVideoSearch = () => {
   const [videoOptions, setVideoOptions] = useState<Video[]>()
 
   useEffect(() => {
-    getVideos()
+    api.videos.getAll()
       .then((videos: Video[]) => {
         setVideoOptions(videos)
-        if(videos) {
+        if (videos) {
           setVideoId(videos[0].youtubeId);
         }
       })
@@ -22,7 +22,7 @@ const SearchDetailVideoSearch = () => {
 
   useEffect(() => {
     if (!videoId) return;
-    getVideo(videoId)
+    api.videos.get(videoId)
       .then(info => {
         setVideoInfo(info)
         setModelId(info.models[0].modelId)
@@ -30,24 +30,24 @@ const SearchDetailVideoSearch = () => {
       .catch(console.error)
   }, [videoId])
 
-  return ( 
+  return (
     <Box style={{
-      width: "100%", 
-      height: "100%", 
+      width: "100%",
+      height: "100%",
       borderRadius: "max(var(--radius-2), var(--radius-full))",
       background: "var(--gray-a2)"
     }}>
-      <Container style={{height: "100%"}}>
+      <Container style={{ height: "100%" }}>
         {
-        (videoId && modelId != null && typeof modelId !== 'undefined' && videoInfo) &&
-        <YouTubeWithTimeline 
-          modelId={modelId} 
+          (videoId && modelId != null && typeof modelId !== 'undefined' && videoInfo) &&
+          <YouTubeWithTimeline
+            modelId={modelId}
             videoInfo={videoInfo}
-        />
+          />
         }
       </Container>
-    </Box> 
+    </Box>
   );
 }
- 
+
 export default SearchDetailVideoSearch;

@@ -57,7 +57,7 @@ export type Job = {
  * @param before Back seeking if necessary (basically time-before)
  * @returns Object where keys are the detected classes, and their value is the list of bounding boxes
  */
-export async function getDetections(videoId: string, time: number, modelId: number | null = null, after: number = 5, before: number = 0): Promise<EntityDetection> {
+async function getDetections(videoId: string, time: number, modelId: number | null = null, after: number = 5, before: number = 0): Promise<EntityDetection> {
   const entityMap = (await getEntities()).reduce((acc, val) => {
     acc[val.entityId] = val.entityName
     return acc
@@ -76,50 +76,73 @@ export async function getDetections(videoId: string, time: number, modelId: numb
   return entities
 }
 
-export async function getVideos(entities?: string[]): Promise<Video[]> {
+async function getVideos(entities?: string[]): Promise<Video[]> {
   const queryString = entities ? `?${entities.map(e => `e=${e}`).join('&')}` : ''
   return (await strictFetch(`/api/videos${queryString}`)).json()
 }
 
-export async function getVideo(youtubeId: string): Promise<DetailedVideo> {
+async function getVideo(youtubeId: string): Promise<DetailedVideo> {
   return (await strictFetch(`/api/videos/${youtubeId}`)).json()
 }
 
-export async function getEntities(): Promise<Entity[]> {
+async function getEntities(): Promise<Entity[]> {
   return (await strictFetch(`/api/entities`)).json()
 }
 
-export async function getJobs(): Promise<Job[]> {
+async function getJobs(): Promise<Job[]> {
   return (await strictFetch(`/api/jobs`)).json()
 }
 
-export async function getJob(jobId: number): Promise<Job> {
+async function getJob(jobId: number): Promise<Job> {
   return (await strictFetch(`/api/jobs/${jobId}`)).json()
 }
 
-export async function getJobLogs(jobId: number): Promise<string> {
+async function getJobLogs(jobId: number): Promise<string> {
   return (await strictFetch(`/api/jobs/${jobId}/logs`)).text()
 }
 
-export async function newJob(videoUrl: string, modelId: number): Promise<Job> {
+async function newJob(videoUrl: string, modelId: number): Promise<Job> {
   return (await strictFetch(`/api/jobs`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ videoUrl, modelId })
   })).json()
 }
 
-export async function getModels(): Promise<Model[]> {
+async function getModels(): Promise<Model[]> {
   return (await strictFetch(`/api/models`)).json()
 }
 
-export async function getModel(modelId: number): Promise<Model> {
+async function getModel(modelId: number): Promise<Model> {
   return (await strictFetch(`/api/models/${modelId}`)).json()
 }
 
-export async function newModel(modelName: string, data: File): Promise<Model> {
+async function newModel(modelName: string, data: File): Promise<Model> {
   return (await strictFetch(`/api/models`, {
     method: 'POST',
     headers: { 'PAM-Model-Name': modelName },
     body: data
   })).json()
 }
+
+export const api = {
+  models: {
+    get: getModel,
+    getAll: getModels,
+    new: newModel
+  },
+  jobs: {
+    get: getJob,
+    getAll: getJobs,
+    new: newJob,
+    getLogs: getJobLogs
+  },
+  videos: {
+    get: getVideo,
+    getAll: getVideos,
+    getDetections: getDetections
+  },
+  entities: {
+    getAll: getEntities
+  }
+}
+export default api

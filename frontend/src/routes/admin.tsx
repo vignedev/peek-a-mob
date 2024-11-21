@@ -1,7 +1,6 @@
-import { Badge, Button, Card, Code, Dialog, Flex, Grid, Heading, Spinner, Table, Text, TextField } from "@radix-ui/themes"
+import { Badge, Button, Code, Dialog, Flex, Grid, Heading, Spinner, Table, Text, TextField } from "@radix-ui/themes"
 import { Fragment, useEffect, useRef, useState } from "react"
-import { Model, newModel } from "../libs/api"
-import { getModels } from "../libs/api"
+import { Model, api } from "../libs/api"
 import ErrorCallout from "../components/ErrorCallouts"
 
 const UploadButtonDialog = (props: { onUpload: () => void }) => {
@@ -17,7 +16,7 @@ const UploadButtonDialog = (props: { onUpload: () => void }) => {
     if (!file) return
 
     setBusy(false)
-    newModel(name, file)
+    api.models.new(name, file)
       .then(_newModel => {
         console.log(_newModel)
         props.onUpload()
@@ -74,7 +73,7 @@ const AdminPage = () => {
 
   function fetchModelList() {
     setModels(undefined)
-    getModels()
+    api.models.getAll()
       .then(setModels)
       .catch(console.error)
   }
