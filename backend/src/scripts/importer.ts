@@ -89,13 +89,15 @@ async function main(csvPath: string) {
       duration: metadata.video.duration,
       videoTitle: metadata.video.title,
       channelId: channel.channelId,
-      aspectRatio: metadata.video.width / metadata.video.height
+      aspectRatio: metadata.video.width / metadata.video.height,
+      frameRate: metadata.video.fps
     }).onConflictDoUpdate({
       target: schema.videos.youtubeId, set: {
         duration: metadata.video.duration,
         videoTitle: metadata.video.title,
         channelId: channel.channelId,
-        aspectRatio: metadata.video.width / metadata.video.height
+        aspectRatio: metadata.video.width / metadata.video.height,
+        frameRate: metadata.video.fps
       }
     })
     const [video] = await tx

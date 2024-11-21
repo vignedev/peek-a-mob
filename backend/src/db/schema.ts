@@ -12,7 +12,8 @@ export const videos = pgTable('videos', {
   videoTitle: text('video_title').notNull(),
   duration: real().notNull(),
   channelId: integer('channel_id').references(() => channels.channelId),
-  aspectRatio: real().default(16 / 9).notNull()
+  aspectRatio: real().default(16 / 9).notNull(),
+  frameRate: real().default(60).notNull()
 })
 
 export const entities = pgTable('entities', {
