@@ -136,5 +136,12 @@ export const models = {
     if (model.length == 0)
       throw new Error('New model has no returning value, this should not happen!')
     return model[0]
+  },
+  async rename(modelId: number, newName: string) {
+    return await db
+      .update(schema.models)
+      .set({ modelName: newName })
+      .where(eq(schema.models.modelId, modelId))
+      .returning()
   }
 }

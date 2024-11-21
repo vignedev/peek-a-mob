@@ -118,10 +118,26 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
 
       res.end()
     })
-    .delete('/jobs/:id', NotImplementedYet)     // delete / cancel job
+    .delete('/jobs/:id', async (req, res) => {  // delete / cancel job
+      const { id: jobId } = req.params
+      const id = parseInt(jobId, 10)
+
+      if (isNaN(id))
+        return res.send({ error: 'Invalid job ID' }, 400)
+
+      const job = runner.get(id)
+      if (!job)
+        return res.send({ error: 'Job not found' }, 404)
+
+      if (job.status != 'active')
+        return res.send({ error: 'Can\'t delete non-active job' }, 400)
+
+      if (runner.kill()) return res.send({}, 200)
+      else return res.send({ error: 'Unknown error: runner.kill() returned false' }, 500)
+    })
 
   router
-    .get('/models', async (_req, res) => {       // get all available models
+    .get('/models', async (_req, res) => {      // get all available models
       res.send(await database.models.getAll())
     })
     .get('/models/:id', async (req, res) => {   // get a specific model
@@ -136,6 +152,26 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
         return res.send({ error: 'Model by that ID not found.' }, 404)
 
       res.send(model, 200)
+    })
+    .post('/models/:id', async (req, res) => {   // rename the model's name
+      const { id } = req.params
+      const modelId = parseInt(id, 10)
+
+      if (isNaN(modelId))
+        return res.send({ error: 'ID is not numeric.' }, 400)
+
+      const model = await database.models.get(modelId)
+      if (!model)
+        return res.send({ error: 'Model by that ID not found.' }, 404)
+
+      const rawData = await buffer(req)
+      let data: { modelName: string }
+      try { data = JSON.parse(rawData.toString()) }
+      catch (err) { return res.send({ error: 'Invalid JSON request' }, 400) }
+
+      const updatedModel = await database.models.rename(modelId, data.modelName)
+      if (updatedModel.length == 0) return res.send({ error: 'Updated model is for some reason empty.' }, 500)
+      return res.send(updatedModel, 200)
     })
     .post('/models', async (req, res) => {      // upload a new model (accept *.pt files, require name)
       const length = parseInt(req.headers['content-length']!, 10)

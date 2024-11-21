@@ -30,7 +30,7 @@ export type Job = {
 // internal state
 const jobList: Job[] = []
 let lastIndex = 0
-let currentJob: { id: number } | null = null
+let currentJob: { id: number, process: ChildProcess | null } | null = null
 
 // call this whenever a job is added/cancelled/finished
 async function onJobUpdate(fromIndex: number) {
@@ -44,7 +44,7 @@ async function onJobUpdate(fromIndex: number) {
     return // no more jobs/no jobs
 
   const idx = lastIndex++  // the index of the current job + increment it
-  currentJob = { id: idx }
+  currentJob = { id: idx, process: null }
 
   // the current job is invalid, move forwards
   if (jobList[idx].status != 'waiting') {
@@ -67,6 +67,7 @@ async function onJobUpdate(fromIndex: number) {
     '-o', filename,
     '--json', '--conf', '0.6'
   ], { cwd: env.str('PROJECT_ROOT') })
+  currentJob.process = child
   child.stdout.on('data', chunk => jobList[idx].logs.push(chunk))
   child.stderr.on('data', chunk => jobList[idx].logs.push(chunk))
 
@@ -100,6 +101,7 @@ async function onJobUpdate(fromIndex: number) {
         'run',
         'import_csv', filename
       ], { cwd: path.join(env.str('PROJECT_ROOT'), 'backend') })
+      currentJob!.process = importer
       importer.stdout.on('data', chunk => jobList[idx].logs.push(chunk))
       importer.stderr.on('data', chunk => jobList[idx].logs.push(chunk))
       importer.once('error', (err) => {
@@ -140,6 +142,9 @@ export const Runner = {
 
     onJobUpdate(id - 1)
     return jobList[id]
+  },
+  kill() {
+    return currentJob?.process?.kill('SIGTERM')
   }
 }
 export default Runner
