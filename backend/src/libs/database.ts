@@ -31,7 +31,7 @@ export const videos = {
       .where(
         eq(schema.detections.videoId, video.videoId)
       )
-      .orderBy(desc(schema.models.modelName))
+      .orderBy(desc(schema.models.modelId))
 
     return {
       ...video,
@@ -40,7 +40,7 @@ export const videos = {
   },
   async getAll(entities?: string[]) {
     if (!entities || entities.length == 0)
-      return await db.query.videos.findMany()
+      return await db.query.videos.findMany({ orderBy: schema.videos.videoId })
 
     const { videoId, youtubeId, videoTitle, duration, channelId, aspectRatio } = schema.videos
     return await db
@@ -50,6 +50,7 @@ export const videos = {
       .fullJoin(schema.videos, eq(schema.detections.videoId, schema.videos.videoId))
       .where(inArray(schema.entities.entityName, entities))
       .groupBy(schema.videos.videoId)
+      .orderBy(schema.videos.videoId)
   }
 }
 
