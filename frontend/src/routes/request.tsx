@@ -58,7 +58,7 @@ const NewJobDialog = (props: { onCreation: () => void }) => {
   const [models, setModels] = useState<Model[]>()
 
   const [url, setUrl] = useState('')
-  const videoId = useMemo(() => {
+  const youtubeId = useMemo(() => {
     return url.match(YOUTUBE_REGEX)?.[1] || null
   }, [url])
 
@@ -71,11 +71,11 @@ const NewJobDialog = (props: { onCreation: () => void }) => {
   }, [])
 
   const uploadFile = () => {
-    if (!videoId || modelId == null)
+    if (!youtubeId || modelId == null)
       return
 
     setBusy(true)
-    api.jobs.new(`https://youtube.com/watch?v=${videoId}`, modelId)
+    api.jobs.new(youtubeId, modelId)
       .then(_job => {
         console.log(_job)
         props.onCreation()
@@ -133,7 +133,7 @@ const NewJobDialog = (props: { onCreation: () => void }) => {
         </Flex>
 
         <Flex gap='3' justify='end'>
-          <Button onClick={uploadFile} disabled={busy || !videoId || modelId == null}>{busy ? <Spinner /> : 'Enqueue'}</Button>
+          <Button onClick={uploadFile} disabled={busy || !youtubeId || modelId == null}>{busy ? <Spinner /> : 'Enqueue'}</Button>
           <Dialog.Close>
             <Button disabled={busy} variant='outline'>Close</Button>
           </Dialog.Close>

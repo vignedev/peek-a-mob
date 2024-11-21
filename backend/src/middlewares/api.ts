@@ -20,17 +20,17 @@ const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
       const entityArray = entities ? (Array.isArray(entities) ? entities : [entities]) : []
       return res.send(await database.videos.getAll(entityArray), 200)
     })
-    .get('/videos/:id', async (req, res) => {
-      const { id: videoId } = req.params
+    .get('/videos/:youtubeId', async (req, res) => {
+      const { youtubeId } = req.params
 
-      const video = await database.videos.get(videoId)
+      const video = await database.videos.get(youtubeId)
       if (!video)
         return res.send({ error: 'No video of such ID was found.' }, 404)
 
       return res.send(video)
     })
-    .get('/videos/:videoId/detections/:modelId', async (req, res) => {
-      const { videoId, modelId } = req.params
+    .get('/videos/:youtubeId/detections/:modelId', async (req, res) => {
+      const { youtubeId, modelId } = req.params
       const { e: entities, ss, to, conf } = req.query
 
       if (Array.isArray(ss) || Array.isArray(to))
@@ -51,7 +51,7 @@ const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
         return res.send({ error: 'Confidence value could not be parsed' }, 400)
 
       return res.send( // TODO: handle invalid modelId
-        await database.detections.get(videoId, parseInt(modelId, 10), {
+        await database.detections.get(youtubeId, parseInt(modelId, 10), {
           entityNames: entities ? (Array.isArray(entities) ? entities : [entities]) : [],
           confidence: confidence,
           timeStart: timeStart,
@@ -88,14 +88,14 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
     })
     .post('/jobs', async (req, res) => {        // create a new job
       const rawData = await buffer(req)
-      let data: { modelId: number, videoUrl: string } | null = null
+      let data: { modelId: number, youtubeId: string } | null = null
       try { data = JSON.parse(rawData.toString()) }
       catch (err) { return res.send({ error: 'Invalid JSON request' }, 400) }
 
-      if (!data || !data.modelId || !data.videoUrl)
+      if (!data || !data.modelId || !data.youtubeId)
         return res.send({ error: 'Invalid JSON request (missing data)' }, 400)
 
-      res.send(runner.addJob(data.videoUrl, data.modelId))
+      res.send(runner.addJob(`https://youtube.com/watch?v=${data.youtubeId}`, data.modelId))
     })
     .get('/jobs/:id/logs', async (req, res) => {// get job's logs (200 always, empty if not found)
       const { id: jobId } = req.params

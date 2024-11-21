@@ -50,20 +50,20 @@ export type Job = {
 
 /**
  * Returns a list of detections and bounding boxes
- * @param videoId Video ID to get the mobs of
+ * @param youtubeId YouTube Video ID to get the mobs of
  * @param time Time in seconds where it should get the detections at
  * @param modelId Specified which model to fetch, set to null to pick the last one in list
  * @param after How many seconds should it get as well
  * @param before Back seeking if necessary (basically time-before)
  * @returns Object where keys are the detected classes, and their value is the list of bounding boxes
  */
-async function getDetections(videoId: string, time: number, modelId: number | null = null, after: number = 5, before: number = 0): Promise<EntityDetection> {
+async function getDetections(youtubeId: string, time: number, modelId: number | null = null, after: number = 5, before: number = 0): Promise<EntityDetection> {
   const entityMap = (await getEntities()).reduce((acc, val) => {
     acc[val.entityId] = val.entityName
     return acc
   }, {} as Record<number, string>)
-  const video = await getVideo(videoId)
-  const occurances: EntityOccurance[] = await (await strictFetch(`/api/videos/${videoId}/detections/${modelId ?? video.models.shift()!.modelId}?ss=${time - before}&to=${time + after}`)).json()
+  const video = await getVideo(youtubeId)
+  const occurances: EntityOccurance[] = await (await strictFetch(`/api/videos/${youtubeId}/detections/${modelId ?? video.models.shift()!.modelId}?ss=${time - before}&to=${time + after}`)).json()
 
   const entities: EntityDetection = {}
   for (const occurance of occurances) {
@@ -101,10 +101,10 @@ async function getJobLogs(jobId: number): Promise<string> {
   return (await strictFetch(`/api/jobs/${jobId}/logs`)).text()
 }
 
-async function newJob(videoUrl: string, modelId: number): Promise<Job> {
+async function newJob(youtubeId: string, modelId: number): Promise<Job> {
   return (await strictFetch(`/api/jobs`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ videoUrl, modelId })
+    body: JSON.stringify({ youtubeId, modelId })
   })).json()
 }
 

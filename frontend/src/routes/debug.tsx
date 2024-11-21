@@ -6,7 +6,7 @@ import meow from '../assets/plink-cat.gif'
 
 function DebugPage() {
   const [modelId, setModelId] = useState<number>()
-  const [videoId, setVideoId] = useState<string>()
+  const [youtubeId, setYoutubeId] = useState<string>()
   const [videoOptions, setVideoOptions] = useState<Video[]>()
   const [videoInfo, setVideoInfo] = useState<DetailedVideo>()
 
@@ -17,25 +17,25 @@ function DebugPage() {
   }, [])
 
   useEffect(() => {
-    if (!videoId) return;
-    api.videos.get(videoId)
+    if (!youtubeId) return;
+    api.videos.get(youtubeId)
       .then(info => {
         setVideoInfo(info)
         setModelId(info.models[0].modelId)
       })
       .catch(console.error)
-  }, [videoId])
+  }, [youtubeId])
 
   return (
     <Flex direction='column' gap='4'>
       <Grid columns='max-content 1fr' gap='1' gapX='3' justify='end' align='center'>
         <Text color='gray'>uwu select a video:</Text>
-        <Select.Root value={videoId} onValueChange={setVideoId}>
+        <Select.Root value={youtubeId} onValueChange={setYoutubeId}>
           <Select.Trigger placeholder={videoOptions ? 'Select a video! |o wo)b' : 'NOW LOADING'} />
           <Select.Content>
             {
               videoOptions ? (
-                videoOptions.map(video => <Select.Item key={video.videoId} value={video.youtubeId}>{video.videoTitle || video.youtubeId}</Select.Item>)
+                videoOptions.map(video => <Select.Item key={video.youtubeId} value={video.youtubeId}>{video.videoTitle || video.youtubeId}</Select.Item>)
               ) : null
             }
           </Select.Content>
@@ -44,7 +44,7 @@ function DebugPage() {
         <Text color='gray'>owo which model:</Text>
         <Select.Root value={(modelId || '').toString()} onValueChange={value => setModelId(+value)}>
           <Select.Trigger
-            placeholder={videoInfo ? 'Select a model as well | uwu)7' : (!videoId ? 'tsk tsk' : 'NOW LOADING')}
+            placeholder={videoInfo ? 'Select a model as well | uwu)7' : (!youtubeId ? 'tsk tsk' : 'NOW LOADING')}
             disabled={!videoInfo}
           />
           <Select.Content>
