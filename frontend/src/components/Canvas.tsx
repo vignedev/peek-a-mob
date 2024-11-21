@@ -1,4 +1,4 @@
-import { CSSProperties, useCallback, useEffect, useRef, useState } from "react"
+import { CSSProperties, useCallback, useEffect, useState } from "react"
 import { CanvasRenderingContext2DExpanded, expandContext } from "../libs/canvasEx"
 
 export type MouseContext = {
