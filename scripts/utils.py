@@ -175,11 +175,11 @@ def annotate_layer_file(tifFile: str, format: Literal['bbox', 'center'], debug_d
     raise Exception(f'Not enough layers!')
   
   background = images[0]
-  b_width = background.shape[0]
-  b_height = background.shape[1]
+  b_width = background.shape[1]
+  b_height = background.shape[0]
 
   for idx in range(1, layerCount):
-    contours, _ = cv.findContours(images[idx][:,:,0], cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv.findContours(np.sign(images[idx][:,:,0] + images[idx][:,:,1] + images[idx][:,:,2]), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     for cnt in contours:
       x, y, w, h = cv.boundingRect(cnt)
 
