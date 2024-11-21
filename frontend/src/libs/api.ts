@@ -124,11 +124,20 @@ async function newModel(modelName: string, data: File): Promise<Model> {
   })).json()
 }
 
+async function renameModel(modelId: number, modelName: string): Promise<Model> {
+  return (await strictFetch(`/api/models/${modelId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ modelName })
+  })).json()
+}
+
 export const api = {
   models: {
     get: getModel,
     getAll: getModels,
-    new: newModel
+    new: newModel,
+    rename: renameModel
   },
   jobs: {
     get: getJob,

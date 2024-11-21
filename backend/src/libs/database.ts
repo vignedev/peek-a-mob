@@ -121,7 +121,7 @@ export const detections = {
 
 export const models = {
   async getAll() {
-    return await db.query.models.findMany()
+    return await db.query.models.findMany({ orderBy: schema.models.modelId })
   },
   async get(modelId: number) {
     const result = await db.select().from(schema.models).where(eq(schema.models.modelId, modelId)).limit(1)

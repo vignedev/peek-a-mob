@@ -1,7 +1,8 @@
-import { Badge, Button, Code, Dialog, Flex, Grid, Heading, Spinner, Table, Text, TextField } from "@radix-ui/themes"
-import { Fragment, useEffect, useRef, useState } from "react"
+import { Badge, Button, Code, Dialog, Flex, Grid, Heading, IconButton, Spinner, Table, Text, TextField } from "@radix-ui/themes"
+import { useEffect, useRef, useState } from "react"
 import { Model, api } from "../libs/api"
 import ErrorCallout from "../components/ErrorCallouts"
+import { Pencil1Icon } from "@radix-ui/react-icons"
 
 const UploadButtonDialog = (props: { onUpload: () => void }) => {
   const [open, setOpen] = useState(false)
@@ -68,6 +69,71 @@ const UploadButtonDialog = (props: { onUpload: () => void }) => {
   )
 }
 
+const ModelTableRow = (props: { model: Model, onUpdate: () => void }) => {
+  const { model, onUpdate } = props
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<any>()
+
+  const [name, setName] = useState<string>(model.modelName || '')
+  const renameModel = () => {
+    setBusy(true)
+    api.models.rename(model.modelId, name)
+      .then(_newModel => {
+        props.onUpdate()
+        setOpen(false)
+      })
+      .catch(err => {
+        console.error(err)
+        setError(err)
+      })
+      .finally(() => {
+        setBusy(false)
+      })
+  }
+
+  return (
+    <Table.Row>
+      <Table.Cell>{model.modelId}</Table.Cell>
+      <Table.Cell>
+        <Flex align='center' gapX='2'>
+          {model.modelName || <i style={{ opacity: 0.3 }}>[no name]</i>}
+          <Dialog.Root open={open} onOpenChange={setOpen}>
+            <Dialog.Trigger>
+              <IconButton variant='ghost'>
+                <Pencil1Icon />
+              </IconButton>
+            </Dialog.Trigger>
+            <Dialog.Content onInteractOutside={e => e.preventDefault()}>
+              <Dialog.Title>Rename model</Dialog.Title>
+
+              <TextField.Root
+                value={name || ''} onChange={e => setName(e.target.value)}
+                onKeyDown={e => {
+                  if (!busy && e.code == 'Enter') {
+                    renameModel()
+                    e.preventDefault()
+                  }
+                }}
+                disabled={busy}
+              />
+
+              <Flex gap='3' justify='end' pt='4'>
+                <Button disabled={busy} onClick={renameModel}>{busy ? <Spinner /> : 'Rename'}</Button>
+                <Dialog.Close>
+                  <Button disabled={busy} variant='outline'>Close</Button>
+                </Dialog.Close>
+              </Flex>
+            </Dialog.Content>
+          </Dialog.Root>
+        </Flex>
+      </Table.Cell>
+      <Table.Cell><Code>{model.modelPath}</Code></Table.Cell>
+      <Table.Cell><Badge color={model.modelAvailable ? 'green' : 'gray'}>{model.modelAvailable ? 'Available' : 'Offline'}</Badge></Table.Cell>
+    </Table.Row>
+  )
+}
+
 const AdminPage = () => {
   const [models, setModels] = useState<Model[]>()
 
@@ -100,16 +166,12 @@ const AdminPage = () => {
 
         <Table.Body>
           {
-            models ? models.map(model => {
-              return <Fragment key={model.modelPath}>
-                <Table.Row>
-                  <Table.Cell>{model.modelId}</Table.Cell>
-                  <Table.Cell>{model.modelName}</Table.Cell>
-                  <Table.Cell><Code>{model.modelPath}</Code></Table.Cell>
-                  <Table.Cell><Badge color={model.modelAvailable ? 'green' : 'gray'}>{model.modelAvailable ? 'Available' : 'Offline'}</Badge></Table.Cell>
-                </Table.Row>
-              </Fragment>
-            }) : null
+            models ? models.map(model => (
+              <ModelTableRow
+                key={model.modelId} model={model}
+                onUpdate={fetchModelList}
+              />
+            )) : null
           }
         </Table.Body>
       </Table.Root>
