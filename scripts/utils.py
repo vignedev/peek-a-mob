@@ -148,3 +148,65 @@ def annotate_file(src_image: str, format: Literal['bbox', 'center'], debug_draw:
   #   cv.destroyAllWindows()
   
   return rgb, entities_bucket
+
+def annotate_layer_file(tifFile: str, format: Literal['bbox', 'center'], debug_draw: bool = False, area_threshold = 0.0) -> tuple[cv.typing.MatLike, list[tuple[int, float, float, float, float]]]:
+  ret, images = cv.imreadmulti(tifFile)
+  entities_bucket = []
+
+  if not ret:
+    raise Exception('Could not open the file')
+
+  id = None
+  for segment in tifFile.split('.'):
+    if len(segment) == 0:
+      continue
+    header = segment[0]
+    if header != 'i':
+      continue
+
+    id = int(segment[1:])
+    break
+
+  if id is None:
+    raise Exception(f'No ID found in the filename')
+
+  layerCount = len(images)
+  if layerCount <= 1:
+    raise Exception(f'Not enough layers!')
+  
+  background = images[0]
+  b_width = background.shape[0]
+  b_height = background.shape[1]
+
+  for idx in range(1, layerCount):
+    contours, _ = cv.findContours(images[idx][:,:,0], cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    for cnt in contours:
+      x, y, w, h = cv.boundingRect(cnt)
+
+      if debug_draw:
+        color = (0, 255, 0)
+        cv.rectangle(background, (x,y), (x+w, y+h), color, 1)
+        cv.putText(
+          background,
+          f'id={id}', (x, y - 4),
+          fontFace=cv.FONT_HERSHEY_SIMPLEX,
+          fontScale=0.4,
+          color=color,
+          thickness=1,
+          lineType=cv.LINE_AA
+        )
+
+      if format == 'bbox':
+        entities_bucket.append((
+          id,
+          x / b_width, y / b_height,
+          w / b_width, y / b_height
+        ))
+      elif format == 'center':
+        entities_bucket.append((
+          id,
+          (x + w/2) / b_width, (y + h/2) / b_height,
+          w / b_width, h / b_height
+        ))
+
+  return background, entities_bucket

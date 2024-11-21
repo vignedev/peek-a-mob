@@ -1,7 +1,7 @@
 import os
 import argparse
 from os import path
-from utils import annotate_file, get_entity_bidict
+from utils import annotate_file, get_entity_bidict, annotate_layer_file
 import cv2 as cv
 from multiprocessing import Pool
 import random
@@ -71,7 +71,10 @@ def get_argv():
 
 def create_from_image(filepath: str, _type: str, argv: argparse.Namespace):
   name = '.'.join(path.basename(filepath).split('.')[:-1])
-  image, labels = annotate_file(filepath, format=argv.format, debug_draw=argv.debug, area_threshold=argv.area_threshold)
+  if filepath.split('.')[-1].lower() == 'tif':
+    image, labels = annotate_layer_file(filepath, format=argv.format, debug_draw=argv.debug)
+  else:
+    image, labels = annotate_file(filepath, format=argv.format, debug_draw=argv.debug, area_threshold=argv.area_threshold)
 
   basename = f'{len(labels)}x_{name}'
   cv.imwrite(path.join(argv.output, _type, 'images', f'{basename}.{argv.extension}'), image)
