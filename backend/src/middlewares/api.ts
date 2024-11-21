@@ -95,6 +95,9 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
       if (!data || !data.modelId || !data.youtubeId)
         return res.send({ error: 'Invalid JSON request (missing data)' }, 400)
 
+      if (await database.detections.exists(data.youtubeId, data.modelId))
+        return res.send({ error: 'Given video was already analyzed by that model.' }, 403)
+
       res.send(runner.addJob(`https://youtube.com/watch?v=${data.youtubeId}`, data.modelId))
     })
     .get('/jobs/:id/logs', async (req, res) => {// get job's logs (200 always, empty if not found)

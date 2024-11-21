@@ -61,6 +61,26 @@ export const entities = {
 }
 
 export const detections = {
+  async exists(youtubeId: string, modelId: number) {
+    const detections = await db
+      .select({
+        time: schema.detections.time,
+        confidence: schema.detections.confidence,
+        bbox: schema.detections.bbox,
+        entityId: schema.detections.entityId
+      })
+      .from(schema.detections)
+      .rightJoin(schema.videos, eq(schema.videos.videoId, schema.detections.videoId))
+      .where(
+        and(
+          eq(schema.videos.youtubeId, youtubeId),
+          eq(schema.detections.modelId, modelId)
+        )
+      )
+      .limit(1)
+
+    return detections.length !== 0
+  },
   async get(youtubeId: string, modelId: number, options: DetectionQuery = {}) {
     const entities_list = await (
       (options.entityNames && options.entityNames.length != 0)
@@ -71,8 +91,9 @@ export const detections = {
     )
     const entityIds = entities_list.map(entity => entity.entityId)
 
-    const models = await db.select().from(schema.models).where(eq(schema.models.modelId, modelId)).limit(1)
-    if (models.length == 0) return []
+    const _models = await db.select().from(schema.models).where(eq(schema.models.modelId, modelId)).limit(1)
+    if (_models.length == 0) return []
+    const model = _models[0]
 
     const detections = await db
       .select({
@@ -90,7 +111,7 @@ export const detections = {
           gte(schema.detections.time, options.timeStart || 0),
           lte(schema.detections.time, options.timeEnd || Infinity),
           gte(schema.detections.confidence, options.confidence || 0.65),
-          eq(schema.detections.modelId, models[0].modelId)
+          eq(schema.detections.modelId, model.modelId)
         )
       )
 
