@@ -1,6 +1,6 @@
-import { Badge, BadgeProps, Box, Button, Code, Dialog, Flex, Grid, Heading, Progress, Select, Spinner, Table, Text, TextField, Tooltip } from "@radix-ui/themes"
+import { Badge, BadgeProps, Box, Button, Checkbox, Code, Dialog, Flex, Grid, Heading, Progress, Select, Spinner, Table, Text, TextField, Tooltip } from "@radix-ui/themes"
 import Link from "../components/Link"
-import { Job, Model, api } from "../libs/api"
+import { Job, Model, Video, api } from "../libs/api"
 import { useEffect, useMemo, useState } from "react"
 import ErrorCallout from "../components/ErrorCallouts"
 
@@ -57,6 +57,8 @@ const NewJobDialog = (props: { onCreation: () => void }) => {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<any>()
   const [models, setModels] = useState<Model[]>()
+  const [existing, setExisting] = useState(false)
+  const [videoList, setVideoList] = useState<Video[]>()
 
   const [url, setUrl] = useState('')
   const youtubeId = useMemo(() => {
@@ -71,7 +73,17 @@ const NewJobDialog = (props: { onCreation: () => void }) => {
       .catch(console.error)
   }, [])
 
-  const uploadFile = () => {
+  useEffect(() => {
+    setUrl('')
+    if (!existing) return
+
+    api.videos.getAll().then(setVideoList).catch(err => {
+      console.error(err)
+      setError(err)
+    })
+  }, [existing])
+
+  const enqueueJob = () => {
     if (!youtubeId || modelId == null)
       return
 
@@ -104,14 +116,39 @@ const NewJobDialog = (props: { onCreation: () => void }) => {
         <Dialog.Description>Supported videos are currently <i>YouTube</i> links.</Dialog.Description>
 
         <Flex direction='column' gapY='3' py='6'>
-          <Grid columns='max-content 1fr' gapX='4' gapY='2' align='center'>
-            <Text>YouTube URL:</Text>
-            <TextField.Root
-              value={url} onChange={e => setUrl(e.target.value)}
-              placeholder='https://youtube.com/watch?v=INAAAAAA'
-            />
+          <Grid columns='max-content minmax(0, 1fr)' gapX='4' gapY='2' align='center' width='100%'>
+            <Text as='label' htmlFor='reanalvid'>Use existing video</Text>
+            <Flex>
+              <Checkbox id='reanalvid' checked={existing} onCheckedChange={state => setExisting(!!state)} />
+            </Flex>
 
-            <Text>Model:</Text>
+            <Text>YouTube URL</Text>
+            {
+              existing ? (
+                <Select.Root value={url} onValueChange={setUrl}>
+                  <Select.Trigger disabled={!videoList} placeholder={!videoList ? 'NOW LOADING!!!' : 'pick a video uwu'} />
+                  <Select.Content>
+                    {
+                      videoList?.map(video => (
+                        <Select.Item
+                          key={video.youtubeId}
+                          value={`https://youtube.com/watch?v=${video.youtubeId}`}
+                        >
+                          {video.videoTitle || video.youtubeId}
+                        </Select.Item>
+                      ))
+                    }
+                  </Select.Content>
+                </Select.Root>
+              ) : (
+                <TextField.Root
+                  value={url} onChange={e => setUrl(e.target.value)}
+                  placeholder='https://youtube.com/watch?v=INAAAAAA'
+                />
+              )
+            }
+
+            <Text>Model</Text>
             <Select.Root value={modelId?.toString()} onValueChange={id => setModelId(+id)}>
               <Select.Trigger placeholder={models ? 'select a model uwu' : 'NOW LOADING!!!'} />
               <Select.Content>
@@ -134,7 +171,7 @@ const NewJobDialog = (props: { onCreation: () => void }) => {
         </Flex>
 
         <Flex gap='3' justify='end'>
-          <Button onClick={uploadFile} disabled={busy || !youtubeId || modelId == null}>{busy ? <Spinner /> : 'Enqueue'}</Button>
+          <Button onClick={enqueueJob} disabled={busy || !youtubeId || modelId == null}>{busy ? <Spinner /> : 'Enqueue'}</Button>
           <Dialog.Close>
             <Button disabled={busy} variant='outline'>Close</Button>
           </Dialog.Close>
