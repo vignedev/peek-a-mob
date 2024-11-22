@@ -6,6 +6,7 @@ import cv2 as cv
 from multiprocessing import Pool
 import random
 import sys
+import shutil
 
 RANDOM_TRAIN_RATIO=0.7
 RANDOM_VALID_RATIO=0.2
@@ -71,7 +72,23 @@ def get_argv():
 
 def create_from_image(filepath: str, _type: str, argv: argparse.Namespace):
   name = '.'.join(path.basename(filepath).split('.')[:-1])
-  if filepath.split('.')[-1].lower() == 'tif':
+  extname = filepath.split('.')[-1].lower()
+
+  # if external exists
+  external_annotations = path.join(path.dirname(filepath), f'{name}.txt')
+  if os.path.exists(external_annotations):
+    temp = cv.imread(filepath) # convert the image
+    cv.imwrite(path.join(argv.output, _type, 'images', f'external_{name}.{argv.extension}'), temp)
+    
+    found_entities = set()
+    shutil.copy(external_annotations, path.join(argv.output, _type, 'labels', f'external_{name}.txt'))
+    with open(external_annotations, 'rt') as tempFile:
+      for line in tempFile:
+        _id, _x, _y, _w, _h = line.rstrip().split()
+        found_entities.add(int(_id))
+    return filepath, found_entities
+
+  if extname == 'tif':
     image, labels = annotate_layer_file(filepath, format=argv.format, debug_draw=argv.debug)
   else:
     image, labels = annotate_file(filepath, format=argv.format, debug_draw=argv.debug, area_threshold=argv.area_threshold)
