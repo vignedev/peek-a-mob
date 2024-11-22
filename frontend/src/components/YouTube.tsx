@@ -15,7 +15,7 @@ const EntityColors: Record<string, { line: string, box: string }> = {
     box: '#ff6900'
   },
   cow: {
-    line: 'rgba(0, 255, 0, 0.03',
+    line: 'rgba(0, 255, 0, 0.03)',
     box: '#4F2E19'
   },
   creeper: {
@@ -38,6 +38,14 @@ const EntityColors: Record<string, { line: string, box: string }> = {
     line: 'rgba(255, 0, 0, 0.03)',
     box: '#6D2CD9'
   }
+}
+
+export const RandomColorFromString = (text: string, alpha: number = 0.03) => {
+  let value = 0
+  for (let i = 0; i < text.length; ++i)
+    value += Math.pow(text.charCodeAt(i), 2.6)
+
+  return `hsla(${value % 360}, 80%, 45%, ${alpha})`
 }
 
 export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInfo, detections: EntityDetection, style?: React.CSSProperties }) => {
@@ -85,7 +93,7 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
         ctx.drawLine(
           detection.time / duration * ctx.canvas.width + ctx.lineWidth / 2,
           lineHeight * idx, detection.time / duration * ctx.canvas.width + ctx.lineWidth / 2, lineHeight * (idx + 1),
-          2, EntityColors[entName]?.line || '#ff000005'
+          2, EntityColors[entName]?.line || RandomColorFromString(entName) || '#ff000005'
         )
       })
     })
@@ -242,7 +250,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, videoInfo: Video, 
 
         if (dist <= frameThreshold) {
           alpha = 1
-          color = EntityColors[name]?.box || 'red'
+          color = EntityColors[name]?.box || RandomColorFromString(name, 1.0) || 'red'
         } else if (dist <= fadeOutSeconds && currentTime > entity.time) {
           alpha = (1 - (currentTime - entity.time) / fadeOutSeconds) * 0.015
           color = `rgba(255, 0, 255, ${alpha})`
