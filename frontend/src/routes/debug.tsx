@@ -3,10 +3,14 @@ import { YouTubeWithTimeline } from "../components/YouTube"
 import { useEffect, useState } from "react"
 import { DetailedVideo, Video, api } from "../libs/api"
 import meow from '../assets/plink-cat.gif'
+import { useLocation } from "react-router-dom"
 
 function DebugPage() {
-  const [modelId, setModelId] = useState<number>()
-  const [youtubeId, setYoutubeId] = useState<string>()
+  const location = useLocation()
+  const state = location.state as { modelId?: number, youtubeId?: string }
+
+  const [modelId, setModelId] = useState<number | null>(state.modelId == undefined ? null : state.modelId)
+  const [youtubeId, setYoutubeId] = useState<string | undefined>(state.youtubeId)
   const [videoOptions, setVideoOptions] = useState<Video[]>()
   const [videoInfo, setVideoInfo] = useState<DetailedVideo>()
 
@@ -28,14 +32,20 @@ function DebugPage() {
 
   return (
     <Flex direction='column' gap='4'>
-      <Grid columns='max-content 1fr' gap='1' gapX='3' justify='end' align='center'>
+      <Grid columns='max-content minmax(0, 1fr)' gap='1' gapX='3' justify='end' align='center'>
         <Text color='gray'>uwu select a video:</Text>
         <Select.Root value={youtubeId} onValueChange={setYoutubeId}>
           <Select.Trigger placeholder={videoOptions ? 'Select a video! |o wo)b' : 'NOW LOADING'} />
           <Select.Content>
             {
               videoOptions ? (
-                videoOptions.map(video => <Select.Item key={video.youtubeId} value={video.youtubeId}>{video.videoTitle || video.youtubeId}</Select.Item>)
+                videoOptions.map(video =>
+                  <Select.Item
+                    key={video.youtubeId}
+                    value={video.youtubeId}
+                  >
+                    {video.videoTitle || video.youtubeId}
+                  </Select.Item>)
               ) : null
             }
           </Select.Content>

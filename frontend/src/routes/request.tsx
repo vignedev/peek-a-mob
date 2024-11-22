@@ -1,13 +1,16 @@
-import { Badge, BadgeProps, Box, Button, Checkbox, Code, Dialog, Flex, Grid, Heading, Progress, Select, Spinner, Table, Text, TextField, Tooltip } from "@radix-ui/themes"
+import { Badge, BadgeProps, Box, Button, Checkbox, Code, ContextMenu, Dialog, Flex, Grid, Heading, Progress, Select, Spinner, Table, Text, TextField, Tooltip } from "@radix-ui/themes"
 import Link from "../components/Link"
 import { Job, Model, Video, api } from "../libs/api"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import ErrorCallout from "../components/ErrorCallouts"
+import { useNavigate } from "react-router-dom"
+import { ExternalLinkIcon, FileTextIcon } from "@radix-ui/react-icons"
 
 // https://stackoverflow.com/a/6904504
 const YOUTUBE_REGEX = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i
 
 const JobTableRow = (props: { data: Job, models: Record<number, Model> }) => {
+  const navigate = useNavigate()
   const { data, models } = props
 
   const percentage: number = data.progress ? (data.progress.currentFrame / data.progress.totalFrames * 100) : 0
@@ -25,30 +28,62 @@ const JobTableRow = (props: { data: Job, models: Record<number, Model> }) => {
   const model: Model | undefined = models[data.modelId]
 
   return (
-    <Table.Row>
-      <Table.Cell>
-        <Link to={`/api/jobs/${data.id}/logs`} reloadDocument>#{data.id}</Link>
-      </Table.Cell>
-      <Table.Cell maxWidth='20rem'>
-        <Link to={data.videoUrl}>{data.videoUrl}</Link>
-      </Table.Cell>
-      <Table.Cell maxWidth='20rem'><Code>{model?.modelName || model?.modelPath || data.modelId}</Code></Table.Cell>
-      <Table.Cell><Badge color={colorMapping[data.status]}>{data.status}</Badge></Table.Cell>
-      <Table.Cell>
-        <Flex align='center' gapX='4'>
-          <Box width='7rem'>
-            <Progress color={colorMapping[data.status]} value={percentage} />
-          </Box>
-          {percentage.toFixed(1)}%
-        </Flex>
-      </Table.Cell>
-      <Table.Cell>
-        {data.progress ? (1.0 / data.progress.rate.average).toFixed(2) : null}
-      </Table.Cell>
-      <Table.Cell>
-        {(eta == null) ? 'No ETA' : <Tooltip content={<span>in {eta.toFixed(1)} seconds<br />{new Date(Date.now() + eta * 1000).toLocaleString()}</span>}><Text>{new Date(eta * 1000).toISOString().substring(11, 19)}</Text></Tooltip>}
-      </Table.Cell>
-    </Table.Row>
+    <ContextMenu.Root>
+      <ContextMenu.Trigger>
+        <Table.Row>
+          <Table.Cell>
+            #{data.id}
+          </Table.Cell>
+          <Table.Cell maxWidth='20rem'>
+            <Link to={data.videoUrl}>{data.videoUrl}</Link><br />
+            {
+              data.status === 'finished' ? (
+                <Link to={`/debug`} state={{
+                  youtubeId: data.videoUrl.match(YOUTUBE_REGEX)?.[1] || null,
+                  modelId: data.modelId
+                }}>Open in debug</Link>
+              ) : null
+            }
+          </Table.Cell>
+          <Table.Cell maxWidth='20rem'><Code>{model?.modelName || model?.modelPath || data.modelId}</Code></Table.Cell>
+          <Table.Cell><Badge color={colorMapping[data.status]}>{data.status}</Badge></Table.Cell>
+          <Table.Cell>
+            <Flex align='center' gapX='4'>
+              <Box width='7rem'>
+                <Progress color={colorMapping[data.status]} value={percentage} />
+              </Box>
+              {percentage.toFixed(1)}%
+            </Flex>
+          </Table.Cell>
+          <Table.Cell>
+            {
+              (eta == null) ?
+                'No ETA' :
+                (
+                  <Tooltip content={
+                    <span>
+                      in {eta.toFixed(1)} seconds {data.progress ? `(${(1.0 / data.progress.rate.average).toFixed(2)} FPS)` : ''}<br />
+                      {new Date(Date.now() + eta * 1000).toLocaleString()}
+                    </span>
+                  }>
+                    <Text>{new Date(eta * 1000).toISOString().substring(11, 19)}</Text>
+                  </Tooltip>
+                )
+            }
+          </Table.Cell>
+        </Table.Row>
+      </ContextMenu.Trigger >
+      <ContextMenu.Content>
+        <ContextMenu.Item disabled={data.status !== 'finished'} onSelect={() => navigate('/debug', { state: { modelId: data.modelId, youtubeId: data.videoUrl.match(YOUTUBE_REGEX)?.[1] || null } })}>
+          <ExternalLinkIcon />
+          Open in debug
+        </ContextMenu.Item>
+        <ContextMenu.Item onSelect={() => window.open(`/api/jobs/${data.id}/logs`, '_blank')}>
+          <FileTextIcon />
+          Show logs
+        </ContextMenu.Item>
+      </ContextMenu.Content>
+    </ContextMenu.Root >
   )
 }
 
@@ -256,7 +291,6 @@ const RequestPage = () => {
             <Table.ColumnHeaderCell>Model</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Progress</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>FPS</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>ETA</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
