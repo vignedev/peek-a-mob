@@ -29,10 +29,10 @@ const JobTableRow = (props: { data: Job, models: Record<number, Model> }) => {
       <Table.Cell>
         <Link to={`/api/jobs/${data.id}/logs`} reloadDocument>#{data.id}</Link>
       </Table.Cell>
-      <Table.Cell>
+      <Table.Cell maxWidth='20rem'>
         <Link to={data.videoUrl}>{data.videoUrl}</Link>
       </Table.Cell>
-      <Table.Cell><Code>{model?.modelName || model?.modelPath || data.modelId}</Code></Table.Cell>
+      <Table.Cell maxWidth='20rem'><Code>{model?.modelName || model?.modelPath || data.modelId}</Code></Table.Cell>
       <Table.Cell><Badge color={colorMapping[data.status]}>{data.status}</Badge></Table.Cell>
       <Table.Cell>
         <Flex align='center' gapX='4'>
