@@ -8,8 +8,8 @@ import random
 import sys
 import shutil
 
-RANDOM_TRAIN_RATIO=0.7
-RANDOM_VALID_RATIO=0.2
+RANDOM_TRAIN_RATIO=0.76
+RANDOM_VALID_RATIO=0.25
 RANDOM_TEST_RATIO=0.1 # ignored btw
 
 def get_argv():
