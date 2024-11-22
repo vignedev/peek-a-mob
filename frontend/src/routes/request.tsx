@@ -36,7 +36,7 @@ const JobTableRow = (props: { data: Job, models: Record<number, Model> }) => {
       <Table.Cell><Badge color={colorMapping[data.status]}>{data.status}</Badge></Table.Cell>
       <Table.Cell>
         <Flex align='center' gapX='4'>
-          <Box width='10rem'>
+          <Box width='7rem'>
             <Progress color={colorMapping[data.status]} value={percentage} />
           </Box>
           {percentage.toFixed(1)}%
