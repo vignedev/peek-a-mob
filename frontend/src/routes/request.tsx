@@ -1,7 +1,7 @@
 import { Badge, BadgeProps, Box, Button, Checkbox, Code, Dialog, Flex, Grid, Heading, Progress, Select, Spinner, Table, Text, TextField, Tooltip } from "@radix-ui/themes"
 import Link from "../components/Link"
 import { Job, Model, Video, api } from "../libs/api"
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import ErrorCallout from "../components/ErrorCallouts"
 
 // https://stackoverflow.com/a/6904504
@@ -188,8 +188,7 @@ const RequestPage = () => {
   const [models, setModels] = useState<Record<number, Model>>({})
   const [error, setError] = useState<any>()
 
-
-  function fetchJobList() {
+  const fetchJobList = useCallback(() => {
     return api.jobs.getAll()
       .then(jobs => {
         setError(null)
@@ -201,7 +200,7 @@ const RequestPage = () => {
         console.error(error)
         setError(error)
       })
-  }
+  }, [jobs])
 
   function fetchModelList() {
     api.models.getAll()
@@ -214,7 +213,7 @@ const RequestPage = () => {
       .catch(console.error)
   }
 
-  function killActiveJob() {
+  const killActiveJob = useCallback(() => {
     if (!jobs) return
     const job = jobs.find(job => job.status === 'active')
 
@@ -225,7 +224,7 @@ const RequestPage = () => {
         console.error(err)
         setError(err)
       })
-  }
+  }, [jobs])
 
   useEffect(() => {
     fetchJobList()
@@ -265,7 +264,8 @@ const RequestPage = () => {
           {
             jobs ?
               jobs.map(job => <JobTableRow key={job.id} data={job} models={models} />) :
-              <Table.Row><Table.Cell><Spinner /></Table.Cell></Table.Row>
+              error ? null :
+                <Table.Row><Table.Cell><Spinner /></Table.Cell></Table.Row>
           }
         </Table.Body>
       </Table.Root>
