@@ -50,7 +50,13 @@ const UploadButtonDialog = (props: { onUpload: () => void }) => {
             <TextField.Root value={name} onChange={e => setName(e.target.value)} disabled={busy} placeholder='Model name' />
 
             <Text>File: </Text>
-            <input onChange={e => setFile(e.target.files![0])} ref={fileRef} disabled={busy} accept='.pt' multiple={false} type='file' />
+            <input onChange={e => {
+              const file = e.target.files![0]
+              setFile(file)
+
+              if (!name)
+                setName(`${file.name} (${new Date(file.lastModified).toISOString()})`)
+            }} ref={fileRef} disabled={busy} accept='.pt' multiple={false} type='file' />
           </Grid>
 
           <ErrorCallout error={error} />
@@ -73,23 +79,17 @@ const ModelTableRow = (props: { model: Model, onUpdate: () => void }) => {
   const { model, onUpdate } = props
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<any>()
 
   const [name, setName] = useState<string>(model.modelName || '')
   const renameModel = () => {
     setBusy(true)
     api.models.rename(model.modelId, name)
       .then(_newModel => {
-        props.onUpdate()
+        onUpdate()
         setOpen(false)
       })
-      .catch(err => {
-        console.error(err)
-        setError(err)
-      })
-      .finally(() => {
-        setBusy(false)
-      })
+      .catch(err => console.error(err))
+      .finally(() => setBusy(false))
   }
 
   return (
