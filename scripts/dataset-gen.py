@@ -106,9 +106,12 @@ def get_dataset_images(root: str, _type: str, seed: str):
     if has_dot:
       continue
 
-    n_files = len(files)
+    # filtered files: only permit (for now) png, jp(e)g and tif files
+    f_files = [ f_name for f_name in files if f_name.split('.')[-1].lower() in [ 'png', 'jpg', 'jpeg', 'tif' ] ]
+
+    n_files = len(f_files)
     if _type == 'random_sort':
-      randomizer.shuffle(files)
+      randomizer.shuffle(f_files)
 
     for i in range(n_files):
       ratio = (i+1) / n_files
@@ -119,7 +122,7 @@ def get_dataset_images(root: str, _type: str, seed: str):
       else:
         given_type = 'test'
 
-      bucket.append((path.join(rootdir, files[i]), given_type))
+      bucket.append((path.join(rootdir, f_files[i]), given_type))
   return bucket
 
 def get_label_files(root: str):
