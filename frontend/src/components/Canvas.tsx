@@ -56,16 +56,19 @@ export const Canvas = (props: CanvasProps) => {
 
   // monitoring the size and updating the canvasSize
   useEffect(() => {
-    const loop = setInterval(() => {
-      if (!canvas) return
+    let doLoop = true
+    function loop() {
+      if (!doLoop || !canvas) return
       if (canvas.width != canvas.clientWidth || canvas.height != canvas.clientHeight) {
         canvas.width = canvas.clientWidth
         canvas.height = canvas.clientHeight
         props.onResize?.(canvas)
-        // props.onDraw?.(canvas.getContext('2d')!, mouse)
       }
-    }, 16)
-    return () => clearInterval(loop)
+      requestAnimationFrame(loop)
+    }
+    loop()
+
+    return () => { doLoop = false }
   }, [canvas, props.onResize])
 
   // the canvas, wowie
