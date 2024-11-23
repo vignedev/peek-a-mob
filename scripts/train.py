@@ -35,8 +35,9 @@ if __name__ == '__main__':
     plots=True,
     save=True,
     degrees=10.0,
+    translate=0.2,
     # perspective=0.001,
-    copy_paste=1.0,
+    copy_paste=0.85,
     erasing=0.6,
     crop_fraction=0.85
   )
