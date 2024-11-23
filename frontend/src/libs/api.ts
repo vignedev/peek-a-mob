@@ -56,6 +56,7 @@ export type Job = {
  * @param after How many seconds should it get as well
  * @param before Back seeking if necessary (basically time-before)
  * @returns Object where keys are the detected classes, and their value is the list of bounding boxes
+ * @TODO TODO: refactor this to use an object for ss, to and conf params instead of this amalgimation
  */
 async function getDetections(youtubeId: string, time: number, modelId: number | null = null, after: number = 5, before: number = 0): Promise<EntityDetection> {
   const entityMap = (await getEntities()).reduce((acc, val) => {
@@ -63,7 +64,17 @@ async function getDetections(youtubeId: string, time: number, modelId: number | 
     return acc
   }, {} as Record<number, string>)
   const video = await getVideo(youtubeId)
-  const occurances: EntityOccurance[] = await (await strictFetch(`/api/videos/${youtubeId}/detections/${modelId ?? video.models.shift()!.modelId}?ss=${time - before}&to=${time + after}`)).json()
+  const usedModelId = modelId ?? video.models.shift()!.modelId
+  const searchQuery = Object.entries({
+    ss: time - before,
+    to: time + after,
+    conf: 0.85
+  }).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&')
+  const occurances: EntityOccurance[] = await (
+    await strictFetch(
+      `/api/videos/${youtubeId}/detections/${usedModelId}?${searchQuery}`
+    )
+  ).json()
 
   const entities: EntityDetection = {}
   for (const occurance of occurances) {
