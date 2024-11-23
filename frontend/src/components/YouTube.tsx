@@ -243,7 +243,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, videoInfo: Video, 
       for (const entity of rollingDetections[name]) {
         const [bx, by, bw, bh] = entity.bbox
 
-        const frameThreshold = 1 / (videoInfo.frameRate * 1.5)
+        const frameThreshold = 1.0 / videoInfo.frameRate
         const dist = Math.abs(entity.time - currentTime)
         const fadeOutSeconds = 1
         let color = 'magenta', alpha = 0.0
@@ -315,7 +315,7 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number }
     const loop = async () => {
       while (condition) {
         if (player) setTimeInfo([await player.getCurrentTime(), await player.getDuration()])
-        await wait(1000 / 30) // shannon theorem be damned
+        await wait(1000 / videoInfo.frameRate) // shannon theorem be damned
       }
     }
     loop()
