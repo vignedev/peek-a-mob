@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { DetailedVideo, Video, api } from "../libs/api"
 import meow from '../assets/plink-cat.gif'
 import { useLocation } from "react-router-dom"
+import ErrorCallout from "../components/ErrorCallouts"
 
 function DebugPage() {
   const location = useLocation()
@@ -13,11 +14,15 @@ function DebugPage() {
   const [youtubeId, setYoutubeId] = useState<string | undefined>(state?.youtubeId)
   const [videoOptions, setVideoOptions] = useState<Video[]>()
   const [videoInfo, setVideoInfo] = useState<DetailedVideo>()
+  const [error, setError] = useState()
 
   useEffect(() => {
     api.videos.getAll()
       .then(setVideoOptions)
-      .catch(console.error)
+      .catch(err => {
+        console.error(err)
+        setError(err)
+      })
   }, [])
 
   useEffect(() => {
@@ -27,7 +32,10 @@ function DebugPage() {
         setVideoInfo(info)
         setModelId(info.models[0].modelId)
       })
-      .catch(console.error)
+      .catch(err => {
+        console.error(err)
+        setError(err)
+      })
   }, [youtubeId])
 
   return (
@@ -72,6 +80,8 @@ function DebugPage() {
           </Select.Content>
         </Select.Root>
       </Grid>
+
+      <ErrorCallout error={error} />
 
       {
         (videoInfo && modelId != null && typeof modelId !== 'undefined') ?
