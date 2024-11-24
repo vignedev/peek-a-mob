@@ -94,6 +94,7 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
     // ctx.fillText(`${currentTime} | ${duration} | ${Date.now()} | ${!!cachedTimeline}`, 32, 32)
 
     // display time in seconds as well as the progress
+    ctx.font = '12px monospace'
     ctx.fillStyle = '#f094'
     ctx.fillRect(0, 0, currentTime / duration * ctx.canvas.width, ctx.canvas.height)
 
