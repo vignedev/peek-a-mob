@@ -9,8 +9,8 @@ function DebugPage() {
   const location = useLocation()
   const state = location.state as { modelId?: number, youtubeId?: string }
 
-  const [modelId, setModelId] = useState<number | null>(state.modelId == undefined ? null : state.modelId)
-  const [youtubeId, setYoutubeId] = useState<string | undefined>(state.youtubeId)
+  const [modelId, setModelId] = useState<number | null>(state?.modelId == undefined ? null : state.modelId)
+  const [youtubeId, setYoutubeId] = useState<string | undefined>(state?.youtubeId)
   const [videoOptions, setVideoOptions] = useState<Video[]>()
   const [videoInfo, setVideoInfo] = useState<DetailedVideo>()
 
