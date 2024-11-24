@@ -112,6 +112,7 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
         return res.send({ error: 'Job not found' }, 404)
 
       const write = (buffer: Buffer) => new Promise((resolve) => res.write(buffer, resolve))
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8')
       res.statusCode = 200
       for (const buffer of job.logs)
         await write(buffer)
