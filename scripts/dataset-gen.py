@@ -232,6 +232,11 @@ if __name__ == '__main__':
         # f'names: [{names}]'
       ]))
 
-      file.write('\n'.join([ f'    {remapper[id]}: {entity_bidict[id]}' for id in unique_entities ]))
+      for idx in unique_entities:
+        if idx in entity_bidict:
+          file.write(f'    {remapper[idx]}: {entity_bidict[idx]}\n')
+        else:
+          file.write(f'    {remapper[idx]}: UNKNOWN_ENTITY_CALL_THE_SCP\n')
+          print(f'\n[w] !!WARNING!! FOUND AN UNIDENTIFIED ENTITY !! (remapper={remapper[idx]}, idx={idx})')
   
   print('\n[i] finito 🤌')
