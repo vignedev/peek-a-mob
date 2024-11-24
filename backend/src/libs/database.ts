@@ -56,7 +56,9 @@ export const videos = {
 
 export const entities = {
   async getAll() {
-    return db.select().from(schema.entities)
+    return db.select()
+      .from(schema.entities)
+      .orderBy(schema.entities.entityId)
   }
 }
 
@@ -85,7 +87,8 @@ export const detections = {
     const entities_list = await (
       (options.entityNames && options.entityNames.length != 0)
         ? db.query.entities.findMany({
-          where: (table, op) => op.inArray(table.entityName, options.entityNames!)
+          where: (table, op) => op.inArray(table.entityName, options.entityNames!),
+          orderBy: schema.entities.entityId
         })
         : entities.getAll()
     )

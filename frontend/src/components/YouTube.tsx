@@ -47,8 +47,8 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
     // print of the timelines
     let printed = new Set()
     let lineHeight = Math.floor(ctx.canvas.height / Object.keys(detections).length)
-    Object.keys(detections).sort().forEach((entName, idx) => {
-      detections[entName].forEach(detection => {
+    Object.entries(detections).forEach(([entName, detections], idx) => {
+      detections.forEach(detection => {
         // borders
         if (idx != 0 && !printed.has(entName)) {
           ctx.drawLine(
@@ -117,8 +117,7 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
     // print of the timelines
     let printed = new Set()
     let lineHeight = Math.floor(ctx.canvas.height / Object.keys(detections).length)
-    Object.keys(detections).sort().forEach((entName, idx) => {
-      const occurances = detections[entName]
+    Object.entries(detections).forEach(([entName, occurances], idx) => {
       occurances.forEach(detection => {
         // labeling
         if (detection.time < currentTime || printed.has(entName)) return
@@ -212,7 +211,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, videoInfo: Video, 
       for (const entity of rollingDetections[name]) {
         const [bx, by, bw, bh] = entity.bbox
 
-        const frameThreshold = 1.0 / (videoInfo.frameRate * 1.5)
+        const frameThreshold = 1.0 / (videoInfo.frameRate)
         const dist = Math.abs(entity.time - currentTime)
 
         if (dist <= frameThreshold) {
