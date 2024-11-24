@@ -11,11 +11,13 @@ import RootPage from './routes/root.tsx'
 import RequestPage from './routes/request.tsx'
 import AdminPage from './routes/admin.tsx'
 import SearchDetailPage from './routes/search-detail.tsx'
+import { ErrorRouteCallout } from './components/ErrorCallouts.tsx'
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <RootPage />,
+    errorElement: <ErrorRouteCallout />,
     children: [
       {
         index: true,
