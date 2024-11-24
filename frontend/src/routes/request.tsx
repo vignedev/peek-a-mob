@@ -31,22 +31,25 @@ const JobTableRow = (props: { data: Job, models: Record<number, Model> }) => {
     <ContextMenu.Root>
       <ContextMenu.Trigger>
         <Table.Row>
-          <Table.Cell>
-            #{data.id}
-          </Table.Cell>
           <Table.Cell maxWidth='20rem'>
-            <Link to={data.videoUrl}>{data.videoUrl}</Link><br />
-            {
-              data.status === 'finished' ? (
-                <Link to={`/debug`} state={{
-                  youtubeId: data.videoUrl.match(YOUTUBE_REGEX)?.[1] || null,
-                  modelId: data.modelId
-                }}>Open in debug</Link>
-              ) : null
-            }
+            <Link to={data.videoUrl}>{data.videoUrl}</Link>
           </Table.Cell>
           <Table.Cell maxWidth='20rem'><Code>{model?.modelName || model?.modelPath || data.modelId}</Code></Table.Cell>
-          <Table.Cell><Badge color={colorMapping[data.status]}>{data.status}</Badge></Table.Cell>
+          <Table.Cell>
+            <Tooltip content={(
+              <>
+                <span>Current rate: {(1.0 / data.progress?.rate.last!).toFixed(2)} FPS</span><br />
+                <span>Average rate: {(1.0 / data.progress?.rate.average!).toFixed(2)} FPS</span><br />
+
+                <span>Started: {data.start ? new Date(data.start).toLocaleString() : 'not yet'}</span><br />
+                <span>Ended: {data.end ? new Date(data.end).toLocaleString() : 'not yet'}</span><br />
+
+                <span>Duration: {data.end ? new Date(data.end - data.start!).toISOString().substring(11, 19) : 'not yet'}</span><br />
+              </>
+            )} hidden={!data.progress}>
+              <Badge color={colorMapping[data.status]}>{data.status}</Badge>
+            </Tooltip>
+          </Table.Cell>
           <Table.Cell>
             <Flex align='center' gapX='4'>
               <Box width='7rem'>
@@ -60,12 +63,12 @@ const JobTableRow = (props: { data: Job, models: Record<number, Model> }) => {
               (eta == null) ?
                 'No ETA' :
                 (
-                  <Tooltip content={
+                  <Tooltip content={(
                     <span>
                       in {eta.toFixed(1)} seconds {data.progress ? `(${(1.0 / data.progress.rate.average).toFixed(2)} FPS)` : ''}<br />
-                      {new Date(Date.now() + eta * 1000).toLocaleString()}
+                      {new Date(Date.now() + eta * 1000).toLocaleString()}<br />
                     </span>
-                  }>
+                  )} hidden={data.status !== 'active'}>
                     <Text>{new Date(eta * 1000).toISOString().substring(11, 19)}</Text>
                   </Tooltip>
                 )
@@ -74,12 +77,18 @@ const JobTableRow = (props: { data: Job, models: Record<number, Model> }) => {
         </Table.Row>
       </ContextMenu.Trigger >
       <ContextMenu.Content>
-        <ContextMenu.Item disabled={data.status !== 'finished'} onSelect={() => navigate('/debug', { state: { modelId: data.modelId, youtubeId: data.videoUrl.match(YOUTUBE_REGEX)?.[1] || null } })}>
-          <ExternalLinkIcon />
+        <ContextMenu.Item disabled>Job ID: #{data.id}</ContextMenu.Item>
+        <ContextMenu.Item
+          disabled={data.status !== 'finished'}
+          onSelect={() => navigate('/debug', { state: { modelId: data.modelId, youtubeId: data.videoUrl.match(YOUTUBE_REGEX)?.[1] || null } })}
+          shortcut={<ExternalLinkIcon /> as unknown as string}
+        >
           Open in debug
         </ContextMenu.Item>
-        <ContextMenu.Item onSelect={() => window.open(`/api/jobs/${data.id}/logs`, '_blank')}>
-          <FileTextIcon />
+        <ContextMenu.Item
+          onSelect={() => window.open(`/api/jobs/${data.id}/logs`, '_blank')}
+          shortcut={<FileTextIcon /> as unknown as string}
+        >
           Show logs
         </ContextMenu.Item>
       </ContextMenu.Content>
@@ -286,7 +295,6 @@ const RequestPage = () => {
       <Table.Root>
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>Job ID</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Video URL</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Model</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>

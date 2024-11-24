@@ -38,6 +38,8 @@ export type Job = {
   modelId: number,
   status: JobStatus,
   logs?: Buffer[],
+  start: number | null,
+  end: number | null,
   progress: {
     currentFrame: number,
     totalFrames: number,

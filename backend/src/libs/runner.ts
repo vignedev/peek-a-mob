@@ -17,6 +17,8 @@ export type Job = {
   modelId: number,
   status: JobStatus,
   logs: Buffer[],
+  start: number | null,
+  end: number | null,
   progress: {
     currentFrame: number,
     totalFrames: number,
@@ -53,6 +55,7 @@ async function onJobUpdate(fromIndex: number) {
   }
 
   // set it as active (until it fails or is cancelled)
+  jobList[idx].start = Date.now()
   jobList[idx].status = 'active'
   const job = jobList[idx]
 
@@ -86,6 +89,7 @@ async function onJobUpdate(fromIndex: number) {
   })
 
   child.once('error', (err) => {
+    jobList[idx].end = Date.now()
     jobList[idx].status = 'failed'
     jobList[idx].logs.push(Buffer.from(`\n[pam/backend] Arbitrary spawning issue for analysis: ${JSON.stringify(err)}\n`))
     currentJob = null
@@ -105,17 +109,20 @@ async function onJobUpdate(fromIndex: number) {
       importer.stdout.on('data', chunk => jobList[idx].logs.push(chunk))
       importer.stderr.on('data', chunk => jobList[idx].logs.push(chunk))
       importer.once('error', (err) => {
+        jobList[idx].end = Date.now()
         jobList[idx].status = 'failed'
         jobList[idx].logs.push(Buffer.from(`\n[pam/backend] Arbitrary spawning issue for import: ${JSON.stringify(err)}\n`))
         currentJob = null
         onJobUpdate(idx)
       }).once('exit', (code, signal) => {
+        jobList[idx].end = Date.now()
         jobList[idx].status = code == 0 ? 'finished' : 'failed'
         jobList[idx].logs.push(Buffer.from(`\n[pam/backend] Importing exited with code=${code} signal=${signal}\n`))
         currentJob = null
         onJobUpdate(idx)
       })
     } else {
+      jobList[idx].end = Date.now()
       jobList[idx].status = 'failed'
       currentJob = null
       onJobUpdate(idx)
@@ -137,7 +144,8 @@ export const Runner = {
     jobList.push({
       id, modelId, videoUrl,
       logs: [], status: 'waiting',
-      progress: null
+      progress: null,
+      start: null, end: null
     })
 
     onJobUpdate(id - 1)
