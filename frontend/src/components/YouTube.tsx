@@ -9,37 +9,6 @@ import { expandContext } from '../libs/canvasEx'
 type TimeInfo = [currentTime: number, duration: number]
 type ValidRange = [start: number, end: number]
 
-const EntityColors: Record<string, { line: string, box: string }> = {
-  chicken: {
-    line: 'rgba(0, 255, 0, 0.03)',
-    box: '#ff6900'
-  },
-  cow: {
-    line: 'rgba(0, 255, 0, 0.03)',
-    box: '#4F2E19'
-  },
-  creeper: {
-    line: 'rgba(255, 0, 0, 0.03)',
-    box: '#0A6D14'
-  },
-  skeleton: {
-    line: 'rgba(255, 0, 0, 0.03)',
-    box: '#888888'
-  },
-  spider: {
-    line: 'rgba(255, 0, 0, 0.03)',
-    box: '#181D24'
-  },
-  zombie: {
-    line: 'rgba(255, 0, 0, 0.03)',
-    box: '#479814'
-  },
-  enderman: {
-    line: 'rgba(255, 0, 0, 0.03)',
-    box: '#6D2CD9'
-  }
-}
-
 export const RandomColorFromString = (text: string, alpha: number = 0.03) => {
   let value = 0
   for (let i = 0; i < text.length; ++i)
@@ -93,7 +62,7 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
         ctx.drawLine(
           detection.time / duration * ctx.canvas.width + ctx.lineWidth / 2,
           lineHeight * idx, detection.time / duration * ctx.canvas.width + ctx.lineWidth / 2, lineHeight * (idx + 1),
-          2, EntityColors[entName]?.line || RandomColorFromString(entName) || '#ff000005'
+          2, RandomColorFromString(entName)
         )
       })
     })
@@ -233,7 +202,7 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, videoInfo: Video, 
       x = 0; w = ctx.canvas.width;
       h = ctx.canvas.height / videoAr * aspect;
       y = (ctx.canvas.height - h) / 2;
-    } else { // == 16/9
+    } else { // == is correct aspect ratio
       x = y = 0;
       w = ctx.canvas.width;
       h = ctx.canvas.height;
@@ -243,48 +212,19 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, videoInfo: Video, 
       for (const entity of rollingDetections[name]) {
         const [bx, by, bw, bh] = entity.bbox
 
-        const frameThreshold = 1.0 / videoInfo.frameRate
+        const frameThreshold = 1.0 / (videoInfo.frameRate * 1.5)
         const dist = Math.abs(entity.time - currentTime)
-        const fadeOutSeconds = 1
-        let color = 'magenta', alpha = 0.0
 
         if (dist <= frameThreshold) {
-          alpha = 1
-          color = EntityColors[name]?.box || RandomColorFromString(name, 1.0) || 'red'
-        } else if (dist <= fadeOutSeconds && currentTime > entity.time) {
-          alpha = (1 - (currentTime - entity.time) / fadeOutSeconds) * 0.015
-          color = `rgba(255, 0, 255, ${alpha})`
-        } else {
-          continue
-        }
-
-        const header = `${name} ${(entity.confidence * 100).toFixed(1)}%`
-        const headerSize = ctx.measureText(header)
-        const headerHeight = headerSize.fontBoundingBoxAscent + headerSize.fontBoundingBoxDescent + 4
-
-        if (alpha == 1.0) {
-          ctx.lineWidth = 8
-          ctx.fillStyle = ctx.strokeStyle = '#000000ff';
-          ctx.strokeRect(
+          ctx.drawBoundingBox(
             x + bx * w,
             y + by * h,
             bw * w,
-            bh * h
+            bh * h,
+            `${name} ${(entity.confidence * 100.0).toFixed(2)}%`,
+            RandomColorFromString(name, 1.0)
           )
-          ctx.fillRect(x + bx * w - ctx.lineWidth / 2, y + by * h - headerHeight - ctx.lineWidth / 4, headerSize.width + 4 + ctx.lineWidth / 2, headerHeight)
         }
-
-        ctx.lineWidth = 4
-        ctx.fillStyle = ctx.strokeStyle = color;
-        ctx.strokeRect(
-          x + bx * w,
-          y + by * h,
-          bw * w,
-          bh * h
-        )
-        ctx.fillRect(x + bx * w - ctx.lineWidth / 2 - 1, y + by * h - headerHeight, headerSize.width + 4 + ctx.lineWidth / 2, headerHeight)
-        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`
-        ctx.fillText(header, x + bx * w, y + by * h - 4)
       }
     }
   }, [player, rollingDetections, timeInfo])
