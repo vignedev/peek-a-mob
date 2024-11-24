@@ -32,7 +32,7 @@ def get_argv():
   parser.add_argument(
     '-t', '--type',
     help='should this be a train, validation or test dataset. or sort/random_sort, which will spread them around in 70:20:10 ratio. random will randomize the order!',
-    default='train',
+    default='random_sort',
     choices=['train', 'valid', 'test', 'sort', 'random_sort']
   )
   parser.add_argument(
@@ -40,7 +40,7 @@ def get_argv():
     help='which format to output the annotations as, or rather what should the first two normalized coordinates represent\n'
          '(center: center of bounding box, bbox: top-left corner of bounding box)',
     choices=['center', 'bbox'],
-    required=True
+    default='center'
   )
   parser.add_argument(
     '-n', '--ncpu',
@@ -55,7 +55,7 @@ def get_argv():
   parser.add_argument(
     '-x', '--extension',
     help='the file extension for the final images to use (eg. for images.png use "png")',
-    default='png'
+    default='jpg'
   )
   parser.add_argument(
     '-a', '--area_threshold',
