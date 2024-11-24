@@ -70,7 +70,7 @@ async function getDetections(youtubeId: string, time: number, modelId: number | 
   const searchQuery = Object.entries({
     ss: time - before,
     to: time + after,
-    conf: 0.85
+    conf: 0.7
   }).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&')
   const occurances: EntityOccurance[] = await (
     await strictFetch(

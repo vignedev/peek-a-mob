@@ -255,7 +255,7 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number }
     const loop = async () => {
       while (condition) {
         if (player) setTimeInfo([await player.getCurrentTime(), await player.getDuration()])
-        await wait(1000 / videoInfo.frameRate) // shannon theorem be damned
+        await wait(1000 / (videoInfo.frameRate * 2.0)) // shannon theorem be <respected>
       }
     }
     loop()
