@@ -40,6 +40,7 @@ export type Job = {
   logs?: Buffer[],
   start: number | null,
   end: number | null,
+  exportable: boolean,
   progress: {
     currentFrame: number,
     totalFrames: number,

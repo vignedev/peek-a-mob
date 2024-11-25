@@ -19,6 +19,7 @@ export type Job = {
   logs: Buffer[],
   start: number | null,
   end: number | null,
+  result: string | null,
   progress: {
     currentFrame: number,
     totalFrames: number,
@@ -100,6 +101,7 @@ async function onJobUpdate(fromIndex: number) {
 
     // on success, import the csv into the system
     if (code == 0) {
+      jobList[idx].result = filename
       jobList[idx].status = 'importing'
       const importer = spawn('npm', [
         'run',
@@ -145,7 +147,8 @@ export const Runner = {
       id, modelId, videoUrl,
       logs: [], status: 'waiting',
       progress: null,
-      start: null, end: null
+      start: null, end: null,
+      result: null
     })
 
     onJobUpdate(id - 1)

@@ -2,7 +2,7 @@ import restana, { Protocol } from 'restana'
 import * as database from '../libs/database'
 import * as log from '../libs/log'
 import * as env from '../libs/env'
-import { createWriteStream } from 'fs'
+import { createReadStream, createWriteStream } from 'fs'
 import { copyFile, mkdir, mkdtemp, rm, rmdir } from 'fs/promises'
 import { pipeline } from 'stream/promises'
 import path from 'path'
@@ -70,7 +70,7 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
 
   router
     .get('/jobs', (_req, res) => {              // get all jobs 
-      return res.send(runner.getAll().map(({ logs, ...rest }) => rest))
+      return res.send(runner.getAll().map(({ logs, result, ...rest }) => ({ ...rest, exportable: !!result })))
     })
     .get('/jobs/:id', (req, res) => {           // get specific job
       const { id: jobId } = req.params
@@ -83,8 +83,8 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
       if (!job)
         return res.send({ error: 'Job not found' }, 404)
 
-      const { logs, ...rest } = job
-      return res.send(rest)
+      const { logs, result, ...rest } = job
+      return res.send({ ...rest, exportable: !!result })
     })
     .post('/jobs', async (req, res) => {        // create a new job
       const rawData = await buffer(req)
@@ -118,6 +118,25 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
         await write(buffer)
 
       res.end()
+    })
+    .get('/jobs/:id/export', async (req, res) => { // export the csv if possible
+      const { id: jobId } = req.params
+      const id = parseInt(jobId, 10)
+
+      if (isNaN(id))
+        return res.send({ error: 'Invalid job ID' }, 400)
+
+      const job = runner.get(id)
+      if (!job)
+        return res.send({ error: 'Job not found' }, 404)
+
+      if (job.result) {
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+        createReadStream(job.result).pipe(res)
+        return
+      }
+
+      return res.send({ error: 'Job has no exportable data. Is it finished or importing...?' }, 400)
     })
     .delete('/jobs/:id', async (req, res) => {  // delete / cancel job
       const { id: jobId } = req.params
