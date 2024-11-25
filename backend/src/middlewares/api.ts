@@ -176,8 +176,8 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
     })
     .post('/models', async (req, res) => {      // upload a new model (accept *.pt files, require name)
       const length = parseInt(req.headers['content-length']!, 10)
-      if (isNaN(length) || length >= 10_000_000)
-        return res.send('Invalid Content-Length or too big of a file (limit of 10MB)', 400)
+      if (isNaN(length) || length >= 50_000_000)
+        return res.send('Invalid Content-Length or too big of a file (limit of 50MB)', 400)
 
       const modelName = req.headers['PAM-Model-Name'.toLowerCase()]
       if (!modelName)
