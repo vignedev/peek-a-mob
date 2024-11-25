@@ -1,14 +1,10 @@
-import { Box } from "@radix-ui/themes";
+import { Flex } from "@radix-ui/themes";
 
 const SearchDetailVideoBar = () => {
   return ( 
-    <Box style={{
-      height: "100%", 
-      borderRadius: "max(var(--radius-2), var(--radius-full))",
-      background: "var(--gray-a2)"
-    }}>
+    <Flex>
       Video Bar
-    </Box> 
+    </Flex> 
   );
 }
  

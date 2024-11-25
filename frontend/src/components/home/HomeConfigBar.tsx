@@ -1,4 +1,4 @@
-import { Box, Container } from "@radix-ui/themes"
+import { Box, Container, Flex } from "@radix-ui/themes"
 
 const HomeConfigBar = () => {
   return (
@@ -9,9 +9,9 @@ const HomeConfigBar = () => {
       background: "var(--gray-a2)"
     }}>
       <Container p="2">
-        <Box style={{alignItems: "center", width: "100%", textAlign: "center"}}>
+        <Flex>
           Vig config
-        </Box>
+        </Flex>
       </Container>
     </Box>
   )
