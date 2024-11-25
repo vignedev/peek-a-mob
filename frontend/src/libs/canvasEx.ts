@@ -22,8 +22,7 @@ export function expandContext(ctx: CanvasRenderingContext2D): CanvasRenderingCon
     const textMeasure = ctx.measureText(text)
     const
       textWidth = textMeasure.width + 8,
-      textHeight = Math.abs(textMeasure.fontBoundingBoxAscent + textMeasure.fontBoundingBoxDescent - textMeasure.emHeightDescent)
-
+      textHeight = Math.abs(textMeasure.actualBoundingBoxAscent + textMeasure.fontBoundingBoxDescent - textMeasure.actualBoundingBoxDescent)
     // rendering logic behind the label backdrop + outline
     function _bbox() {
       ctx.strokeRect(x1, y1, x2, y2)
@@ -31,7 +30,7 @@ export function expandContext(ctx: CanvasRenderingContext2D): CanvasRenderingCon
         x1 - Math.ceil(ctx.lineWidth / 2),
         Math.max(0.0, y1 - Math.ceil(ctx.lineWidth / 2) - textHeight),
         textWidth + ctx.lineWidth,
-        textHeight + ctx.lineWidth + textMeasure.emHeightDescent
+        textHeight + ctx.lineWidth + textMeasure.actualBoundingBoxDescent
       )
     }
 
@@ -49,8 +48,9 @@ export function expandContext(ctx: CanvasRenderingContext2D): CanvasRenderingCon
     ctx.lineWidth = 2
     ctx.strokeStyle = 'black'
     ctx.fillStyle = 'white'
-    ctx.strokeText(text, x1 + 4, Math.max(textMeasure.emHeightAscent * 1.25, y1))
-    ctx.fillText(text, x1 + 4, Math.max(textMeasure.emHeightAscent, y1))
+
+    ctx.strokeText(text, x1 + 4, Math.max(textMeasure.actualBoundingBoxAscent * 1.25, y1))
+    ctx.fillText(text, x1 + 4, Math.max(textMeasure.actualBoundingBoxAscent, y1))
   }
   return prepare
 }
