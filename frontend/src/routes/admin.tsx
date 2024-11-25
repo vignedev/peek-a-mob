@@ -128,8 +128,11 @@ const ModelTableRow = (props: { model: Model, onUpdate: () => void }) => {
           </Dialog.Root>
         </Flex>
       </Table.Cell>
-      <Table.Cell><Code>{model.modelPath}</Code></Table.Cell>
-      <Table.Cell><Badge color={model.modelAvailable ? 'green' : 'gray'}>{model.modelAvailable ? 'Available' : 'Offline'}</Badge></Table.Cell>
+      <Table.Cell>
+        <Badge color={model.modelAvailable ? 'green' : 'gray'}>
+          {model.modelAvailable ? 'Available' : 'Offline'}
+        </Badge>
+      </Table.Cell>
     </Table.Row>
   )
 }
@@ -159,7 +162,6 @@ const AdminPage = () => {
           <Table.Row>
             <Table.RowHeaderCell>Model ID</Table.RowHeaderCell>
             <Table.RowHeaderCell>Model Name</Table.RowHeaderCell>
-            <Table.RowHeaderCell>Model Path</Table.RowHeaderCell>
             <Table.RowHeaderCell>Available</Table.RowHeaderCell>
           </Table.Row>
         </Table.Header>
