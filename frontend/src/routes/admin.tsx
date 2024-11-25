@@ -1,8 +1,9 @@
-import { Badge, Button, Code, Dialog, Flex, Grid, Heading, IconButton, Link, Spinner, Table, Text, TextField } from "@radix-ui/themes"
+import { AlertDialog, Badge, Button, Code, ContextMenu, Dialog, Flex, Grid, Heading, IconButton, Link, Spinner, Table, Text, TextField } from "@radix-ui/themes"
 import { ReactNode, useEffect, useRef, useState } from "react"
 import { DetectionRecord, Model, api } from "../libs/api"
 import ErrorCallout from "../components/ErrorCallouts"
 import { Pencil1Icon } from "@radix-ui/react-icons"
+import { useNavigate } from "react-router-dom"
 
 const UploadButtonDialog = (props: { onUpload: () => void }) => {
   const [open, setOpen] = useState(false)
@@ -164,19 +165,71 @@ const ModelTable = (props: { models?: Model[], onUpdate: () => void }) => {
   )
 }
 
-const DetectionTableRow = (props: { videoTitle: string, videoUrl: string, modelName: string, modelId: number }) => {
-  const { modelName, videoTitle, videoUrl, modelId } = props
+const DetectionTableRow = (props: { videoTitle: string, youtubeId: string, model: Model, onUpdate: () => void }) => {
+  const { videoTitle, youtubeId, model, onUpdate } = props
+  const navigate = useNavigate()
+
+  const [showDelete, setShowDelete] = useState(false)
+  const [error, setError] = useState(null)
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    setBusy(false)
+  }, [])
+
+  function deleteThisEntry() {
+    setError(null)
+    setBusy(true)
+
+    api.detections.delete(youtubeId, model.modelId)
+      .then(() => {
+        setShowDelete(false)
+        onUpdate()
+      })
+      .catch(err => {
+        console.error(err)
+        setError(err)
+      })
+      .finally(() => {
+        setBusy(false)
+      })
+  }
 
   return (
-    <Table.Row>
-      <Table.Cell><Link href={videoUrl}>{videoTitle}</Link></Table.Cell>
-      <Table.Cell>{modelName || <i style={{ opacity: 0.3 }}>[no name (id={modelId})]</i>}</Table.Cell>
-    </Table.Row>
+    <>
+      <ContextMenu.Root>
+        <ContextMenu.Trigger>
+          <Table.Row>
+            <Table.Cell><Link href={`https://youtube.com/watch?v=${youtubeId}`}>{videoTitle}</Link></Table.Cell>
+            <Table.Cell>{model.modelName || <i style={{ opacity: 0.3 }}>[no name] ({model.modelPath})</i>}</Table.Cell>
+          </Table.Row>
+        </ContextMenu.Trigger>
+        <ContextMenu.Content>
+          <ContextMenu.Item onSelect={() => navigate('/debug', { state: { modelId: model.modelId, youtubeId } })}>Open in debug</ContextMenu.Item>
+          <ContextMenu.Item onSelect={() => setShowDelete(true)} color='red'>Delete</ContextMenu.Item>
+        </ContextMenu.Content>
+      </ContextMenu.Root>
+      <AlertDialog.Root open={showDelete} onOpenChange={setShowDelete}>
+        <AlertDialog.Content>
+          <AlertDialog.Title>Are you sure?</AlertDialog.Title>
+          <AlertDialog.Description>You are removing <Code>{model.modelName || model.modelPath}</Code> detections for video <Code>{videoTitle}</Code>.</AlertDialog.Description>
+
+          <Flex pt='4' gap='2' justify='end'>
+            <Button onClick={() => deleteThisEntry()} disabled={busy} variant='solid' color='red'>{busy ? <Spinner /> : 'Delete'}</Button>
+            <AlertDialog.Cancel>
+              <Button disabled={busy} variant='surface' color='gray'>Cancel</Button>
+            </AlertDialog.Cancel>
+          </Flex>
+
+          <ErrorCallout error={error} />
+        </AlertDialog.Content>
+      </AlertDialog.Root>
+    </>
   )
 }
 
-const DetectionsTable = (props: { models?: Model[], detections?: DetectionRecord }) => {
-  const { models, detections } = props
+const DetectionsTable = (props: { models?: Model[], detections?: DetectionRecord, onUpdate: () => void }) => {
+  const { models, detections, onUpdate } = props
 
   return (
     <Table.Root>
@@ -189,15 +242,14 @@ const DetectionsTable = (props: { models?: Model[], detections?: DetectionRecord
       {
         (models && detections) ? (
           Object.entries(detections).reduce((acc, [youtubeId, data]) => {
-            console.log(data)
             acc.push(data.modelIds?.map(modelId =>
             (
               <DetectionTableRow
-                modelName={models.find(x => x.modelId == modelId)!.modelName!}
+                model={models.find(x => x.modelId == modelId)!}
                 videoTitle={data.videoTitle}
-                videoUrl={`https://youtube.com/watch?v=${youtubeId}`}
-                modelId={modelId}
+                youtubeId={youtubeId}
                 key={`${youtubeId}_${modelId}`}
+                onUpdate={onUpdate}
               />
             )
             ))
@@ -245,7 +297,7 @@ const AdminPage = () => {
       <Flex justify='between'>
         <Heading>Detections</Heading>
       </Flex>
-      <DetectionsTable models={models} detections={detections} />
+      <DetectionsTable models={models} detections={detections} onUpdate={fetchDetectionsList} />
     </Flex>
   )
 }

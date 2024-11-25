@@ -96,6 +96,12 @@ async function getAllDetections(): Promise<DetectionRecord> {
   return (await strictFetch('/api/detections')).json()
 }
 
+async function deleteDetections(youtubeId: string, modelId: number) {
+  return (await strictFetch(`/api/videos/${youtubeId}/detections/${modelId}`, {
+    method: 'DELETE'
+  })).json()
+}
+
 async function getVideos(entities?: string[]): Promise<Video[]> {
   const queryString = entities ? `?${entities.map(e => `e=${e}`).join('&')}` : ''
   return (await strictFetch(`/api/videos${queryString}`)).json()
@@ -181,7 +187,8 @@ export const api = {
     getAll: getEntities
   },
   detections: {
-    getAll: getAllDetections
+    getAll: getAllDetections,
+    delete: deleteDetections
   }
 }
 export default api

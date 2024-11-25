@@ -239,6 +239,10 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
         }, {} as Record<string, { videoTitle: string, modelIds: number[] }>)
       )
     })
+    .delete('/videos/:youtubeId/detections/:modelId', async (req, res) => {
+      const { youtubeId, modelId } = req.params
+      return res.send(await database.detections.delete(youtubeId, +modelId))
+    })
 
   return router
 }
