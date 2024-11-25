@@ -53,17 +53,21 @@ export type Job = {
 
 export type DetectionRecord = Record<string, { modelIds: number[], videoTitle: string }>
 
+export type DetectionQuery = {
+  start?: number,
+  end?: number,
+  confidence?: number,
+  entities?: string[]
+}
+
 /**
  * Returns a list of detections and bounding boxes
  * @param youtubeId YouTube Video ID to get the mobs of
- * @param time Time in seconds where it should get the detections at
  * @param modelId Specified which model to fetch, set to null to pick the last one in list
- * @param after How many seconds should it get as well
- * @param before Back seeking if necessary (basically time-before)
+ * @param query Query settings
  * @returns Object where keys are the detected classes, and their value is the list of bounding boxes
- * @TODO TODO: refactor this to use an object for ss, to and conf params instead of this amalgimation
  */
-async function getDetections(youtubeId: string, time: number, modelId: number | null = null, after: number = 5, before: number = 0): Promise<EntityDetection> {
+async function getDetections(youtubeId: string, modelId: number | null = null, query: DetectionQuery = {}): Promise<EntityDetection> {
   const entityMap = (await getEntities()).reduce((acc, val) => {
     acc[val.entityId] = val.entityName
     return acc
@@ -71,10 +75,15 @@ async function getDetections(youtubeId: string, time: number, modelId: number | 
   const video = await getVideo(youtubeId)
   const usedModelId = modelId ?? video.models.shift()!.modelId
   const searchQuery = Object.entries({
-    ss: time - before,
-    to: time + after,
-    conf: 0.7
-  }).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&')
+    ss: query.start || 0,
+    to: query.end || Infinity,
+    conf: query.confidence || 0.7,
+    e: query.entities || []
+  }).map(([key, value]) =>
+    Array.isArray(value) ?
+      value.map(x => `${key}=${encodeURIComponent(x)}`).join('&') :
+      `${key}=${encodeURIComponent(value)}`
+  ).join('&')
   const occurances: EntityOccurance[] = await (
     await strictFetch(
       `/api/videos/${youtubeId}/detections/${usedModelId}?${searchQuery}`

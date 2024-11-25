@@ -241,8 +241,8 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, videoInfo: Video, 
   />
 }
 
-export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number }) => {
-  const { videoInfo, modelId } = props
+export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, entities?: string[] }) => {
+  const { videoInfo, modelId, entities } = props
 
   const [player, setPlayer] = useState<YouTubePlayer>()
   const [detections, setDetections] = useState<EntityDetection>({})
@@ -269,7 +269,7 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number }
     setRollingDetections(undefined)
 
     if (videoInfo)
-      api.videos.getDetections(videoInfo.youtubeId, 0, modelId, Infinity)
+      api.videos.getDetections(videoInfo.youtubeId, modelId, { entities })
         .then(setDetections)
   }, [videoInfo, modelId])
 
@@ -283,7 +283,11 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number }
         const newTime = await player!.getCurrentTime()
         if (!rollingDetections || newTime <= rollingDetections.range[0] || newTime >= rollingDetections.range[1]) {
           setRollingDetections({
-            detections: await api.videos.getDetections(videoInfo.youtubeId, newTime, modelId, 10, 10),
+            detections: await api.videos.getDetections(videoInfo.youtubeId, modelId, {
+              start: newTime - 10,
+              end: newTime + 10,
+              entities
+            }),
             range: [newTime - 7, newTime + 7] // the "valid range" where this cached are is for
           })
         }
