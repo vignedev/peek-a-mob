@@ -4,7 +4,8 @@ import { Job, Model, Video, api } from "../libs/api"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import ErrorCallout from "../components/ErrorCallouts"
 import { useNavigate } from "react-router-dom"
-import { ExternalLinkIcon, FileTextIcon } from "@radix-ui/react-icons"
+import { DownloadIcon, ExternalLinkIcon, FileTextIcon } from "@radix-ui/react-icons"
+import { invokeDownload } from "../libs/utils"
 
 // https://stackoverflow.com/a/6904504
 const YOUTUBE_REGEX = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i
@@ -78,6 +79,7 @@ const JobTableRow = (props: { data: Job, models: Record<number, Model> }) => {
       </ContextMenu.Trigger >
       <ContextMenu.Content>
         <ContextMenu.Item disabled>Job ID: #{data.id}</ContextMenu.Item>
+        <ContextMenu.Separator />
         <ContextMenu.Item
           disabled={data.status !== 'finished'}
           onSelect={() => navigate('/debug', { state: { modelId: data.modelId, youtubeId: data.videoUrl.match(YOUTUBE_REGEX)?.[1] || null } })}
@@ -90,6 +92,13 @@ const JobTableRow = (props: { data: Job, models: Record<number, Model> }) => {
           shortcut={<FileTextIcon /> as unknown as string}
         >
           Show logs
+        </ContextMenu.Item>
+        <ContextMenu.Item
+          disabled={!data.exportable}
+          onSelect={() => invokeDownload(`/api/jobs/${data.id}/export`, `${data.videoUrl}_${data.modelId}.csv`)}
+          shortcut={<DownloadIcon /> as unknown as string}
+        >
+          Export CSV
         </ContextMenu.Item>
       </ContextMenu.Content>
     </ContextMenu.Root >

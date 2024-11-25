@@ -40,3 +40,10 @@ export async function strictFetch(input: RequestInfo | URL, init?: RequestInit):
   if (!response.ok) throw await response.json()
   return response
 }
+
+export async function invokeDownload(url: string, filename: string) {
+  const temp = document.createElement('a')
+  temp.href = url
+  temp.download = filename
+  temp.click()
+}
