@@ -1,6 +1,6 @@
-import { Badge, Button, Code, Dialog, Flex, Grid, Heading, IconButton, Spinner, Table, Text, TextField } from "@radix-ui/themes"
-import { useEffect, useRef, useState } from "react"
-import { Model, api } from "../libs/api"
+import { Badge, Button, Code, Dialog, Flex, Grid, Heading, IconButton, Link, Spinner, Table, Text, TextField } from "@radix-ui/themes"
+import { ReactNode, useEffect, useRef, useState } from "react"
+import { DetectionRecord, Model, api } from "../libs/api"
 import ErrorCallout from "../components/ErrorCallouts"
 import { Pencil1Icon } from "@radix-ui/react-icons"
 
@@ -137,8 +137,83 @@ const ModelTableRow = (props: { model: Model, onUpdate: () => void }) => {
   )
 }
 
+const ModelTable = (props: { models?: Model[], onUpdate: () => void }) => {
+  const { models, onUpdate } = props
+
+  return (
+    <Table.Root>
+      <Table.Header>
+        <Table.Row>
+          <Table.RowHeaderCell>Model ID</Table.RowHeaderCell>
+          <Table.RowHeaderCell>Model Name</Table.RowHeaderCell>
+          <Table.RowHeaderCell>Available</Table.RowHeaderCell>
+        </Table.Row>
+      </Table.Header>
+
+      <Table.Body>
+        {
+          models ? models.map(model => (
+            <ModelTableRow
+              key={model.modelId} model={model}
+              onUpdate={onUpdate}
+            />
+          )) : <Spinner />
+        }
+      </Table.Body>
+    </Table.Root>
+  )
+}
+
+const DetectionTableRow = (props: { videoTitle: string, videoUrl: string, modelName: string, modelId: number }) => {
+  const { modelName, videoTitle, videoUrl, modelId } = props
+
+  return (
+    <Table.Row>
+      <Table.Cell><Link href={videoUrl}>{videoTitle}</Link></Table.Cell>
+      <Table.Cell>{modelName || <i style={{ opacity: 0.3 }}>[no name (id={modelId})]</i>}</Table.Cell>
+    </Table.Row>
+  )
+}
+
+const DetectionsTable = (props: { models?: Model[], detections?: DetectionRecord }) => {
+  const { models, detections } = props
+
+  return (
+    <Table.Root>
+      <Table.Header>
+        <Table.Row>
+          <Table.RowHeaderCell>Video Title</Table.RowHeaderCell>
+          <Table.RowHeaderCell>Model Name</Table.RowHeaderCell>
+        </Table.Row>
+      </Table.Header>
+      {
+        (models && detections) ? (
+          Object.entries(detections).reduce((acc, [youtubeId, data]) => {
+            console.log(data)
+            acc.push(data.modelIds?.map(modelId =>
+            (
+              <DetectionTableRow
+                modelName={models.find(x => x.modelId == modelId)!.modelName!}
+                videoTitle={data.videoTitle}
+                videoUrl={`https://youtube.com/watch?v=${youtubeId}`}
+                modelId={modelId}
+                key={`${youtubeId}_${modelId}`}
+              />
+            )
+            ))
+            return acc
+          }, [] as ReactNode[])
+        ) : <Spinner />
+      }
+      <Table.Body>
+      </Table.Body>
+    </Table.Root>
+  )
+}
+
 const AdminPage = () => {
   const [models, setModels] = useState<Model[]>()
+  const [detections, setDetection] = useState<DetectionRecord>()
 
   function fetchModelList() {
     setModels(undefined)
@@ -147,8 +222,16 @@ const AdminPage = () => {
       .catch(console.error)
   }
 
+  function fetchDetectionsList() {
+    setDetection(undefined)
+    api.detections.getAll()
+      .then(setDetection)
+      .catch(console.error)
+  }
+
   useEffect(() => {
     fetchModelList()
+    fetchDetectionsList()
   }, [])
 
   return (
@@ -157,26 +240,12 @@ const AdminPage = () => {
         <Heading>Models</Heading>
         <UploadButtonDialog onUpload={fetchModelList} />
       </Flex>
-      <Table.Root>
-        <Table.Header>
-          <Table.Row>
-            <Table.RowHeaderCell>Model ID</Table.RowHeaderCell>
-            <Table.RowHeaderCell>Model Name</Table.RowHeaderCell>
-            <Table.RowHeaderCell>Available</Table.RowHeaderCell>
-          </Table.Row>
-        </Table.Header>
+      <ModelTable models={models} onUpdate={fetchModelList} />
 
-        <Table.Body>
-          {
-            models ? models.map(model => (
-              <ModelTableRow
-                key={model.modelId} model={model}
-                onUpdate={fetchModelList}
-              />
-            )) : null
-          }
-        </Table.Body>
-      </Table.Root>
+      <Flex justify='between'>
+        <Heading>Detections</Heading>
+      </Flex>
+      <DetectionsTable models={models} detections={detections} />
     </Flex>
   )
 }

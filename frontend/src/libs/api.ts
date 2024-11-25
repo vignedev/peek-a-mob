@@ -51,6 +51,8 @@ export type Job = {
   } | null
 }
 
+export type DetectionRecord = Record<string, { modelIds: number[], videoTitle: string }>
+
 /**
  * Returns a list of detections and bounding boxes
  * @param youtubeId YouTube Video ID to get the mobs of
@@ -88,6 +90,10 @@ async function getDetections(youtubeId: string, time: number, modelId: number | 
     entities[name].push(occurance)
   }
   return entities
+}
+
+async function getAllDetections(): Promise<DetectionRecord> {
+  return (await strictFetch('/api/detections')).json()
 }
 
 async function getVideos(entities?: string[]): Promise<Video[]> {
@@ -173,6 +179,9 @@ export const api = {
   },
   entities: {
     getAll: getEntities
+  },
+  detections: {
+    getAll: getAllDetections
   }
 }
 export default api

@@ -229,6 +229,17 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
       }
     })
 
+  router
+    .get('/detections', async (req, res) => {
+      return res.send(
+        (await database.detections.getAll()).reduce((acc, { modelId, videoTitle, youtubeId }) => {
+          if (!acc[youtubeId]) acc[youtubeId] = { videoTitle, modelIds: [] }
+          acc[youtubeId].modelIds.push(modelId!)
+          return acc
+        }, {} as Record<string, { videoTitle: string, modelIds: number[] }>)
+      )
+    })
+
   return router
 }
 

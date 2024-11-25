@@ -119,6 +119,28 @@ export const detections = {
       )
 
     return detections
+  },
+  async delete(youtubeId: string, modelId: number) {
+    const [video] = await db.select().from(schema.videos).where(eq(schema.videos.youtubeId, youtubeId)).limit(1)
+    if (!video) throw new Error('YouTube video ID was not found in the database')
+
+    return await db
+      .delete(schema.detections)
+      .where(
+        and(
+          eq(schema.detections.videoId, video.videoId),
+          eq(schema.detections.modelId, modelId)
+        )
+      )
+  },
+  async getAll() {
+    return db.selectDistinctOn([schema.detections.videoId, schema.detections.modelId], {
+      youtubeId: schema.videos.youtubeId,
+      videoTitle: schema.videos.videoTitle,
+      modelId: schema.detections.modelId
+    })
+      .from(schema.detections)
+      .innerJoin(schema.videos, eq(schema.detections.videoId, schema.videos.videoId))
   }
 }
 
