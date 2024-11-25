@@ -244,7 +244,7 @@ const RequestPage = () => {
         console.error(error)
         setError(error)
       })
-  }, [jobs])
+  }, [models])
 
   function fetchModelList() {
     api.models.getAll()
@@ -280,7 +280,7 @@ const RequestPage = () => {
       fetchJobList().finally(() => { fetched = true })
     }, 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [models])
 
   return (
     <Flex direction='column' gapY='4'>
