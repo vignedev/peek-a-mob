@@ -1,22 +1,13 @@
 import Select from 'react-select'
 import { grayDark } from "@radix-ui/colors";
 
-const options = [
-  { value: 'creeper', label: 'Creeper' },
-  { value: 'zombie', label: 'Zombie' },
-  { value: 'skeleton', label: 'Skeleton' },
-  { value: 'enderman', label: 'Enderman' },
-  { value: 'spider', label: 'Spider' },
-  { value: 'pig', label: 'Pig' },
-  { value: 'cow', label: 'Cow' },
-  { value: 'chicken', label: 'Chicken' }
-]
-
-const Search = () => {
+const Search = (props: {
+  options: {value: string, label: string}[]
+}) => {
   return (
     <div style={{ width: "100%" }}>
       <Select
-        options={options}
+        options={props.options}
         className="basic-multi-select"
         isMulti
         styles={{

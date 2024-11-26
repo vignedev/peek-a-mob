@@ -12,6 +12,17 @@ const HeaderButton = ({ style, ...props }: ButtonProps) => (
   />
 )
 
+const options = [
+  { value: 'creeper', label: 'Creeper' },
+  { value: 'zombie', label: 'Zombie' },
+  { value: 'skeleton', label: 'Skeleton' },
+  { value: 'enderman', label: 'Enderman' },
+  { value: 'spider', label: 'Spider' },
+  { value: 'pig', label: 'Pig' },
+  { value: 'cow', label: 'Cow' },
+  { value: 'chicken', label: 'Chicken' }
+]
+
 const SearchHeader = () => {
   const navigate = useNavigate();
 
@@ -19,7 +30,7 @@ const SearchHeader = () => {
     <Flex gap="8" width="auto" pt='4'>
       <PeekAMobHeading />
       <Flex gap="2" width="100%">
-        <Search />
+        <Search options={options}/>
 
         <HeaderButton color='iris' onClick={() => { navigate("search-detail") }}>
           <MagnifyingGlassIcon /> Search
