@@ -1,5 +1,5 @@
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons"
-import { Blockquote, Button, Callout, Code, Flex } from "@radix-ui/themes"
+import { Blockquote, Button, Callout, Flex } from "@radix-ui/themes"
 import { useState } from "react"
 import { useRouteError } from "react-router-dom"
 
