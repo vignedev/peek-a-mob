@@ -1,15 +1,24 @@
-import Select from 'react-select'
+import Select, { MultiValue } from 'react-select'
 import { grayDark } from "@radix-ui/colors";
 
 const Search = (props: {
-  options: {value: string, label: string}[]
+  options: {value: string, label: string}[],
+  setSelectedEntities: (entities: string[]) => void
 }) => {
+  const handleEntityInputChange = (selected: MultiValue<{
+      value: string;
+      label: string;
+  }>) => {
+    props.setSelectedEntities(selected.map( (value) => value.value))
+  }
+
   return (
     <div style={{ width: "100%" }}>
       <Select
         options={props.options}
         className="basic-multi-select"
         isMulti
+        onChange={handleEntityInputChange}
         styles={{
           control: (baseStyles) => ({
             ...baseStyles,

@@ -19,11 +19,16 @@ const HeaderButton = ({ style, ...props }: ButtonProps) => (
 const SearchHeader = () => {
   const navigate = useNavigate();
   const [options, setOptions] = useState<{value: string, label: string}[]>([]);
+  const [selectedEntity, setSelectedEntity] = useState<string[]>([])
+
+  const handleSearch = () => {
+    api.videos.getAll(selectedEntity).then( (videos) => console.log(videos))
+  }
 
   useEffect( () => {
     api.entities.getAll().then(
       (value) => {
-        setOptions(value.map( entity => ({value: entity.entityId.toString(), label: entity.entityName})))
+        setOptions(value.map( entity => ({value: entity.entityName, label: entity.entityName})))
       }
     );
   }, [])
@@ -32,9 +37,9 @@ const SearchHeader = () => {
     <Flex gap="8" width="auto" pt='4'>
       <PeekAMobHeading />
       <Flex gap="2" width="100%">
-        <Search options={options}/>
+        <Search options={options} setSelectedEntities={setSelectedEntity}/>
 
-        <HeaderButton color='iris' onClick={() => { navigate("search-detail") }}>
+        <HeaderButton color='iris' onClick={handleSearch}>
           <MagnifyingGlassIcon /> Search
         </HeaderButton>
 
