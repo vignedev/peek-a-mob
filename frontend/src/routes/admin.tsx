@@ -265,20 +265,29 @@ const DetectionsTable = (props: { models?: Model[], detections?: DetectionRecord
 
 const AdminPage = () => {
   const [models, setModels] = useState<Model[]>()
-  const [detections, setDetection] = useState<DetectionRecord>()
+  const [detections, setDetections] = useState<DetectionRecord>()
+  const [error, setError] = useState<any>(null)
 
   function fetchModelList() {
     setModels(undefined)
     api.models.getAll()
       .then(setModels)
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err)
+        setModels([])
+        setError(err)
+      })
   }
 
   function fetchDetectionsList() {
-    setDetection(undefined)
+    setDetections(undefined)
     api.detections.getAll()
-      .then(setDetection)
-      .catch(console.error)
+      .then(setDetections)
+      .catch((err) => {
+        console.error(err)
+        setDetections({})
+        setError(err)
+      })
   }
 
   useEffect(() => {
@@ -298,6 +307,8 @@ const AdminPage = () => {
         <Heading>Detections</Heading>
       </Flex>
       <DetectionsTable models={models} detections={detections} onUpdate={fetchDetectionsList} />
+
+      <ErrorCallout error={error} />
     </Flex>
   )
 }

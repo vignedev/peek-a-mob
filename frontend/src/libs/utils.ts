@@ -37,7 +37,12 @@ export async function tryUntil<T>(source: () => Promise<T>, tester?: (a: T) => b
 
 export async function strictFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const response = await fetch(input, init)
-  if (!response.ok) throw await response.json()
+  if (!response.ok) {
+    if (response.headers.get('content-type') === 'application/json')
+      throw await response.json()
+    const body = await response.text()
+    throw new Error(`Server responded with ${response.status} ${body ?? ` "${body}"`}`)
+  }
   return response
 }
 

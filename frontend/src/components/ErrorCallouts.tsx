@@ -14,10 +14,10 @@ export const ErrorCallout = (props: { title?: string, error: any }) => {
       <Callout.Icon><ExclamationTriangleIcon /></Callout.Icon>
       <Callout.Text>
         <b>{title || 'Whoopsie! Something has gone awry.'}</b><br />
-        {error.message || error.error || JSON.stringify(error)}
+        {error.message || error.error || (typeof error === 'object' ? JSON.stringify(error) : error)}
       </Callout.Text>
 
-      {'stack' in error ? (
+      {error?.stack ? (
         <Flex direction='column' gapY='1' width='100%'>
           <Button size='1' variant='surface' onClick={() => setShow(s => !s)} style={{ width: 'fit-content' }}>
             {show ? 'Hide' : 'Show'} stack
