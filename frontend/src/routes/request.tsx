@@ -10,9 +10,9 @@ import { invokeDownload } from "../libs/utils"
 // https://stackoverflow.com/a/6904504
 const YOUTUBE_REGEX = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i
 
-const JobTableRow = (props: { data: Job, models: Record<number, Model> }) => {
+const JobTableRow = (props: { data: Job, models: Record<number, Model>, video?: Video }) => {
   const navigate = useNavigate()
-  const { data, models } = props
+  const { data, models, video } = props
 
   const percentage: number = data.progress ? (data.progress.currentFrame / data.progress.totalFrames * 100) : 0
   const eta: number | null = data.progress ? (data.progress.totalFrames - data.progress.currentFrame) * data.progress.rate.average : null
@@ -33,7 +33,7 @@ const JobTableRow = (props: { data: Job, models: Record<number, Model> }) => {
       <ContextMenu.Trigger>
         <Table.Row>
           <Table.Cell maxWidth='20rem'>
-            <Link to={data.videoUrl}>{data.videoUrl}</Link>
+            <Link to={data.videoUrl}>{video ? video.videoTitle : data.videoUrl}</Link>
           </Table.Cell>
           <Table.Cell maxWidth='20rem'><Code>{model?.modelName || model?.modelPath || data.modelId}</Code></Table.Cell>
           <Table.Cell>
@@ -240,6 +240,7 @@ const RequestPage = () => {
   const [jobs, setJobs] = useState<Job[] | null>(null)
   const [models, setModels] = useState<Record<number, Model>>({})
   const [error, setError] = useState<any>()
+  const [videos, setVideos] = useState<Video[]>([])
 
   const fetchJobList = useCallback(() => {
     return api.jobs.getAll()
@@ -280,6 +281,10 @@ const RequestPage = () => {
   }, [jobs])
 
   useEffect(() => {
+    api.videos.getAll()
+      .then(setVideos)
+      .catch(console.error)
+
     fetchJobList()
 
     let fetched = true
@@ -314,7 +319,7 @@ const RequestPage = () => {
         <Table.Body>
           {
             jobs ?
-              jobs.map(job => <JobTableRow key={job.id} data={job} models={models} />) :
+              jobs.map(job => <JobTableRow video={videos.find(x => job.videoUrl.includes(x.youtubeId))} key={job.id} data={job} models={models} />) :
               error ? null :
                 <Table.Row><Table.Cell><Spinner /></Table.Cell></Table.Row>
           }
