@@ -2,7 +2,9 @@ import { Button, ButtonProps, Flex } from "@radix-ui/themes";
 import { PeekAMobHeading } from "./Branding";
 import { MagnifyingGlassIcon, FilePlusIcon, RocketIcon, CameraIcon } from "@radix-ui/react-icons"
 import Search from "./Search";
+import { api } from "../libs/api"
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const HeaderButton = ({ style, ...props }: ButtonProps) => (
   <Button
@@ -12,19 +14,19 @@ const HeaderButton = ({ style, ...props }: ButtonProps) => (
   />
 )
 
-const options = [
-  { value: 'creeper', label: 'Creeper' },
-  { value: 'zombie', label: 'Zombie' },
-  { value: 'skeleton', label: 'Skeleton' },
-  { value: 'enderman', label: 'Enderman' },
-  { value: 'spider', label: 'Spider' },
-  { value: 'pig', label: 'Pig' },
-  { value: 'cow', label: 'Cow' },
-  { value: 'chicken', label: 'Chicken' }
-]
+
 
 const SearchHeader = () => {
   const navigate = useNavigate();
+  const [options, setOptions] = useState<{value: string, label: string}[]>([]);
+
+  useEffect( () => {
+    api.entities.getAll().then(
+      (value) => {
+        setOptions(value.map( entity => ({value: entity.entityId.toString(), label: entity.entityName})))
+      }
+    );
+  }, [])
 
   return (
     <Flex gap="8" width="auto" pt='4'>
