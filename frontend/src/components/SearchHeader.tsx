@@ -22,7 +22,18 @@ const SearchHeader = () => {
   const [selectedEntity, setSelectedEntity] = useState<string[]>([])
 
   const handleSearch = () => {
-    api.videos.getAll(selectedEntity).then( (videos) => console.log(videos))
+    api.videos.getAll(selectedEntity).then( 
+      (videos) => {
+        console.log(videos)
+        if (videos && videos.length >= 1) {
+          navigate('/search-detail', {state: {
+            modelId: 0,
+            videoList: videos,
+            currentVideo: videos[0],
+            currentEntities: selectedEntity
+          }})
+        }
+      })
   }
 
   useEffect( () => {
