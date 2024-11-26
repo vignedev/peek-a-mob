@@ -98,7 +98,7 @@ const ModelTableRow = (props: { model: Model, onUpdate: () => void }) => {
       <Table.Cell>{model.modelId}</Table.Cell>
       <Table.Cell>
         <Flex align='center' gapX='2'>
-          {model.modelName || <i style={{ opacity: 0.3 }}>[no name]</i>}
+          {model.modelName ? <Code>{model.modelName}</Code> : <i style={{ opacity: 0.3 }}>[no name]</i>}
           <Dialog.Root open={open} onOpenChange={setOpen}>
             <Dialog.Trigger>
               <IconButton variant='ghost'>
@@ -201,7 +201,7 @@ const DetectionTableRow = (props: { videoTitle: string, youtubeId: string, model
         <ContextMenu.Trigger>
           <Table.Row>
             <Table.Cell><Link href={`https://youtube.com/watch?v=${youtubeId}`}>{videoTitle}</Link></Table.Cell>
-            <Table.Cell>{model.modelName || <i style={{ opacity: 0.3 }}>[no name] ({model.modelPath})</i>}</Table.Cell>
+            <Table.Cell>{model.modelName ? <Code>{model.modelName}</Code> : <i style={{ opacity: 0.3 }}>[no name] ({model.modelPath})</i>}</Table.Cell>
           </Table.Row>
         </ContextMenu.Trigger>
         <ContextMenu.Content>
