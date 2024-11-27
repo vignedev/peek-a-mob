@@ -22,7 +22,6 @@ const SearchHeader = () => {
   const handleSearch = () => {
     api.videos.getAll(selectedEntities)
     .then((videos) => {
-      console.log(videos)
       if (videos && videos.length >= 1) {
         navigate('/search-detail', {state: {
           videoList: videos,
