@@ -16,9 +16,9 @@ const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
       return res.send(await database.entities.getAll(), 200)
     })
     .get('/videos', async (req, res) => {
-      const { e: entities } = req.query
+      const { e: entities, model } = req.query
       const entityArray = entities ? (Array.isArray(entities) ? entities : [entities]) : []
-      return res.send(await database.videos.getAll(entityArray), 200)
+      return res.send(await database.videos.getAll(entityArray, (+(Array.isArray(model) ? model[0] : model)) || undefined), 200)
     })
     .get('/videos/:youtubeId', async (req, res) => {
       const { youtubeId } = req.params

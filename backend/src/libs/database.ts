@@ -38,30 +38,29 @@ export const videos = {
       models: availableModels
     }
   },
-  async getAll(entities?: string[], mode: 'or' | 'and' = 'and') {
-    if (!entities || entities.length == 0)
+  async getAll(entities?: string[], modelId?: number) {
+    if ((!entities || entities.length == 0) && (typeof modelId === 'undefined'))
       return await db.query.videos.findMany({ orderBy: schema.videos.videoId })
 
-    const { videoId, youtubeId, videoTitle, duration, channelId, aspectRatio } = schema.videos
-    if (mode == 'or')
-      return await db
-        .select({ videoId, youtubeId, videoTitle, duration, channelId, aspectRatio })
-        .from(schema.detections)
-        .fullJoin(schema.entities, eq(schema.detections.entityId, schema.entities.entityId))
-        .fullJoin(schema.videos, eq(schema.detections.videoId, schema.videos.videoId))
-        .where(inArray(schema.entities.entityName, entities))
-        .groupBy(schema.videos.videoId)
-        .orderBy(schema.videos.videoId)
+    const andConditions = [
+      (entities && entities.length !== 0) ? inArray(schema.entities.entityName, entities) : null,
+      (typeof modelId !== 'undefined') ? eq(schema.detections.modelId, modelId) : null
+    ].filter(x => !!x)
 
-    return await db
+    const { videoId, youtubeId, videoTitle, duration, channelId, aspectRatio } = schema.videos
+    const query = db
       .select({ videoId, youtubeId, videoTitle, duration, channelId, aspectRatio })
       .from(schema.detections)
       .fullJoin(schema.entities, eq(schema.detections.entityId, schema.entities.entityId))
       .fullJoin(schema.videos, eq(schema.detections.videoId, schema.videos.videoId))
-      .where(inArray(schema.entities.entityName, entities))
+      .where(and(...andConditions))
       .groupBy(schema.videos.videoId)
       .orderBy(schema.videos.videoId)
-      .having(eq(countDistinct(schema.detections.entityId), entities.length))
+
+    if (entities && entities.length != 0)
+      return await query.having(eq(countDistinct(schema.detections.entityId), entities.length))
+
+    return await query
   }
 }
 
