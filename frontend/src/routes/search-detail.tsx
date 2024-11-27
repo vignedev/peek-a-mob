@@ -13,8 +13,6 @@ const SearchDetailPage = () => {
     currentVideo: Video,
     currentEntities: string[]
   }
-
-  console.log(state);
   
   return (
     <Flex 
