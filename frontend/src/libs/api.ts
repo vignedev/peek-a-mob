@@ -111,9 +111,19 @@ async function deleteDetections(youtubeId: string, modelId: number) {
   })).json()
 }
 
-async function getVideos(entities?: string[]): Promise<Video[]> {
-  const queryString = entities ? `?${entities.map(e => `e=${e}`).join('&')}` : ''
-  return (await strictFetch(`/api/videos${queryString}`)).json()
+async function getVideos(entities?: string[], modelId?: number): Promise<Video[]> {
+  const queryString = Object.entries({
+    e: entities, model: modelId
+  }).reduce((acc, [key, value]) => {
+    if (Array.isArray(value))
+      acc.push(...value.map(e => `${key}=${encodeURIComponent(e)}`))
+    else if (value)
+      acc.push(`${key}=${encodeURIComponent(value)}`)
+    return acc
+  }, [] as string[]).join('&')
+
+  // const queryString = entities ? `?${entities.map(e => `e=${e}`).join('&')}` : ''
+  return (await strictFetch(`/api/videos${queryString ? `?${queryString}` : ''}`)).json()
 }
 
 async function getVideo(youtubeId: string): Promise<DetailedVideo> {
