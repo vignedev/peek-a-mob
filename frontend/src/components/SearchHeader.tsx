@@ -24,7 +24,6 @@ const SearchHeader = () => {
     .then((videos) => {
       if (videos && videos.length >= 1) {
         navigate('/search-detail', {state: {
-          modelId: 0,
           videoList: videos,
           currentVideo: videos[0],
           currentEntities: selectedEntities

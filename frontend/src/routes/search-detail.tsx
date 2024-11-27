@@ -8,7 +8,7 @@ import { Video } from "../libs/api";
 const SearchDetailPage = () => {
   const location = useLocation()
   const state = location.state as { 
-    modelId?: number, 
+    modelId: number, 
     videoList: Video[],
     currentVideo: Video,
     currentEntities: string[]
@@ -25,7 +25,10 @@ const SearchDetailPage = () => {
         <SearchRetailConfigBar />
         <SearchDetailVideoBar />
       </Grid>
-      <SearchDetailVideoSearch />
+      <SearchDetailVideoSearch 
+        video={state.currentVideo} 
+        entities={state.currentEntities}
+      />
     </Flex>
   )
 }

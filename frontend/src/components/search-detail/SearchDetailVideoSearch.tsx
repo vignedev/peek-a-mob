@@ -1,34 +1,24 @@
-import { Box, Container, Flex, Text } from "@radix-ui/themes";
-import { DetailedVideo, Video, api } from "../../libs/api";
-import { useEffect, useState } from "react";
+import { Box, Container } from "@radix-ui/themes";
+import api, { DetailedVideo, Video } from "../../libs/api";
 import { YouTubeWithTimeline } from "../YouTube";
+import { useEffect, useState } from "react";
 
-const SearchDetailVideoSearch = () => {
+const SearchDetailVideoSearch = (props: {
+  video: Video,
+  entities: string[]
+}) => {
   const [videoInfo, setVideoInfo] = useState<DetailedVideo>()
   const [modelId, setModelId] = useState<number>()
-  const [videoId, setVideoId] = useState<string>()
-  const [videoOptions, setVideoOptions] = useState<Video[]>()
 
   useEffect(() => {
-    api.videos.getAll()
-      .then((videos: Video[]) => {
-        setVideoOptions(videos)
-        if (videos) {
-          setVideoId(videos[0].youtubeId);
-        }
-      })
-      .catch(console.error)
-  }, [])
-
-  useEffect(() => {
-    if (!videoId) return;
-    api.videos.get(videoId)
+    if (!props.video.youtubeId) return;
+    api.videos.get(props.video.youtubeId)
       .then(info => {
         setVideoInfo(info)
         setModelId(info.models[0].modelId)
       })
       .catch(console.error)
-  }, [videoId])
+  }, [])
 
   return (
     <Box style={{
@@ -39,10 +29,11 @@ const SearchDetailVideoSearch = () => {
     }}>
       <Container style={{ height: "100%" }}>
         {
-          (videoId && modelId != null && typeof modelId !== 'undefined' && videoInfo) &&
+          videoInfo && modelId &&
           <YouTubeWithTimeline
             modelId={modelId}
             videoInfo={videoInfo}
+            entities={props.entities}
           />
         }
       </Container>
