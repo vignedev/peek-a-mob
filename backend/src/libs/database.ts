@@ -1,7 +1,7 @@
 import * as env from './env'
 import * as schema from '../db/schema'
 import { drizzle } from 'drizzle-orm/node-postgres'
-import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm'
+import { and, countDistinct, desc, eq, gte, inArray, lte } from 'drizzle-orm'
 
 const db = drizzle(env.str('DATABASE_URL'), { schema })
 export default db
@@ -38,11 +38,21 @@ export const videos = {
       models: availableModels
     }
   },
-  async getAll(entities?: string[]) {
+  async getAll(entities?: string[], mode: 'or' | 'and' = 'and') {
     if (!entities || entities.length == 0)
       return await db.query.videos.findMany({ orderBy: schema.videos.videoId })
 
     const { videoId, youtubeId, videoTitle, duration, channelId, aspectRatio } = schema.videos
+    if (mode == 'or')
+      return await db
+        .select({ videoId, youtubeId, videoTitle, duration, channelId, aspectRatio })
+        .from(schema.detections)
+        .fullJoin(schema.entities, eq(schema.detections.entityId, schema.entities.entityId))
+        .fullJoin(schema.videos, eq(schema.detections.videoId, schema.videos.videoId))
+        .where(inArray(schema.entities.entityName, entities))
+        .groupBy(schema.videos.videoId)
+        .orderBy(schema.videos.videoId)
+
     return await db
       .select({ videoId, youtubeId, videoTitle, duration, channelId, aspectRatio })
       .from(schema.detections)
@@ -51,6 +61,7 @@ export const videos = {
       .where(inArray(schema.entities.entityName, entities))
       .groupBy(schema.videos.videoId)
       .orderBy(schema.videos.videoId)
+      .having(eq(countDistinct(schema.detections.entityId), entities.length))
   }
 }
 
