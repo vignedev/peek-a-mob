@@ -3,7 +3,7 @@ import * as database from '../libs/database'
 import * as log from '../libs/log'
 import * as env from '../libs/env'
 import { createReadStream, createWriteStream } from 'fs'
-import { copyFile, mkdir, mkdtemp, rm, rmdir } from 'fs/promises'
+import { copyFile, mkdir, mkdtemp, rm, rmdir, stat } from 'fs/promises'
 import { pipeline } from 'stream/promises'
 import path from 'path'
 import runner from '../libs/runner'
@@ -63,11 +63,6 @@ const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
 }
 
 const adminApi = (router: restana.Router<Protocol.HTTP>) => {
-  const NotImplementedYet = (
-    _req: restana.Request<Protocol.HTTP>,
-    res: restana.Response<Protocol.HTTP>
-  ) => res.send({ error: 'Not Implemented... yet?' }, 501)
-
   router
     .get('/jobs', (_req, res) => {              // get all jobs 
       return res.send(runner.getAll().map(({ logs, result, ...rest }) => ({ ...rest, exportable: !!result })))
@@ -172,6 +167,23 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
         return res.send({ error: 'Model by that ID not found.' }, 404)
 
       res.send(model, 200)
+    })
+    .get('/models/:id/download', async (req, res) => { // download the model
+      const { id } = req.params
+      const modelId = parseInt(id, 10)
+
+      if (isNaN(modelId))
+        return res.send({ error: 'ID is not numeric.' }, 400)
+
+      const model = await database.models.get(modelId)
+      if (!model)
+        return res.send({ error: 'Model by that ID not found.' }, 404)
+
+      const { mtime, size } = await stat(model.modelPath)
+      res.setHeader('Content-Type', 'application/octet-stream')
+      res.setHeader('Content-Length', size.toString())
+      res.setHeader('Last-Modified', mtime.toUTCString())
+      createReadStream(model.modelPath).pipe(res)
     })
     .post('/models/:id', async (req, res) => {   // rename the model's name
       const { id } = req.params

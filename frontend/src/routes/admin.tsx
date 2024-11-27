@@ -2,8 +2,9 @@ import { AlertDialog, Badge, Button, Code, ContextMenu, Dialog, Flex, Grid, Head
 import { ReactNode, useEffect, useRef, useState } from "react"
 import { DetectionRecord, Model, api } from "../libs/api"
 import ErrorCallout from "../components/ErrorCallouts"
-import { Pencil1Icon } from "@radix-ui/react-icons"
+import { DownloadIcon, Pencil1Icon } from "@radix-ui/react-icons"
 import { useNavigate } from "react-router-dom"
+import { invokeDownload } from "../libs/utils"
 
 const UploadButtonDialog = (props: { onUpload: () => void }) => {
   const [open, setOpen] = useState(false)
@@ -130,9 +131,18 @@ const ModelTableRow = (props: { model: Model, onUpdate: () => void }) => {
         </Flex>
       </Table.Cell>
       <Table.Cell>
-        <Badge color={model.modelAvailable ? 'green' : 'gray'}>
-          {model.modelAvailable ? 'Available' : 'Offline'}
-        </Badge>
+        <Flex align='center' justify='between' gapX='2' width='fit-content'>
+          <Badge color={model.modelAvailable ? 'green' : 'gray'}>
+            {model.modelAvailable ? 'Available' : 'Offline'}
+          </Badge>
+          {model.modelAvailable ? (
+            <IconButton variant='ghost' color='green' onClick={() => {
+              invokeDownload(`/api/models/${model.modelId}/download`, `${model.modelName}.pt`)
+            }}>
+              <DownloadIcon />
+            </IconButton>
+          ) : null}
+        </Flex>
       </Table.Cell>
     </Table.Row>
   )
