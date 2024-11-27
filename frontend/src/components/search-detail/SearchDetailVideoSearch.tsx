@@ -18,7 +18,7 @@ const SearchDetailVideoSearch = (props: {
         setModelId(info.models[0].modelId)
       })
       .catch(console.error)
-  }, [])
+  }, [props.video, props.entities])
 
   return (
     <Box style={{
