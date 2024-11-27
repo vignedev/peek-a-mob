@@ -180,3 +180,21 @@ export const models = {
       .returning()
   }
 }
+
+export const config = {
+  async getAll() {
+    return (await db.select().from(schema.config)).reduce((acc, val) => {
+      acc[val.key] = val.value
+      return acc
+    }, {} as Record<string, string | null>)
+  },
+  async set(key: string, value: string | null) {
+    await db
+      .insert(schema.config)
+      .values({ key, value })
+      .onConflictDoUpdate({
+        target: schema.config.key,
+        set: { key, value }
+      })
+  }
+}

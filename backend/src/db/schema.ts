@@ -1,5 +1,10 @@
 import { boolean, integer, pgTable, serial, text, real, index } from 'drizzle-orm/pg-core'
 
+export const config = pgTable('config', {
+  key: text('config_key').primaryKey().unique().notNull(),
+  value: text('config_value')
+});
+
 export const channels = pgTable('channels', {
   channelId: serial('channel_id').primaryKey().notNull(),
   channelHandle: text('channel_handle').unique().notNull(),
