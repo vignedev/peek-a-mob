@@ -6,6 +6,8 @@ import { DownloadIcon, Pencil1Icon } from "@radix-ui/react-icons"
 import { useNavigate } from "react-router-dom"
 import { invokeDownload } from "../libs/utils"
 
+const TableRowSpinner = () => <Table.Row><Table.Cell><Spinner /></Table.Cell></Table.Row>
+
 const UploadButtonDialog = (props: { onUpload: () => void }) => {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -182,7 +184,7 @@ const ModelTable = (props: { models?: Model[], onUpdate: () => void }) => {
               busy={busy}
               setBusy={setBusy}
             />
-          )) : <Spinner />
+          )) : <TableRowSpinner />
         }
       </Table.Body>
     </Table.Root>
@@ -263,25 +265,25 @@ const DetectionsTable = (props: { models?: Model[], detections?: DetectionRecord
           <Table.RowHeaderCell>Model Name</Table.RowHeaderCell>
         </Table.Row>
       </Table.Header>
-      {
-        (models && detections) ? (
-          Object.entries(detections).reduce((acc, [youtubeId, data]) => {
-            acc.push(data.modelIds?.map(modelId =>
-            (
-              <DetectionTableRow
-                model={models.find(x => x.modelId == modelId)!}
-                videoTitle={data.videoTitle}
-                youtubeId={youtubeId}
-                key={`${youtubeId}_${modelId}`}
-                onUpdate={onUpdate}
-              />
-            )
-            ))
-            return acc
-          }, [] as ReactNode[])
-        ) : <Spinner />
-      }
       <Table.Body>
+        {
+          (models && detections) ? (
+            Object.entries(detections).reduce((acc, [youtubeId, data]) => {
+              acc.push(data.modelIds?.map(modelId =>
+              (
+                <DetectionTableRow
+                  model={models.find(x => x.modelId == modelId)!}
+                  videoTitle={data.videoTitle}
+                  youtubeId={youtubeId}
+                  key={`${youtubeId}_${modelId}`}
+                  onUpdate={onUpdate}
+                />
+              )
+              ))
+              return acc
+            }, [] as ReactNode[])
+          ) : <TableRowSpinner />
+        }
       </Table.Body>
     </Table.Root>
   )
