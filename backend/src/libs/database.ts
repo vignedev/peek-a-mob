@@ -38,9 +38,18 @@ export const videos = {
       models: availableModels
     }
   },
-  async getAll(entities?: string[], modelId?: number) {
-    if ((!entities || entities.length == 0) && (typeof modelId === 'undefined'))
+  async getAll(entities?: string[], _modelId?: number) {
+    if ((!entities || entities.length == 0) && (typeof _modelId === 'undefined'))
       return await db.query.videos.findMany({ orderBy: schema.videos.videoId })
+
+    let modelId = _modelId
+    if (modelId == -1) {
+      const [model] = await db.select({ modelId: schema.models.modelId }).from(schema.models).where(eq(schema.models.modelIsPrimary, true))
+      if (!model)
+        throw new Error('Primary model was requested for search, but none was set!')
+
+      modelId = model.modelId
+    }
 
     const andConditions = [
       (entities && entities.length !== 0) ? inArray(schema.entities.entityName, entities) : null,
