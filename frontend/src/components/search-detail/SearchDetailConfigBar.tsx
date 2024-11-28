@@ -1,11 +1,11 @@
 import { Flex } from "@radix-ui/themes";
 
 const SearchRetailConfigBar = () => {
-  return ( 
+  return (
     <Flex>
       Config bar
-    </Flex> 
+    </Flex>
   );
 }
- 
+
 export default SearchRetailConfigBar;

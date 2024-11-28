@@ -5,9 +5,9 @@ import HomeVideoGrid from "../components/home/HomeVideoGrid"
 
 const HomePage = () => (
   <>
-    <Flex 
-      height='calc(100vh - 10rem)' 
-      align='center' 
+    <Flex
+      height='calc(100vh - 10rem)'
+      align='center'
       justify='center'
       gap="4"
     >

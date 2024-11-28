@@ -1,11 +1,11 @@
 import { Flex } from "@radix-ui/themes";
 
 const SearchDetailVideoBar = () => {
-  return ( 
+  return (
     <Flex>
       Video Bar
-    </Flex> 
+    </Flex>
   );
 }
- 
+
 export default SearchDetailVideoBar;
