@@ -178,5 +178,21 @@ export const models = {
       .set({ modelName: newName })
       .where(eq(schema.models.modelId, modelId))
       .returning()
+  },
+  async setAsPrimary(modelId: number) {
+    await db.transaction(async tx => {
+      await tx.update(schema.models).set({ modelIsPrimary: false })
+      await tx.update(schema.models).set({ modelIsPrimary: true })
+        .where(eq(schema.models.modelId, modelId))
+    })
+
+    return await db.select()
+      .from(schema.models)
+      .where(
+        and(
+          eq(schema.models.modelId, modelId),
+          eq(schema.models.modelIsPrimary, true)
+        )
+      )
   }
 }

@@ -1,4 +1,5 @@
-import { boolean, integer, pgTable, serial, text, real, index } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm';
+import { boolean, integer, pgTable, serial, text, real, index, uniqueIndex } from 'drizzle-orm/pg-core'
 
 export const channels = pgTable('channels', {
   channelId: serial('channel_id').primaryKey().notNull(),
@@ -26,8 +27,11 @@ export const models = pgTable('models', {
   modelId: serial('model_id').primaryKey().notNull(),
   modelPath: text('model_path').unique().notNull(),
   modelName: text('model_name'),
-  modelAvailable: boolean('model_available').default(false)
-})
+  modelAvailable: boolean('model_available').default(false),
+  modelIsPrimary: boolean('model_isprimary').default(false)
+}, (table => ([
+  uniqueIndex('models_unique').on(table.modelIsPrimary).where(sql`"model_isprimary"`)
+])))
 
 export const detections = pgTable('detections', {
   detectionId: serial('detection_id').primaryKey().notNull(),

@@ -24,7 +24,8 @@ export type Model = {
   modelId: number,
   modelName: string | null,
   modelPath: string,
-  modelAvailable: boolean
+  modelAvailable: boolean,
+  modelIsPrimary: boolean
 }
 export type DetailedVideo = Video & {
   models: Model[]
@@ -183,12 +184,21 @@ async function renameModel(modelId: number, modelName: string): Promise<Model> {
   })).json()
 }
 
+async function setAsPrimaryModel(modelId: number): Promise<Model> {
+  return (await strictFetch(`/api/models/${modelId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ modelIsPrimary: true })
+  })).json()
+}
+
 export const api = {
   models: {
     get: getModel,
     getAll: getModels,
     new: newModel,
-    rename: renameModel
+    rename: renameModel,
+    setAsPrimary: setAsPrimaryModel
   },
   jobs: {
     get: getJob,

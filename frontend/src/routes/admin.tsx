@@ -1,5 +1,5 @@
-import { AlertDialog, Badge, Button, Code, ContextMenu, Dialog, Flex, Grid, Heading, IconButton, Link, Spinner, Table, Text, TextField } from "@radix-ui/themes"
-import { ReactNode, useEffect, useRef, useState } from "react"
+import { AlertDialog, Badge, Button, Checkbox, Code, ContextMenu, Dialog, Flex, Grid, Heading, IconButton, Link, Spinner, Table, Text, TextField } from "@radix-ui/themes"
+import { Dispatch, ReactNode, SetStateAction, useEffect, useRef, useState } from "react"
 import { DetectionRecord, Model, api } from "../libs/api"
 import ErrorCallout from "../components/ErrorCallouts"
 import { DownloadIcon, Pencil1Icon } from "@radix-ui/react-icons"
@@ -77,10 +77,9 @@ const UploadButtonDialog = (props: { onUpload: () => void }) => {
   )
 }
 
-const ModelTableRow = (props: { model: Model, onUpdate: () => void }) => {
-  const { model, onUpdate } = props
+const ModelTableRow = (props: { model: Model, onUpdate: () => void, busy: boolean, setBusy: Dispatch<SetStateAction<boolean>> }) => {
+  const { model, onUpdate, busy, setBusy } = props
   const [open, setOpen] = useState(false)
-  const [busy, setBusy] = useState(false)
 
   const [name, setName] = useState<string>(model.modelName || '')
   const renameModel = () => {
@@ -90,6 +89,14 @@ const ModelTableRow = (props: { model: Model, onUpdate: () => void }) => {
         onUpdate()
         setOpen(false)
       })
+      .catch(err => console.error(err))
+      .finally(() => setBusy(false))
+  }
+
+  const setAsPrimary = () => {
+    setBusy(true)
+    api.models.setAsPrimary(model.modelId)
+      .then(() => onUpdate())
       .catch(err => console.error(err))
       .finally(() => setBusy(false))
   }
@@ -144,12 +151,16 @@ const ModelTableRow = (props: { model: Model, onUpdate: () => void }) => {
           ) : null}
         </Flex>
       </Table.Cell>
+      <Table.Cell>
+        <Checkbox disabled={!model.modelAvailable || busy} checked={model.modelIsPrimary} onClick={setAsPrimary} />
+      </Table.Cell>
     </Table.Row>
   )
 }
 
 const ModelTable = (props: { models?: Model[], onUpdate: () => void }) => {
   const { models, onUpdate } = props
+  const [busy, setBusy] = useState(false)
 
   return (
     <Table.Root>
@@ -158,6 +169,7 @@ const ModelTable = (props: { models?: Model[], onUpdate: () => void }) => {
           <Table.RowHeaderCell>Model ID</Table.RowHeaderCell>
           <Table.RowHeaderCell>Model Name</Table.RowHeaderCell>
           <Table.RowHeaderCell>Available</Table.RowHeaderCell>
+          <Table.RowHeaderCell>Priority</Table.RowHeaderCell>
         </Table.Row>
       </Table.Header>
 
@@ -167,6 +179,8 @@ const ModelTable = (props: { models?: Model[], onUpdate: () => void }) => {
             <ModelTableRow
               key={model.modelId} model={model}
               onUpdate={onUpdate}
+              busy={busy}
+              setBusy={setBusy}
             />
           )) : <Spinner />
         }

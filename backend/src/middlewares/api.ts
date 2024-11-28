@@ -185,7 +185,7 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
       res.setHeader('Last-Modified', mtime.toUTCString())
       createReadStream(model.modelPath).pipe(res)
     })
-    .post('/models/:id', async (req, res) => {   // rename the model's name
+    .post('/models/:id', async (req, res) => {   // rename/set as primary the model's name
       const { id } = req.params
       const modelId = parseInt(id, 10)
 
@@ -197,13 +197,20 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
         return res.send({ error: 'Model by that ID not found.' }, 404)
 
       const rawData = await buffer(req)
-      let data: { modelName: string }
+      let data: { modelName?: string, modelIsPrimary?: boolean }
       try { data = JSON.parse(rawData.toString()) }
       catch (err) { return res.send({ error: 'Invalid JSON request' }, 400) }
 
-      const updatedModel = await database.models.rename(modelId, data.modelName)
-      if (updatedModel.length == 0) return res.send({ error: 'Updated model is for some reason empty.' }, 500)
-      return res.send(updatedModel, 200)
+      if (!data.modelIsPrimary && !data.modelName)
+        return res.send({ error: 'Empty changing request?' }, 400)
+
+      if (data.modelName)
+        await database.models.rename(modelId, data.modelName)
+
+      if (data.modelIsPrimary)
+        await database.models.setAsPrimary(modelId)
+
+      return res.send(await database.models.get(modelId), 200)
     })
     .post('/models', async (req, res) => {      // upload a new model (accept *.pt files, require name)
       const length = parseInt(req.headers['content-length']!, 10)
