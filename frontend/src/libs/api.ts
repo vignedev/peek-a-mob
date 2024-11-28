@@ -183,18 +183,6 @@ async function renameModel(modelId: number, modelName: string): Promise<Model> {
   })).json()
 }
 
-async function getAllConfig() {
-  return (await strictFetch(`/api/config`)).json()
-}
-
-async function setConfig(key: string, value: string | null) {
-  return (await strictFetch(`/api/config`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ [key]: value })
-  })).json()
-}
-
 export const api = {
   models: {
     get: getModel,
@@ -220,10 +208,6 @@ export const api = {
   detections: {
     getAll: getAllDetections,
     delete: deleteDetections
-  },
-  config: {
-    getAll: getAllConfig,
-    set: setConfig
   }
 }
 export default api

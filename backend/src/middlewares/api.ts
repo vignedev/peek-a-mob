@@ -259,31 +259,9 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
   return router
 }
 
-const configApi = (router: restana.Router<Protocol.HTTP>) => {
-  router
-    .get('/config', async (req, res) => {
-      return res.send(await database.config.getAll(), 200)
-    })
-    .patch('/config', async (req, res) => {
-      const rawData = await buffer(req)
-      let data: Record<string, string | null> | null = null
-      try { data = JSON.parse(rawData.toString()) }
-      catch (err) { return res.send({ error: 'Invalid JSON request' }, 400) }
-
-      if (data == null)
-        return res.send({ error: 'Data is null for some reason.' }, 400)
-
-      for (const key in data)
-        await database.config.set(key, data[key])
-
-      return res.send('', 200)
-    })
-}
-
 const getApiRouter = (router: restana.Router<Protocol.HTTP>) => {
   detectionsApi(router)
   adminApi(router)
-  configApi(router)
 
   return router
 }
