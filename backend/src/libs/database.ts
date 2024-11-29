@@ -23,7 +23,8 @@ export const videos = {
       .select({
         modelId: schema.models.modelId,
         modelName: schema.models.modelName,
-        modelPath: schema.models.modelPath
+        modelPath: schema.models.modelPath,
+        modelIsPrimary: schema.models.modelIsPrimary
       })
       .from(schema.detections)
       .innerJoin(schema.models, eq(schema.detections.modelId, schema.models.modelId))
