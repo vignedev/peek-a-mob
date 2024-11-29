@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import YouTube, { YouTubePlayer } from 'react-youtube'
 import { Canvas, CanvasDrawingFunction } from './Canvas'
 import { Box, Flex } from '@radix-ui/themes'
-import { EntityDetection, Video, api } from '../libs/api'
+import { EntityDetection, Video, api, groupDetections } from '../libs/api'
 import { wait } from '../libs/utils'
 import { expandContext } from '../libs/canvasEx'
 
@@ -20,6 +20,11 @@ export const RandomColorFromString = (text: string, alpha: number = 0.03) => {
 export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInfo, detections: EntityDetection, style?: React.CSSProperties }) => {
   const { player, detections, timeInfo } = props
   const [currentTime, duration] = timeInfo
+
+  const detectionGroups = useMemo(() => {
+    if (!detections) return null
+    return groupDetections(detections, 5)
+  }, [detections])
 
   let [cachedTimeline, setCachedTimeline] = useState<HTMLCanvasElement>()
   const cacheTimeline = useCallback(async (width: number, height: number) => {
@@ -45,31 +50,46 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
     // const duration = await tryUntil(() => player.getDuration())
 
     // print of the timelines
-    let printed = new Set()
     let lineHeight = Math.floor(ctx.canvas.height / Object.keys(detections).length)
-    Object.entries(detections).forEach(([entName, detections], idx) => {
-      detections.forEach(detection => {
-        // borders
-        if (idx != 0 && !printed.has(entName)) {
-          ctx.drawLine(
-            0, lineHeight * idx,
-            ctx.canvas.width, lineHeight * idx,
-            1, '#fffa'
-          )
-        }
 
-        // lines 
+    if (!detectionGroups) return
+    Object.entries(detectionGroups).forEach(([entName, groups], idx) => {
+      // borders
+      if (idx != 0)
+        ctx.drawLine(
+          0, lineHeight * idx,
+          ctx.canvas.width, lineHeight * idx,
+          1, '#fffa'
+        )
+
+      // groupings
+      ctx.fillStyle = RandomColorFromString(entName, 0.7)
+      for (const [start, end] of groups) {
+        // if ((end - start) <= 2 / 60) continue
+        ctx.fillRect(
+          Math.round(start / duration * ctx.canvas.width),
+          lineHeight * idx,
+          Math.round(Math.max((end - start) / duration * ctx.canvas.width, 2.0)),
+          lineHeight
+        )
+      }
+
+      // lines
+      detections[entName].forEach(detection => {
         ctx.drawLine(
           detection.time / duration * ctx.canvas.width + ctx.lineWidth / 2,
-          lineHeight * idx, detection.time / duration * ctx.canvas.width + ctx.lineWidth / 2, lineHeight * (idx + 1),
-          2, RandomColorFromString(entName)
+          lineHeight * idx,
+          detection.time / duration * ctx.canvas.width + ctx.lineWidth / 2,
+          lineHeight * (idx + 1),
+          2, RandomColorFromString(entName, 0.1),
+          true
         )
       })
     })
     return canvas
-  }, [player, detections, timeInfo])
+  }, [player, detectionGroups, timeInfo])
 
-  useEffect(() => setCachedTimeline(undefined), [detections, duration])
+  useEffect(() => setCachedTimeline(undefined), [detectionGroups, duration])
 
   const onDraw = useCallback<CanvasDrawingFunction>(async (ctx, mouse) => {
     ctx.fillStyle = 'black'

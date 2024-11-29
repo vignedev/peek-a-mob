@@ -7,6 +7,7 @@ export type EntityOccurance = {
   entityId: number
 }
 export type EntityDetection = Record<string, EntityOccurance[]>
+export type EntityGroup = [start: number, end: number]
 export type Video = {
   videoId: number,
   youtubeId: string,
@@ -59,6 +60,30 @@ export type DetectionQuery = {
   end?: number,
   confidence?: number,
   entities?: string[]
+}
+
+/**
+ * Returns the start and end points of groups of entities
+ * @param detections Input detections grouped by their entity name
+ * @param width Distance where the group should be considered
+ */
+export function groupDetections(detections: EntityDetection, width: number = 1): Record<string, EntityGroup[]> {
+  const bucket: Record<string, EntityGroup[]> = {}
+  for (const entityName in detections) {
+    detections[entityName].forEach((detection) => {
+      if (!bucket[entityName])
+        bucket[entityName] = []
+
+      if (bucket[entityName].length == 0)
+        bucket[entityName].push([detection.time, detection.time])
+      else if ((detection.time - bucket[entityName][bucket[entityName].length - 1][1]) <= width)
+        bucket[entityName][bucket[entityName].length - 1][1] = detection.time
+      else
+        bucket[entityName].push([detection.time, detection.time])
+    })
+  }
+
+  return bucket
 }
 
 /**
