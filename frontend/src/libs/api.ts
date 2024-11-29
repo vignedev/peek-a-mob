@@ -66,8 +66,9 @@ export type DetectionQuery = {
  * Returns the start and end points of groups of entities
  * @param detections Input detections grouped by their entity name
  * @param width Distance where the group should be considered
+ * @param threshold Filter out groups which are below this duration threshold
  */
-export function groupDetections(detections: EntityDetection, width: number = 1): Record<string, EntityGroup[]> {
+export function groupDetections(detections: EntityDetection, width: number = 1, threshold?: number): Record<string, EntityGroup[]> {
   const bucket: Record<string, EntityGroup[]> = {}
   for (const entityName in detections) {
     detections[entityName].forEach((detection) => {
@@ -82,6 +83,10 @@ export function groupDetections(detections: EntityDetection, width: number = 1):
         bucket[entityName].push([detection.time, detection.time])
     })
   }
+
+  if (threshold !== undefined)
+    for (const entityName in bucket)
+      bucket[entityName] = bucket[entityName].filter(([start, end]) => (end - start) > threshold)
 
   return bucket
 }

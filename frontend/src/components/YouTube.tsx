@@ -17,14 +17,14 @@ export const RandomColorFromString = (text: string, alpha: number = 0.03) => {
   return `hsla(${value % 360}, 80%, 45%, ${alpha})`
 }
 
-export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInfo, detections: EntityDetection, style?: React.CSSProperties }) => {
-  const { player, detections, timeInfo } = props
+export const VideoTimeline = (props: { player?: YouTubePlayer, videoInfo: Video, timeInfo: TimeInfo, detections: EntityDetection, style?: React.CSSProperties }) => {
+  const { player, detections, timeInfo, videoInfo } = props
   const [currentTime, duration] = timeInfo
 
   const detectionGroups = useMemo(() => {
     if (!detections) return null
-    return groupDetections(detections, 5)
-  }, [detections])
+    return groupDetections(detections, 5, 1 / videoInfo.frameRate)
+  }, [detections, videoInfo])
 
   let [cachedTimeline, setCachedTimeline] = useState<HTMLCanvasElement>()
   const cacheTimeline = useCallback(async (width: number, height: number) => {
@@ -65,7 +65,6 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
       // groupings
       ctx.fillStyle = RandomColorFromString(entName, 0.7)
       for (const [start, end] of groups) {
-        // if ((end - start) <= 2 / 60) continue
         ctx.fillRect(
           Math.round(start / duration * ctx.canvas.width),
           lineHeight * idx,
@@ -81,7 +80,7 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, timeInfo: TimeInf
           lineHeight * idx,
           detection.time / duration * ctx.canvas.width + ctx.lineWidth / 2,
           lineHeight * (idx + 1),
-          2, RandomColorFromString(entName, 0.1),
+          2, RandomColorFromString(entName, 0.05),
           true
         )
       })
@@ -344,6 +343,7 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
 
       <VideoTimeline
         player={player}
+        videoInfo={videoInfo}
         timeInfo={timeInfo}
         detections={detections}
         style={{
