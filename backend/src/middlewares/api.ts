@@ -2,6 +2,7 @@ import restana, { Protocol } from 'restana'
 import * as database from '../libs/database'
 import * as log from '../libs/log'
 import * as env from '../libs/env'
+import * as compress from '../libs/compress'
 import { createReadStream, createWriteStream } from 'fs'
 import { copyFile, mkdir, mkdtemp, rm, rmdir, stat } from 'fs/promises'
 import { pipeline } from 'stream/promises'
@@ -50,14 +51,15 @@ const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
       if (isNaN(confidence))
         return res.send({ error: 'Confidence value could not be parsed' }, 400)
 
-      return res.send( // TODO: handle invalid modelId
+      return await compress.send( // TODO: handle invalid modelId
         await database.detections.get(youtubeId, parseInt(modelId, 10), {
           entityNames: entities ? (Array.isArray(entities) ? entities : [entities]) : [],
           confidence: confidence,
           timeStart: timeStart,
           timeEnd: timeEnd
         }),
-        200
+        200,
+        req, res
       )
     })
 }
