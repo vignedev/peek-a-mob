@@ -7,8 +7,8 @@ import { copyFile, mkdir, mkdtemp, rm, rmdir, stat } from 'fs/promises'
 import { pipeline } from 'stream/promises'
 import path from 'path'
 import runner from '../libs/runner'
-import { buffer } from 'node:stream/consumers'
 import { tmpdir } from 'os'
+import { requireJSON } from './parser'
 
 const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
   return router
@@ -81,11 +81,8 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
       const { logs, result, ...rest } = job
       return res.send({ ...rest, exportable: !!result })
     })
-    .post('/jobs', async (req, res) => {        // create a new job
-      const rawData = await buffer(req)
-      let data: { modelId: number, youtubeId: string } | null = null
-      try { data = JSON.parse(rawData.toString()) }
-      catch (err) { return res.send({ error: 'Invalid JSON request' }, 400) }
+    .post('/jobs', requireJSON(), async (req, res) => {        // create a new job
+      const data = req.body as { modelId: number, youtubeId: string }
 
       if (!data || !data.modelId || !data.youtubeId)
         return res.send({ error: 'Invalid JSON request (missing data)' }, 400)
@@ -185,7 +182,7 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
       res.setHeader('Last-Modified', mtime.toUTCString())
       createReadStream(model.modelPath).pipe(res)
     })
-    .post('/models/:id', async (req, res) => {   // rename/set as primary the model's name
+    .post('/models/:id', requireJSON(), async (req, res) => {   // rename/set as primary the model's name
       const { id } = req.params
       const modelId = parseInt(id, 10)
 
@@ -196,11 +193,7 @@ const adminApi = (router: restana.Router<Protocol.HTTP>) => {
       if (!model)
         return res.send({ error: 'Model by that ID not found.' }, 404)
 
-      const rawData = await buffer(req)
-      let data: { modelName?: string, modelIsPrimary?: boolean }
-      try { data = JSON.parse(rawData.toString()) }
-      catch (err) { return res.send({ error: 'Invalid JSON request' }, 400) }
-
+      const data = req.body as { modelName?: string, modelIsPrimary?: boolean }
       if (!data.modelIsPrimary && !data.modelName)
         return res.send({ error: 'Empty changing request?' }, 400)
 
