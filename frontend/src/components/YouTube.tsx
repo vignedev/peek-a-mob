@@ -149,9 +149,14 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, videoInfo: Video,
 
         const diff = detection.time - currentTime
         ctx.fillStyle = `rgba(255, 255, 255, ${Math.max((1.0 - diff / 30), 0.25)})`
-        ctx.fillText(`${entName} [${occurances.filter(x => x.time > currentTime).length}/${occurances.length}]`, 8, lineHeight * idx + 16)
+        ctx.fillText(`${entName}`, 8, lineHeight * idx + 16)
         ctx.fillText((diff).toFixed(2), 8, lineHeight * idx + 32)
         break
+      }
+      // display label even if out of time
+      if (start >= occurances.length) {
+        ctx.fillStyle = `rgba(255, 255, 255, 0.25)`
+        ctx.fillText(`${entName}`, 8, lineHeight * idx + 16)
       }
     })
 
