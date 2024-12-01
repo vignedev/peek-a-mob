@@ -247,6 +247,9 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, videoInfo: Video, 
             RandomColorFromString(name, 1.0)
           )
         }
+
+        if ((entity.time - currentTime) > (frameThreshold * 2))
+          break;
       }
     }
 
