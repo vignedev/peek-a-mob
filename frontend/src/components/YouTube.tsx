@@ -227,8 +227,11 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, videoInfo: Video, 
       h = ctx.canvas.height;
     }
 
+    let callCount = 0;
     for (const name in rollingDetections) {
+      // const lb_idx = lowerBound(rollingDetections[name], (a => a.time < ))
       for (const entity of rollingDetections[name]) {
+        callCount++;
         const [bx, by, bw, bh] = entity.bbox
 
         const frameThreshold = 1.0 / (videoInfo.frameRate)
@@ -246,6 +249,11 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, videoInfo: Video, 
         }
       }
     }
+
+    // ctx.fillStyle = 'black'
+    // ctx.fillRect(0, 128, 200, 16)
+    // ctx.fillStyle = 'white'
+    // ctx.fillText(`callCount = ${callCount}`, 2, 128 + 14)
   }, [player, rollingDetections, timeInfo])
 
   return <Canvas
