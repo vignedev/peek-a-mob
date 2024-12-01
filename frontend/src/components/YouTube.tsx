@@ -3,7 +3,7 @@ import YouTube, { YouTubePlayer } from 'react-youtube'
 import { Canvas, CanvasDrawingFunction } from './Canvas'
 import { Box, Flex } from '@radix-ui/themes'
 import { EntityDetection, Video, api, groupDetections } from '../libs/api'
-import { wait } from '../libs/utils'
+import { lowerBound, wait } from '../libs/utils'
 import { expandContext } from '../libs/canvasEx'
 
 type TimeInfo = [currentTime: number, duration: number]
@@ -227,14 +227,16 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, videoInfo: Video, 
       h = ctx.canvas.height;
     }
 
+    const frameThreshold = 1.0 / (videoInfo.frameRate)
     let callCount = 0;
     for (const name in rollingDetections) {
-      // const lb_idx = lowerBound(rollingDetections[name], (a => a.time < ))
-      for (const entity of rollingDetections[name]) {
+      const lb_idx = lowerBound(rollingDetections[name], (a => a.time < currentTime - frameThreshold * 4.0))
+      for (let i = lb_idx; i < rollingDetections[name].length; ++i) {
         callCount++;
+
+        const entity = rollingDetections[name][i]
         const [bx, by, bw, bh] = entity.bbox
 
-        const frameThreshold = 1.0 / (videoInfo.frameRate)
         const dist = Math.abs(entity.time - currentTime)
 
         if (dist <= frameThreshold) {
