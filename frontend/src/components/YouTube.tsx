@@ -155,8 +155,8 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, videoInfo: Video,
       }
     })
 
-    ctx.fillStyle = 'white'
-    ctx.fillText(`callCount = ${callCount}`, 16, 256)
+    // ctx.fillStyle = 'white'
+    // ctx.fillText(`callCount = ${callCount}`, 16, 256)
     // display cursor if mouse is hovering on top
     if (mouse != null) {
       ctx.drawLine(
