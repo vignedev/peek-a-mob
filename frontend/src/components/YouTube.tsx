@@ -135,20 +135,28 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, videoInfo: Video,
     ctx.fillText(timestamp, currentTime / duration * ctx.canvas.width + offset, ctx.canvas.height - 12)
 
     // print of the timelines
-    let printed = new Set()
+    let callCount = 0
     let lineHeight = Math.floor(ctx.canvas.height / Object.keys(detections).length)
     Object.entries(detections).forEach(([entName, occurances], idx) => {
-      occurances.forEach(detection => {
-        // labeling
-        if (detection.time < currentTime || printed.has(entName)) return
+      const start = lowerBound(occurances, a => a.time < (currentTime - (2 / videoInfo.frameRate)))
+      for (let i = start; i < occurances.length; ++i) {
+        const detection = occurances[i]
+        callCount++
+
+        // this occurance is came too late, ignore it
+        if (detection.time < currentTime)
+          continue
+
         const diff = detection.time - currentTime
-        printed.add(entName)
         ctx.fillStyle = `rgba(255, 255, 255, ${Math.max((1.0 - diff / 30), 0.25)})`
         ctx.fillText(`${entName} [${occurances.filter(x => x.time > currentTime).length}/${occurances.length}]`, 8, lineHeight * idx + 16)
         ctx.fillText((diff).toFixed(2), 8, lineHeight * idx + 32)
-      })
+        break
+      }
     })
 
+    ctx.fillStyle = 'white'
+    ctx.fillText(`callCount = ${callCount}`, 16, 256)
     // display cursor if mouse is hovering on top
     if (mouse != null) {
       ctx.drawLine(
