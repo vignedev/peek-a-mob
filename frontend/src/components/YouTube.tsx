@@ -358,6 +358,11 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
           onReady={async (event) => {
             setPlayer(event.target)
           }}
+          opts={{
+            playerVars: {
+              fs: 0
+            }
+          }}
         />
         <VideoOverlay
           player={player}
