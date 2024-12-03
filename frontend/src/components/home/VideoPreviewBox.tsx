@@ -14,7 +14,7 @@ const VideoPreviewBox = (props: {
 
   useEffect( () => {
     let apiEntities: string[] = [];
-    api.videos.getDetections(props.video.youtubeId, 1)
+    api.videos.getDetections(props.video.youtubeId, props.modelId)
     .then( (detection: EntityDetection) => {
       Object.keys(detection).forEach( (entity) => {
         apiEntities.push(entity)
