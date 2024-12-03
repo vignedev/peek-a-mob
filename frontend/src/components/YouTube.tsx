@@ -295,8 +295,8 @@ export const VideoOverlay = (props: { player?: YouTubePlayer, videoInfo: Video, 
   />
 }
 
-export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, entities?: string[] }) => {
-  const { videoInfo, modelId, entities } = props
+export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, entities?: string[], fullScreenWidth?: boolean }) => {
+  const { videoInfo, modelId, entities, fullScreenWidth } = props
 
   const [player, setPlayer] = useState<YouTubePlayer>()
   const [detections, setDetections] = useState<EntityDetection | null>(null)
@@ -383,18 +383,23 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
 
       {
         (detections) ? (
-          <VideoTimeline
-            player={player}
-            videoInfo={videoInfo}
-            timeInfo={timeInfo}
-            detections={detections}
-            style={{
-              borderRadius: 'max(var(--radius-2), var(--radius-full))',
-              overflow: 'hidden',
-              boxShadow: 'var(--shadow-2)',
-              height: `${Object.keys(detections).length * 3}rem`
-            }}
-          />
+          <Box>
+            <VideoTimeline
+              player={player}
+              videoInfo={videoInfo}
+              timeInfo={timeInfo}
+              detections={detections}
+              style={{
+                borderRadius: 'max(var(--radius-2), var(--radius-full))',
+                overflow: 'hidden',
+                boxShadow: 'var(--shadow-2)',
+                width: fullScreenWidth ? 'calc(100% - 2rem)' : '100%',
+                height: `${Object.keys(detections).length * 3}rem`,
+                position: fullScreenWidth ? 'fixed' : 'relative',
+                left: fullScreenWidth ? '1rem' : 0,
+              }}
+            />
+          </Box>
         ) : (
           <Flex
             justify='center'
