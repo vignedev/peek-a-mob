@@ -206,6 +206,7 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, videoInfo: Video,
       }}
       onDraw={onDraw}
       onMouseDown={async (e, ctx) => {
+        if (e.button != 0) return;
         if (!player) return;
         player.seekTo((await player.getDuration()) * e.offsetX / ctx.canvas.width, true)
       }}
