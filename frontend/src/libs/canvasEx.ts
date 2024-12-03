@@ -1,6 +1,7 @@
 export type CanvasRenderingContext2DExpanded = CanvasRenderingContext2D & {
   drawLine(x1: number, y1: number, x2: number, y2: number, lineWidth?: number, strokeStyle?: string, integer?: boolean): void,
   drawBoundingBox(x1: number, y1: number, x2: number, y2: number, text: string, color: string): void,
+  drawTextWithBackground(text: string, x: number, y: number, foreground?: string, background?: string): void
 }
 
 export function expandContext(ctx: CanvasRenderingContext2D): CanvasRenderingContext2DExpanded {
@@ -53,6 +54,18 @@ export function expandContext(ctx: CanvasRenderingContext2D): CanvasRenderingCon
 
     ctx.strokeText(text, x1 + 4, Math.max(textMeasure.actualBoundingBoxAscent * 1.25, y1))
     ctx.fillText(text, x1 + 4, Math.max(textMeasure.actualBoundingBoxAscent, y1))
+  }
+  prepare.drawTextWithBackground = (text, x, y, foreground = '#fff', background = '#000b') => {
+    const timestampDim = ctx.measureText(text)
+    const offset = (x + timestampDim.width + 16) > ctx.canvas.width ? -timestampDim.width - 8 : 8
+    const padding = 4
+    ctx.fillStyle = background
+    ctx.fillRect(
+      x + offset - padding, y - timestampDim.fontBoundingBoxAscent - padding,
+      timestampDim.width + padding * 2, timestampDim.fontBoundingBoxAscent + timestampDim.fontBoundingBoxDescent + padding * 2
+    )
+    ctx.fillStyle = foreground
+    ctx.fillText(text, x + offset, y)
   }
   return prepare
 }

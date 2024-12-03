@@ -52,3 +52,7 @@ export async function invokeDownload(url: string, filename: string) {
   temp.download = filename
   temp.click()
 }
+
+export function formatDuration(time: number, duration?: number) {
+  return new Date(time * 1000.0).toISOString().substring(((duration || time) >= 3_600) ? 11 : 14, 19) + (time - Math.floor(time)).toFixed(2).substring(1)
+}

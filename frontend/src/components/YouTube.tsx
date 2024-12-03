@@ -3,7 +3,7 @@ import YouTube, { YouTubePlayer } from 'react-youtube'
 import { Canvas, CanvasDrawingFunction } from './Canvas'
 import { Box, Flex, Spinner } from '@radix-ui/themes'
 import { EntityDetection, Video, api, groupDetections } from '../libs/api'
-import { lowerBound, wait } from '../libs/utils'
+import { formatDuration, lowerBound, wait } from '../libs/utils'
 import { expandContext } from '../libs/canvasEx'
 
 type TimeInfo = [currentTime: number, duration: number]
@@ -114,25 +114,23 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, videoInfo: Video,
 
     // display time in seconds as well as the progress
     ctx.font = '12px monospace'
-    ctx.fillStyle = '#f094'
+    ctx.fillStyle = '#f092'
     ctx.fillRect(0, 0, currentTime / duration * ctx.canvas.width, ctx.canvas.height)
 
     ctx.drawLine(
-      currentTime / duration * ctx.canvas.width, 0,
-      currentTime / duration * ctx.canvas.width, ctx.canvas.height,
+      Math.floor(currentTime / duration * ctx.canvas.width) + 0.5, 0,
+      Math.floor(currentTime / duration * ctx.canvas.width) + 0.5, ctx.canvas.height,
       6, '#0005'
     )
     ctx.drawLine(
-      currentTime / duration * ctx.canvas.width, 0,
-      currentTime / duration * ctx.canvas.width, ctx.canvas.height,
-      2, '#f09'
+      Math.floor(currentTime / duration * ctx.canvas.width) + 0.5, 0,
+      Math.floor(currentTime / duration * ctx.canvas.width) + 0.5, ctx.canvas.height,
+      1, '#f09'
     )
 
-    ctx.fillStyle = '#f09'
-    const timestamp = currentTime?.toFixed(2)
-    const timestampDim = ctx.measureText(timestamp)
-    const offset = (currentTime / duration * ctx.canvas.width + timestampDim.width + 16) > ctx.canvas.width ? -timestampDim.width - 8 : 8
-    ctx.fillText(timestamp, currentTime / duration * ctx.canvas.width + offset, ctx.canvas.height - 12)
+    // print the thingamijig timeline
+    const timestamp = formatDuration(currentTime, duration)
+    ctx.drawTextWithBackground(timestamp, currentTime / duration * ctx.canvas.width, ctx.canvas.height - 12, '#f09')
 
     // print of the timelines
     let callCount = 0
@@ -165,30 +163,38 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, videoInfo: Video,
     // display cursor if mouse is hovering on top
     if (mouse != null) {
       ctx.drawLine(
-        mouse.x, 0,
-        mouse.x, ctx.canvas.height,
+        mouse.x + 0.5, 0,
+        mouse.x + 0.5, ctx.canvas.height,
         6, '#0005'
       )
 
       ctx.drawLine(
-        mouse.x, 0,
-        mouse.x, ctx.canvas.height,
-        2, '#0ff'
+        mouse.x + 0.5, 0,
+        mouse.x + 0.5, ctx.canvas.height,
+        1, '#0ff',
       )
 
       const cursorTime = mouse.x / ctx.canvas.width * duration
 
-      const timestamp = new Date(cursorTime * 1000.0).toISOString().substring((duration >= 3_600) ? 11 : 14, 19) + (cursorTime - Math.floor(cursorTime)).toFixed(2).substring(1)
-      const timestampDim = ctx.measureText(timestamp)
-      const offset = (mouse.x + timestampDim.width + 16) > ctx.canvas.width ? -timestampDim.width - 8 : 8
-      const padding = 4
-      ctx.fillStyle = '#000b'
-      ctx.fillRect(
-        mouse.x + offset - padding, 16 - timestampDim.fontBoundingBoxAscent - padding,
-        timestampDim.width + padding * 2, timestampDim.fontBoundingBoxAscent + timestampDim.fontBoundingBoxDescent + padding * 2
+      const timestamp = formatDuration(cursorTime, duration)
+      ctx.drawTextWithBackground(timestamp, mouse.x, 16, '#0ff')
+
+      const index = Math.floor(mouse.y / lineHeight)
+      ctx.fillStyle = '#ffffff19'
+      ctx.fillRect(0, index * lineHeight, ctx.canvas.width, lineHeight)
+
+      const arr = Object.values(detections)[index]
+      const closest = lowerBound(arr, a => a.time < cursorTime)
+      const withinBounds = closest < arr.length
+      ctx.drawTextWithBackground(
+        withinBounds ? (
+          `next: ${formatDuration(arr[closest].time - cursorTime)}`
+        ) : (
+          `last: -${formatDuration(cursorTime - arr[arr.length - 1].time)} ago`
+        ),
+        mouse.x, mouse.y + 8,
+        withinBounds ? '#fff' : '#f00'
       )
-      ctx.fillStyle = '#0ff'
-      ctx.fillText(timestamp, mouse.x + offset, 16)
     }
   }, [player, detections, timeInfo, cachedTimeline])
 
