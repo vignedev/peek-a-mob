@@ -260,9 +260,19 @@ const DetectionModelBullet = (props: { model: Model, youtubeId: string, onUpdate
 
 const DetectionTableRow = (props: { youtubeId: string, entry: DetectionEntry, models: Model[], onUpdate: () => void }) => {
   const { entry, models, onUpdate, youtubeId } = props
+  const navigate = useNavigate()
   return (
     <li>
-      <Link href={`https://youtube.com/watch?v=${youtubeId}`}>{entry.videoTitle}</Link>
+      <ContextMenu.Root>
+        <ContextMenu.Trigger>
+          <Link href={`https://youtube.com/watch?v=${youtubeId}`}>{entry.videoTitle}</Link>
+        </ContextMenu.Trigger>
+        <ContextMenu.Content>
+          <ContextMenu.Item onSelect={() => navigate('/request', { state: { existing: true, youtubeId: youtubeId } })}>
+            Request
+          </ContextMenu.Item>
+        </ContextMenu.Content>
+      </ContextMenu.Root>
       <ul>
         {
           entry.modelIds.map(id => {

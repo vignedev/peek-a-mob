@@ -3,7 +3,7 @@ import Link from "../components/Link"
 import { Job, Model, Video, api } from "../libs/api"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import ErrorCallout from "../components/ErrorCallouts"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { DownloadIcon, ExternalLinkIcon, FileTextIcon } from "@radix-ui/react-icons"
 import { invokeDownload } from "../libs/utils"
 
@@ -105,15 +105,17 @@ const JobTableRow = (props: { data: Job, models: Record<number, Model>, video?: 
   )
 }
 
-const NewJobDialog = (props: { onCreation: () => void }) => {
-  const [open, setOpen] = useState(false)
+const NewJobDialog = (props: { initialState?: { existing: boolean, youtubeId: string } | null, onCreation: () => void }) => {
+  const { initialState, onCreation } = props
+
+  const [open, setOpen] = useState(!!initialState || false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<any>()
   const [models, setModels] = useState<Model[]>()
-  const [existing, setExisting] = useState(false)
+  const [existing, setExisting] = useState(initialState?.existing || false)
   const [videoList, setVideoList] = useState<Video[]>()
 
-  const [url, setUrl] = useState('')
+  const [url, setUrl] = useState(initialState ? `https://youtube.com/watch?v=${initialState.youtubeId}` : '')
   const youtubeId = useMemo(() => {
     return url.match(YOUTUBE_REGEX)?.[1] || null
   }, [url])
@@ -127,7 +129,9 @@ const NewJobDialog = (props: { onCreation: () => void }) => {
   }, [])
 
   useEffect(() => {
-    setUrl('')
+    if (videoList && !videoList.find(x => x.youtubeId == youtubeId))
+      setUrl('')
+
     if (!existing) return
 
     api.videos.getAll().then(setVideoList).catch(err => {
@@ -143,8 +147,7 @@ const NewJobDialog = (props: { onCreation: () => void }) => {
     setBusy(true)
     api.jobs.new(youtubeId, modelId)
       .then(_job => {
-        console.log(_job)
-        props.onCreation()
+        onCreation()
         setOpen(false)
       })
       .catch(err => {
@@ -237,6 +240,9 @@ const NewJobDialog = (props: { onCreation: () => void }) => {
 }
 
 const RequestPage = () => {
+  const location = useLocation()
+  const state = location.state as { existing: boolean, youtubeId: string }
+
   const [jobs, setJobs] = useState<Job[] | null>(null)
   const [models, setModels] = useState<Record<number, Model>>({})
   const [error, setError] = useState<any>()
@@ -303,7 +309,7 @@ const RequestPage = () => {
 
         <Flex gapX='2'>
           <Button color='red' onClick={killActiveJob} disabled={!jobs || !jobs.find(job => job.status === 'active')}>Kill</Button>
-          <NewJobDialog onCreation={fetchJobList} />
+          <NewJobDialog onCreation={fetchJobList} initialState={state} />
         </Flex>
       </Flex>
       <Table.Root>
