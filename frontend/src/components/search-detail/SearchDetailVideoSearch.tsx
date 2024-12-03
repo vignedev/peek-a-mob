@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 const SearchDetailVideoSearch = (props: {
   video: Video,
-  entities: string[]
+  entities?: string[]
 }) => {
   const [videoInfo, setVideoInfo] = useState<DetailedVideo>()
   const [modelId, setModelId] = useState<number>()

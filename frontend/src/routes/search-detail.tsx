@@ -11,7 +11,7 @@ const SearchDetailPage = () => {
     modelId: number,
     videoList: Video[],
     currentVideo: Video,
-    currentEntities: string[]
+    currentEntities?: string[]
   }
 
   return (

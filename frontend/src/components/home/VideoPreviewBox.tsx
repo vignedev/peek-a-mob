@@ -1,12 +1,21 @@
 import { Flex, Text } from "@radix-ui/themes"
 import { useNavigate } from "react-router-dom"
+import { Video } from "../../libs/api";
 
-const VideoPreviewBox = () => {
+const VideoPreviewBox = (props: {
+  videos: Video[],
+  video: Video
+}) => {
   const navigate = useNavigate();
   return (
     <Flex
       direction="column"
-      onClick={() => navigate("/search-detail")}
+      onClick={() => navigate('/search-detail', {
+        state: {
+          videoList: props.videos,
+          currentVideo: props.video
+        }
+      })}
       gap="1"
     >
       <img
