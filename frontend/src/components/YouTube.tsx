@@ -383,7 +383,7 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
 
       {
         (detections) ? (
-          <Box>
+          <Box height={`${Object.keys(detections).length * 3}rem`}>
             <VideoTimeline
               player={player}
               videoInfo={videoInfo}
@@ -395,7 +395,7 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
                 boxShadow: 'var(--shadow-2)',
                 width: fullScreenWidth ? 'calc(100% - 2rem)' : '100%',
                 height: `${Object.keys(detections).length * 3}rem`,
-                position: fullScreenWidth ? 'fixed' : 'relative',
+                position: fullScreenWidth ? 'absolute' : 'relative',
                 left: fullScreenWidth ? '1rem' : 0,
               }}
             />
