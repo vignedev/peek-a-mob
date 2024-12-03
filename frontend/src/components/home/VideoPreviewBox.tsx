@@ -1,6 +1,6 @@
 import { Flex, Text } from "@radix-ui/themes"
 import { useNavigate } from "react-router-dom"
-import { EntityDetection, Video, api } from "../../libs/api";
+import { Video, api } from "../../libs/api";
 import VideoTag from "../VideoTag";
 import { useEffect, useState } from "react";
 
@@ -10,17 +10,17 @@ const VideoPreviewBox = (props: {
   modelId: number
 }) => {
   const navigate = useNavigate();
-  const [entities, setEntities] = useState<string[]>([]);
+  const [entities, setEntities] = useState<string[]>();
 
   useEffect( () => {
     let apiEntities: string[] = [];
-    api.videos.getDetections(props.video.youtubeId, props.modelId)
-    .then( (detection: EntityDetection) => {
-      Object.keys(detection).forEach( (entity) => {
-        apiEntities.push(entity)
+    api.videos.getEntities(props.video.youtubeId, props.modelId)
+    .then( (entities) => {
+      entities.forEach( (entity) => {
+        apiEntities.push(entity.entityName)
       })
       setEntities(apiEntities)
-    });
+    })
   }, [])
 
   return (

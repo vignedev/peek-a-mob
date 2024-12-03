@@ -26,7 +26,7 @@ const HomeVideoGrid = () => {
       <Grid columns="3" rows="repeat(2)" gapX="4" gapY="4" height="100%">
         {
           modelId &&
-          <VideoPreviewBox videos={videos} video={videos[1]} modelId={modelId}/>
+          <VideoPreviewBox videos={videos} video={videos[4]} modelId={modelId}/>
         }
       </Grid>
     </Box>
