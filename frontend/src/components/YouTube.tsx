@@ -176,7 +176,9 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, videoInfo: Video,
         2, '#0ff'
       )
 
-      const timestamp = (mouse.x / ctx.canvas.width * duration).toFixed(2)
+      const cursorTime = mouse.x / ctx.canvas.width * duration
+
+      const timestamp = new Date(cursorTime * 1000.0).toISOString().substring((duration >= 3_600) ? 11 : 14, 19) + (cursorTime - Math.floor(cursorTime)).toFixed(2).substring(1)
       const timestampDim = ctx.measureText(timestamp)
       const offset = (mouse.x + timestampDim.width + 16) > ctx.canvas.width ? -timestampDim.width - 8 : 8
       const padding = 4
