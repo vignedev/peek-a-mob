@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import YouTube, { YouTubePlayer } from 'react-youtube'
 import { Canvas, CanvasDrawingFunction } from './Canvas'
-import { Box, Flex } from '@radix-ui/themes'
+import { Box, Flex, Spinner } from '@radix-ui/themes'
 import { EntityDetection, Video, api, groupDetections } from '../libs/api'
 import { lowerBound, wait } from '../libs/utils'
 import { expandContext } from '../libs/canvasEx'
@@ -290,7 +290,7 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
   const { videoInfo, modelId, entities } = props
 
   const [player, setPlayer] = useState<YouTubePlayer>()
-  const [detections, setDetections] = useState<EntityDetection>({})
+  const [detections, setDetections] = useState<EntityDetection | null>(null)
   const [rollingDetections, setRollingDetections] = useState<{ detections: EntityDetection, range: ValidRange }>()
   const [timeInfo, setTimeInfo] = useState<TimeInfo>([0, 0])
 
@@ -309,7 +309,7 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
 
   // update the detections array on new video ID update
   useEffect(() => {
-    setDetections({})
+    setDetections(null)
     setTimeInfo([0, 0])
     setRollingDetections(undefined)
 
@@ -372,18 +372,37 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
         />
       </Box>
 
-      <VideoTimeline
-        player={player}
-        videoInfo={videoInfo}
-        timeInfo={timeInfo}
-        detections={detections}
-        style={{
-          borderRadius: 'max(var(--radius-2), var(--radius-full))',
-          overflow: 'hidden',
-          boxShadow: 'var(--shadow-2)',
-          height: `${Object.keys(detections).length * 3}rem`
-        }}
-      />
+      {
+        (detections) ? (
+          <VideoTimeline
+            player={player}
+            videoInfo={videoInfo}
+            timeInfo={timeInfo}
+            detections={detections}
+            style={{
+              borderRadius: 'max(var(--radius-2), var(--radius-full))',
+              overflow: 'hidden',
+              boxShadow: 'var(--shadow-2)',
+              height: `${Object.keys(detections).length * 3}rem`
+            }}
+          />
+        ) : (
+          <Flex
+            justify='center'
+            align='center'
+            p='4'
+            overflow='hidden'
+            style={{
+              background: 'black',
+              borderRadius: 'max(var(--radius-2), var(--radius-full))',
+              overflow: 'hidden',
+              boxShadow: 'var(--shadow-2)',
+            }}
+          >
+            <Spinner size='3' />
+          </Flex>
+        )
+      }
     </Flex>
   )
 }
