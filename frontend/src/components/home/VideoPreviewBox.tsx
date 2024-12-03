@@ -1,70 +1,60 @@
 import { Flex, Text } from "@radix-ui/themes"
 import { useNavigate } from "react-router-dom"
-import { Video } from "../../libs/api";
+import { EntityDetection, Video, api } from "../../libs/api";
+import VideoTag from "../VideoTag";
+import { useEffect, useState } from "react";
 
 const VideoPreviewBox = (props: {
   videos: Video[],
-  video: Video
+  video: Video,
+  modelId: number
 }) => {
   const navigate = useNavigate();
+  const [entities, setEntities] = useState<string[]>([]);
+
+  useEffect( () => {
+    let apiEntities: string[] = [];
+    api.videos.getDetections(props.video.youtubeId, 1)
+    .then( (detection: EntityDetection) => {
+      Object.keys(detection).forEach( (entity) => {
+        apiEntities.push(entity)
+      })
+      setEntities(apiEntities)
+    });
+  }, [])
+
   return (
-    <Flex
-      direction="column"
-      onClick={() => navigate('/search-detail', {
-        state: {
-          videoList: props.videos,
-          currentVideo: props.video
-        }
-      })}
-      gap="1"
-    >
-      <img
-        src="https://img.youtube.com/vi/uEvwuvod2F4/maxresdefault.jpg"
-        width="100%"
-        style={{
-          borderRadius: "max(var(--radius-2), var(--radius-full))"
-        }}
-      />
-      <Text>【Minecraft】 Together As One!!! #MythOneblock</Text>
-      <Flex gap="2" wrap="wrap">
-        <Text style={{
-          borderStyle: "solid",
-          borderColor: "grey",
-          borderWidth: "2px",
-          borderRadius: "max(var(--radius-2), var(--radius-full))",
-          padding: "0px 8px"
-        }}>
-          Enderman
-        </Text>
-        <Text style={{
-          borderStyle: "solid",
-          borderColor: "grey",
-          borderWidth: "2px",
-          borderRadius: "max(var(--radius-2), var(--radius-full))",
-          padding: "0px 8px"
-        }}>
-          Chicken
-        </Text>
-        <Text style={{
-          borderStyle: "solid",
-          borderColor: "grey",
-          borderWidth: "2px",
-          borderRadius: "max(var(--radius-2), var(--radius-full))",
-          padding: "0px 8px"
-        }}>
-          Zombie
-        </Text>
-        <Text style={{
-          borderStyle: "solid",
-          borderColor: "grey",
-          borderWidth: "2px",
-          borderRadius: "max(var(--radius-2), var(--radius-full))",
-          padding: "0px 8px"
-        }}>
-          Pig
-        </Text>
+    <>
+    {
+      props.video &&
+      <Flex
+        direction="column"
+        onClick={() => navigate('/search-detail', {
+          state: {
+            videoList: props.videos,
+            currentVideo: props.video
+          }
+        })}
+        gap="1"
+      >
+        <img
+          src={`https://img.youtube.com/vi/${props.video.youtubeId}/maxresdefault.jpg`}
+          width="100%"
+          style={{
+            borderRadius: "max(var(--radius-2), var(--radius-full))"
+          }}
+        />
+        <Text>{props.video.videoTitle}</Text>
+        <Flex gap="2" wrap="wrap">
+          {
+            entities && entities.map( (entity, index) => {
+              return <VideoTag tagText={entity} key={index}/>
+            })
+          }
+        </Flex>
       </Flex>
-    </Flex>
+    }
+    </>
   )
 }
 
