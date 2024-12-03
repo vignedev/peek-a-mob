@@ -53,7 +53,8 @@ export type Job = {
   } | null
 }
 
-export type DetectionRecord = Record<string, { modelIds: number[], videoTitle: string }>
+export type DetectionEntry = { modelIds: number[], videoTitle: string }
+export type DetectionRecord = Record<string, DetectionEntry>
 
 export type DetectionQuery = {
   start?: number,

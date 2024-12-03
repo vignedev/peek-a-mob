@@ -1,9 +1,9 @@
 import { AlertDialog, Badge, Button, Checkbox, Code, ContextMenu, Dialog, Flex, Grid, Heading, IconButton, Link, Spinner, Table, Text, TextField } from "@radix-ui/themes"
-import { Dispatch, ReactNode, SetStateAction, useEffect, useRef, useState } from "react"
-import { DetectionRecord, Model, api } from "../libs/api"
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
+import { DetectionEntry, DetectionRecord, Model, api } from "../libs/api"
 import ErrorCallout from "../components/ErrorCallouts"
 import { DownloadIcon, Pencil1Icon } from "@radix-ui/react-icons"
-import { useNavigate } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import { invokeDownload } from "../libs/utils"
 
 const TableRowSpinner = () => <Table.Row><Table.Cell><Spinner /></Table.Cell></Table.Row>
@@ -191,8 +191,9 @@ const ModelTable = (props: { models?: Model[], onUpdate: () => void }) => {
   )
 }
 
-const DetectionTableRow = (props: { videoTitle: string, youtubeId: string, model: Model, onUpdate: () => void }) => {
-  const { videoTitle, youtubeId, model, onUpdate } = props
+const DetectionModelBullet = (props: { model: Model, youtubeId: string, onUpdate: () => void, videoTitle: string }) => {
+  const { model, youtubeId, onUpdate, videoTitle } = props
+
   const navigate = useNavigate()
 
   const [showDelete, setShowDelete] = useState(false)
@@ -225,13 +226,16 @@ const DetectionTableRow = (props: { videoTitle: string, youtubeId: string, model
     <>
       <ContextMenu.Root>
         <ContextMenu.Trigger>
-          <Table.Row>
-            <Table.Cell><Link href={`https://youtube.com/watch?v=${youtubeId}`}>{videoTitle}</Link></Table.Cell>
-            <Table.Cell>{model.modelName ? <Code>{model.modelName}</Code> : <i style={{ opacity: 0.3 }}>[no name] ({model.modelPath})</i>}</Table.Cell>
-          </Table.Row>
+          <li>
+            <Link asChild>
+              <NavLink to='/debug' state={{ modelId: model?.modelId, youtubeId: youtubeId }} >
+                {model.modelName ? <Code>{model.modelName}</Code> : <i style={{ opacity: 0.3 }}>[no name] ({model.modelPath})</i>}
+              </NavLink>
+            </Link>
+          </li>
         </ContextMenu.Trigger>
         <ContextMenu.Content>
-          <ContextMenu.Item onSelect={() => navigate('/debug', { state: { modelId: model.modelId, youtubeId } })}>Open in debug</ContextMenu.Item>
+          <ContextMenu.Item onSelect={() => navigate('/debug', { state: { modelId: model.modelId, youtubeId: youtubeId } })}>Open in debug</ContextMenu.Item>
           <ContextMenu.Item onSelect={() => setShowDelete(true)} color='red'>Delete</ContextMenu.Item>
         </ContextMenu.Content>
       </ContextMenu.Root>
@@ -254,38 +258,54 @@ const DetectionTableRow = (props: { videoTitle: string, youtubeId: string, model
   )
 }
 
+const DetectionTableRow = (props: { youtubeId: string, entry: DetectionEntry, models: Model[], onUpdate: () => void }) => {
+  const { entry, models, onUpdate, youtubeId } = props
+  return (
+    <li>
+      <Link href={`https://youtube.com/watch?v=${youtubeId}`}>{entry.videoTitle}</Link>
+      <ul>
+        {
+          entry.modelIds.map(id => {
+            const model = models.find(model => model.modelId === id)
+            return model ? (
+              <DetectionModelBullet
+                model={model}
+                youtubeId={youtubeId}
+                onUpdate={onUpdate}
+                videoTitle={entry.videoTitle}
+                key={`${youtubeId}_${id}`}
+              />
+            ) : <Spinner />
+          })
+        }
+      </ul>
+    </li>
+  )
+}
+
 const DetectionsTable = (props: { models?: Model[], detections?: DetectionRecord, onUpdate: () => void }) => {
   const { models, detections, onUpdate } = props
 
   return (
-    <Table.Root>
-      <Table.Header>
-        <Table.Row>
-          <Table.RowHeaderCell>Video Title</Table.RowHeaderCell>
-          <Table.RowHeaderCell>Model Name</Table.RowHeaderCell>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
+    <Flex direction='column'>
+      <ul>
         {
           (models && detections) ? (
-            Object.entries(detections).reduce((acc, [youtubeId, data]) => {
-              acc.push(data.modelIds?.map(modelId =>
-              (
+            Object.entries(detections).map(([youtubeId, entry]) => {
+              return (
                 <DetectionTableRow
-                  model={models.find(x => x.modelId == modelId)!}
-                  videoTitle={data.videoTitle}
+                  models={models}
+                  entry={entry}
                   youtubeId={youtubeId}
-                  key={`${youtubeId}_${modelId}`}
+                  key={`${youtubeId}`}
                   onUpdate={onUpdate}
                 />
               )
-              ))
-              return acc
-            }, [] as ReactNode[])
-          ) : <TableRowSpinner />
+            })
+          ) : <Spinner />
         }
-      </Table.Body>
-    </Table.Root>
+      </ul>
+    </Flex>
   )
 }
 
