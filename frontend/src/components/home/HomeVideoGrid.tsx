@@ -2,14 +2,23 @@ import { Box, Grid } from "@radix-ui/themes";
 import VideoPreviewBox from "./VideoPreviewBox";
 import { useEffect, useState } from "react";
 import { api, Video } from "../../libs/api";
+import { ScrollArea } from "@radix-ui/themes/src/index.js";
 
-const HomeVideoGrid = () => {
+const HomeVideoGrid = (props: {
+  maxHomePageVideos: number;
+}) => {
   const [videos, setVideos] = useState<Video[]>([])
   const [modelId, setModelId] = useState<number>();
 
   useEffect( () => {
     api.videos.getAll().then((video) => {
-      setVideos(video)
+      const homePageVideos: Video[] = [];
+      for (let i = 0; i < video.length; i++) {
+        if (i == props.maxHomePageVideos) break;
+        homePageVideos.push(video[i]);
+      }
+
+      setVideos(homePageVideos.sort(() => Math.random() - 0.5));
     });
     api.models.getAll().then((models) => {
       setModelId(models[0].modelId)
@@ -23,12 +32,16 @@ const HomeVideoGrid = () => {
 
   return (
     <Box style={{ width: "100%", height: "100%" }}>
-      <Grid columns="3" rows="repeat(2)" gapX="4" gapY="4" height="100%">
-        {
-          modelId &&
-          <VideoPreviewBox videos={videos} video={videos[4]} modelId={modelId}/>
-        }
-      </Grid>
+      <ScrollArea>
+        <Grid columns="3" rows="repeat(2)" gapX="4" gapY="4" height="100%" pr="3">
+          {
+            modelId && videos &&
+            videos.map( (video, index) => {
+              return <VideoPreviewBox videos={videos} video={video} modelId={modelId} key={index}/>
+            })
+          }
+        </Grid>
+      </ScrollArea>
     </Box>
   )
 }
