@@ -62,6 +62,14 @@ const detectionsApi = (router: restana.Router<Protocol.HTTP>) => {
         req, res
       )
     })
+    .get('/videos/:youtubeId/entities', async (req, res) => {
+      const { youtubeId } = req.params
+      return res.send(await database.videos.getEntities(youtubeId, -1))
+    })
+    .get('/videos/:youtubeId/entities/:modelId', async (req, res) => {
+      const { youtubeId, modelId } = req.params
+      return res.send(await database.videos.getEntities(youtubeId, +modelId))
+    })
 }
 
 const adminApi = (router: restana.Router<Protocol.HTTP>) => {

@@ -1,7 +1,7 @@
 import * as env from './env'
 import * as schema from '../db/schema'
 import { drizzle } from 'drizzle-orm/node-postgres'
-import { and, countDistinct, desc, eq, gte, inArray, lte } from 'drizzle-orm'
+import { and, count, countDistinct, desc, eq, gte, inArray, lte } from 'drizzle-orm'
 
 const db = drizzle(env.str('DATABASE_URL'), { schema })
 export default db
@@ -71,6 +71,30 @@ export const videos = {
       return await query.having(eq(countDistinct(schema.detections.entityId), entities.length))
 
     return await query
+  },
+  async getEntities(youtubeId: string, _modelId: number = -1) {
+    let modelId = _modelId
+    if (modelId == -1) {
+      const [model] = await db.select({ modelId: schema.models.modelId }).from(schema.models).where(eq(schema.models.modelIsPrimary, true))
+      if (!model)
+        throw new Error('Primary model was requested for search, but none was set!')
+      modelId = model.modelId
+    }
+
+    return await db.select({
+      entityName: schema.entities.entityName,
+      entityId: schema.entities.entityId,
+      entityCount: count(schema.entities.entityId)
+    }).from(schema.detections)
+      .innerJoin(schema.entities, eq(schema.detections.entityId, schema.entities.entityId))
+      .innerJoin(schema.videos, eq(schema.detections.videoId, schema.videos.videoId))
+      .where(
+        and(
+          eq(schema.videos.youtubeId, youtubeId),
+          eq(schema.detections.modelId, modelId)
+        )
+      )
+      .groupBy(schema.entities.entityId)
   }
 }
 

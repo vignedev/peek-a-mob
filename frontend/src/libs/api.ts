@@ -32,6 +32,12 @@ export type DetailedVideo = Video & {
   models: Model[]
 }
 
+export type VideoEntityItem = {
+  entityName: string,
+  entityId: number,
+  entityCount: number
+}
+
 export type JobStatus = 'waiting' | 'cancelled' | 'active' | 'failed' | 'finished' | 'importing'
 
 export type Job = {
@@ -135,6 +141,10 @@ async function getDetections(youtubeId: string, modelId: number | null = null, q
 
 async function getAllDetections(): Promise<DetectionRecord> {
   return (await strictFetch('/api/detections')).json()
+}
+
+async function getVideoEntities(youtubeId: string, modelId: number = -1): Promise<VideoEntityItem[]> {
+  return (await strictFetch(`/api/videos/${youtubeId}/entities/${modelId}`)).json()
 }
 
 async function deleteDetections(youtubeId: string, modelId: number) {
@@ -241,7 +251,8 @@ export const api = {
   videos: {
     get: getVideo,
     getAll: getVideos,
-    getDetections: getDetections
+    getDetections: getDetections,
+    getEntities: getVideoEntities
   },
   entities: {
     getAll: getEntities
