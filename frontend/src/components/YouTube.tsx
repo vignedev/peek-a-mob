@@ -100,7 +100,7 @@ export const VideoTimeline = (props: { player?: YouTubePlayer, videoInfo: Video,
     // const currentTime = await tryUntil(() => player.getCurrentTime())
     // const duration = await tryUntil(() => player.getDuration())
 
-    if (!cachedTimeline) {
+    if (!cachedTimeline || cachedTimeline.width != ctx.canvas.width || cachedTimeline.height != ctx.canvas.height) {
       const newTimeline = await cacheTimeline(ctx.canvas.width, ctx.canvas.height)
       setCachedTimeline(newTimeline)
       if (newTimeline) ctx.drawImage(newTimeline, 0, 0)
