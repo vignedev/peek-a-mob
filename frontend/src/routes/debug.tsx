@@ -30,7 +30,8 @@ function DebugPage() {
     api.videos.get(youtubeId)
       .then(info => {
         setVideoInfo(info)
-        setModelId(info.models.find(x => x.modelIsPrimary)?.modelId ?? info.models[0].modelId)
+        if (modelId == null || !info.models.find(x => x.modelId == modelId))
+          setModelId(info.models.find(x => x.modelIsPrimary)?.modelId ?? info.models[0].modelId)
       })
       .catch(err => {
         console.error(err)
