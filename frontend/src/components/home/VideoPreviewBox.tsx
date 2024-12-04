@@ -26,10 +26,11 @@ const VideoPreviewBox = (props: {
   }
 
   useEffect(() => {
+    setEntities([])
     api.videos.getEntities(props.video.youtubeId, props.modelId)
       .then((entities) => setEntities(entities.map(entity => entity.entityName)))
       .catch(console.error)
-  }, [props.video, props.modelId])
+  }, [props.video, props.video.videoId, props.modelId])
 
   return (
     <>
