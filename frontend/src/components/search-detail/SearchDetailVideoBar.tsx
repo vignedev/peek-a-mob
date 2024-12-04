@@ -13,7 +13,7 @@ const SearchDetailVideoBar = (props: {
 
   return (
     <Box 
-      height="65%"
+      height="100%"
       style={{
         borderRadius: "max(var(--radius-2), var(--radius-full))",
         background: "var(--gray-a2)"

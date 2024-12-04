@@ -32,7 +32,6 @@ const SearchDetailPage = () => {
             modelId={state.modelId}
             entities={state.currentEntities}
           />
-          <SearchRetailConfigBar />
         </Flex>
         <SearchDetailVideoSearch
           video={currentVideo}
