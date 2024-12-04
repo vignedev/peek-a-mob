@@ -47,7 +47,8 @@ const SearchDetailVideoBar = (props: {
                       state: {
                         videoList: videos,
                         currentVideo: video,
-                        entities: props.entities
+                        currentEntities: props.entities,
+                        modelId: props.modelId
                       }
                     })}
                     style={{
