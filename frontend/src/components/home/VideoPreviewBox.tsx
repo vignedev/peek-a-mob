@@ -41,7 +41,7 @@ const VideoPreviewBox = (props: {
         gap="1"
       >
         <img
-          src={`https://img.youtube.com/vi/${props.video.youtubeId}/maxresdefault.jpg`}
+          src={`https://img.youtube.com/vi/${props.video.youtubeId}/mqdefault.jpg`}
           width="100%"
           style={{
             borderRadius: "max(var(--radius-2), var(--radius-full))"
