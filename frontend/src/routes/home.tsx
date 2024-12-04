@@ -1,10 +1,9 @@
 import { Flex } from "@radix-ui/themes"
 import { VigTheorem } from "../components/Branding"
-import HomeConfigBar from "../components/home/HomeConfigBar"
 import HomeVideoGrid from "../components/home/HomeVideoGrid"
 
 const HomePage = () => {
-  const maxHomePageVideos = 9;
+  const maxHomePageVideos = 12;
   return(
     <Flex
       direction='column'
