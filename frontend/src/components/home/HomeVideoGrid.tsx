@@ -13,12 +13,13 @@ const HomeVideoGrid = (props: {
   useEffect( () => {
     api.videos.getAll().then((video) => {
       const homePageVideos: Video[] = [];
+      const randomVideos = video.sort(() => Math.random() - 0.5);
       for (let i = 0; i < video.length; i++) {
         if (i == props.maxHomePageVideos) break;
-        homePageVideos.push(video[i]);
+        homePageVideos.push(randomVideos[i]);
       }
 
-      setVideos(homePageVideos.sort(() => Math.random() - 0.5));
+      setVideos(homePageVideos);
     });
     api.models.getAll().then((models) => {
       setModelId(models[0].modelId)
