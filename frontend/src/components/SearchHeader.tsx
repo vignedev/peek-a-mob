@@ -18,6 +18,7 @@ const SearchHeader = () => {
   const navigate = useNavigate();
   const [options, setOptions] = useState<{ value: string, label: string }[]>([]);
   const [selectedEntities, setSelectedEntities] = useState<string[]>([])
+  const [modelId, setModelId] = useState<number>()
 
   const handleSearch = () => {
     api.videos.getAll(selectedEntities, -1)
@@ -27,19 +28,32 @@ const SearchHeader = () => {
             state: {
               videoList: videos,
               currentVideo: videos[0],
-              currentEntities: selectedEntities
+              currentEntities: selectedEntities,
+              modelId: modelId
             }
           })
         }
       })
+      .catch(console.error)
   }
 
   useEffect(() => {
-    api.entities.getAll().then(
-      (value) => {
+    api.entities.getAll()
+      .then((value) => {
         setOptions(value.map(entity => ({ value: entity.entityName, label: entity.entityName })))
-      }
-    );
+      })
+      .catch(console.error)
+
+    api.models.getAll()
+      .then((models) => {
+        setModelId(models[0].modelId);
+
+        models.forEach(model => {
+          if (model.modelIsPrimary)
+            setModelId(model.modelId);
+        })
+      })
+      .catch(console.error)
   }, [])
 
   return (
