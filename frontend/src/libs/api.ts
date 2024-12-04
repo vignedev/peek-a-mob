@@ -136,7 +136,14 @@ async function getDetections(youtubeId: string, modelId: number | null = null, q
 
     entities[name].push(occurance)
   }
-  return entities
+
+  // might be expensive, but you can afford that, right?
+  const copy: EntityDetection = {}
+  Object.keys(entities).sort().forEach(entity => {
+    copy[entity] = entities[entity]
+  })
+
+  return copy
 }
 
 async function getAllDetections(): Promise<DetectionRecord> {
