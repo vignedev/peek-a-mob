@@ -34,7 +34,7 @@ const SearchHeader = () => {
           })
         }
       })
-      .catch(err => console.log(err));
+      .catch(console.error);
   }
 
   useEffect(() => {
@@ -42,18 +42,14 @@ const SearchHeader = () => {
       .then((value) => {
         setOptions(value.map(entity => ({ value: entity.entityName, label: entity.entityName })))
       })
-      .catch(err => console.log(err))
+      .catch(console.error)
 
     api.models.getAll()
       .then((models) => {
-        setModelId(models[0].modelId);
-
-        models.forEach(model => {
-          if (model.modelIsPrimary)
-            setModelId(model.modelId);
-        });
+        const primaryModelId = models.find(model => model.modelIsPrimary);
+        setModelId(primaryModelId?.modelId || models[0].modelId);
       })
-      .catch(err => console.log(err));
+      .catch(console.error);
   }, [])
 
   return (

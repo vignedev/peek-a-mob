@@ -13,16 +13,11 @@ const SearchDetailVideoBar = (props: {
   const [videos, setVideos] = useState<Video[]>()
 
   useEffect( () => {
-    if (props.entities) {
-      api.videos.getAll(props.entities, props.modelId).then( videos => {
-        setVideos(videos);
-      });
-    }
-    else {
-      api.videos.getAll().then( videos => {
-        setVideos(videos);
-      });
-    }
+    if (props.entities)
+      api.videos.getAll(props.entities, props.modelId).then(setVideos);
+    else
+      api.videos.getAll().then(setVideos);
+
   }, [])
 
   return (

@@ -13,15 +13,9 @@ const VideoPreviewBox = (props: {
   const [entities, setEntities] = useState<string[]>();
 
   useEffect( () => {
-    let apiEntities: string[] = [];
     api.videos.getEntities(props.video.youtubeId, props.modelId)
-      .then( (entities) => {
-        entities.forEach( (entity) => {
-          apiEntities.push(entity.entityName)
-        })
-        setEntities(apiEntities)
-      })
-      .catch(err => console.log(err))
+      .then((entities) => setEntities(entities.map( entity => entity.entityName)))
+      .catch(console.error)
   }, [])
 
   return (

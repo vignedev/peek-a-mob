@@ -12,28 +12,19 @@ const HomeVideoGrid = (props: {
 
   useEffect( () => {
     api.videos.getAll()
-      .then((video) => {
-        const homePageVideos: Video[] = [];
-        const randomVideos = video.sort(() => Math.random() - 0.5);
-
-        for (let i = 0; i < video.length; i++) {
-          if (i == props.maxHomePageVideos) break;
-          homePageVideos.push(randomVideos[i]);
-        };
-
-        setVideos(homePageVideos);
-      })
-      .catch(err => console.log(err));
+      .then((video) => setVideos(
+        video
+          .sort( () => Math.random() - 0.5 )
+          .slice(0, props.maxHomePageVideos)
+      ))
+      .catch(console.error);
 
     api.models.getAll()
       .then((models) => {
-        setModelId(models[0].modelId);
-        models.forEach(model => {
-          if(model.modelIsPrimary)
-            setModelId(model.modelId);
-        });
+        const primaryModelId = models.find(model => model.modelIsPrimary);
+        setModelId(primaryModelId?.modelId || models[0].modelId);
       })
-      .catch(err => console.log(err));
+      .catch(console.error);
   }, [])
 
   return (
