@@ -32,7 +32,9 @@ const VideoPreviewBox = (props: {
         onClick={() => navigate('/search-detail', {
           state: {
             videoList: props.videos,
-            currentVideo: props.video
+            currentVideo: props.video,
+            currentEntities: entities,
+            modelId: props.modelId
           }
         })}
         gap="1"

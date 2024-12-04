@@ -21,13 +21,18 @@ const SearchDetailPage = () => {
       justify='center'
       gap="4"
     >
-      <Grid rows="2" gap="4" height="100%" width="38rem">
+      <Flex direction="column" gap="4" height="100%" width="38rem">
+        <SearchDetailVideoBar
+          currentVideo={state.currentVideo}
+          entities={state.currentEntities}
+          modelId={state.modelId}
+        />
         <SearchRetailConfigBar />
-        <SearchDetailVideoBar />
-      </Grid>
+      </Flex>
       <SearchDetailVideoSearch
         video={state.currentVideo}
         entities={state.currentEntities}
+        modelId={state.modelId}
       />
     </Flex>
   )
