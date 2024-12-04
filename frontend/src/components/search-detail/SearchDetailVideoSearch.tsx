@@ -5,17 +5,16 @@ import { useEffect, useState } from "react";
 
 const SearchDetailVideoSearch = (props: {
   video: Video,
-  entities?: string[]
+  entities?: string[],
+  modelId: number
 }) => {
   const [videoInfo, setVideoInfo] = useState<DetailedVideo>()
-  const [modelId, setModelId] = useState<number>()
 
   useEffect(() => {
     if (!props.video.youtubeId) return;
     api.videos.get(props.video.youtubeId)
       .then(info => {
         setVideoInfo(info)
-        setModelId(info.models[0].modelId)
       })
       .catch(console.error)
   }, [props.video, props.entities])
@@ -29,9 +28,9 @@ const SearchDetailVideoSearch = (props: {
     }}>
       <Container style={{ height: "100%" }}>
         {
-          videoInfo && modelId &&
+          videoInfo && props.modelId &&
           <YouTubeWithTimeline
-            modelId={modelId}
+            modelId={props.modelId}
             videoInfo={videoInfo}
             entities={props.entities}
           />
