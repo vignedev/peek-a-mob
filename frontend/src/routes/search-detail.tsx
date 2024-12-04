@@ -25,7 +25,7 @@ const SearchDetailPage = () => {
         justify='center'
         gap="4"
       >
-        <Flex direction="column" gap="4" height="100%" width="38rem">
+        <Flex direction="column" gap="4" height="100%" width="40rem">
           <SearchDetailVideoBar
             currentVideoId={state.currentVideoId}
             videoList={state.videoList}
