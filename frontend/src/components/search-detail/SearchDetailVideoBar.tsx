@@ -1,24 +1,15 @@
 import { Flex, Text, Box } from "@radix-ui/themes";
-import { Video, api } from "../../libs/api";
+import { Video } from "../../libs/api";
 import { ScrollArea } from "@radix-ui/themes/src/index.js";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 
 const SearchDetailVideoBar = (props: {
-  currentVideo: Video
-  entities?: string[]
+  currentVideoId: number
   modelId: number
+  entities?: string[]
+  videoList: Video[]
 }) => {
   const navigate = useNavigate();
-  const [videos, setVideos] = useState<Video[]>()
-
-  useEffect( () => {
-    if (props.entities)
-      api.videos.getAll(props.entities, props.modelId).then(setVideos);
-    else
-      api.videos.getAll().then(setVideos);
-
-  }, [])
 
   return (
     <Box 
@@ -31,8 +22,8 @@ const SearchDetailVideoBar = (props: {
         <Flex direction="column" gap="1" pr="3" p="1">
           <>
             {
-              videos &&
-              videos.map( (video, index) => {
+              props.videoList &&
+              props.videoList.map( (video, index) => {
                 return (
                   <Flex 
                     key={index} 
@@ -40,14 +31,14 @@ const SearchDetailVideoBar = (props: {
                     pl="2" pt="1" pb="1"
                     onClick={() => navigate('/search-detail', {
                       state: {
-                        videoList: videos,
-                        currentVideo: video,
+                        videoList: props.videoList,
+                        currentVideoId: video.videoId,
                         currentEntities: props.entities,
                         modelId: props.modelId
                       }
                     })}
                     style={{
-                      backgroundColor: (props.currentVideo.youtubeId == video.youtubeId) ? 
+                      backgroundColor: (props.currentVideoId == video.videoId) ? 
                       "rgba(255,255,255,0.2)" : 
                       "",
                       borderRadius: "max(var(--radius-2), var(--radius-full))",

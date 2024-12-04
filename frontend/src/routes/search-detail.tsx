@@ -1,4 +1,4 @@
-import { Flex, Grid } from "@radix-ui/themes";
+import { Flex } from "@radix-ui/themes";
 import SearchDetailVideoSearch from "../components/search-detail/SearchDetailVideoSearch";
 import SearchRetailConfigBar from "../components/search-detail/SearchDetailConfigBar";
 import SearchDetailVideoBar from "../components/search-detail/SearchDetailVideoBar";
@@ -10,31 +10,38 @@ const SearchDetailPage = () => {
   const state = location.state as {
     modelId: number,
     videoList: Video[],
-    currentVideo: Video,
+    currentVideoId: number,
     currentEntities?: string[]
   }
+  const currentVideo = state.videoList.find(v => v.videoId == state.currentVideoId);
 
   return (
-    <Flex
-      height='calc(100vh - 10rem)'
-      align='center'
-      justify='center'
-      gap="4"
-    >
-      <Flex direction="column" gap="4" height="100%" width="38rem">
-        <SearchDetailVideoBar
-          currentVideo={state.currentVideo}
+    <>
+    {
+      currentVideo &&
+      <Flex
+        height='calc(100vh - 10rem)'
+        align='center'
+        justify='center'
+        gap="4"
+      >
+        <Flex direction="column" gap="4" height="100%" width="38rem">
+          <SearchDetailVideoBar
+            currentVideoId={state.currentVideoId}
+            videoList={state.videoList}
+            modelId={state.modelId}
+            entities={state.currentEntities}
+          />
+          <SearchRetailConfigBar />
+        </Flex>
+        <SearchDetailVideoSearch
+          video={currentVideo}
           entities={state.currentEntities}
           modelId={state.modelId}
         />
-        <SearchRetailConfigBar />
       </Flex>
-      <SearchDetailVideoSearch
-        video={state.currentVideo}
-        entities={state.currentEntities}
-        modelId={state.modelId}
-      />
-    </Flex>
+    }
+    </>
   )
 }
 

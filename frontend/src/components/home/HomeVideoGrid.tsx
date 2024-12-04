@@ -34,7 +34,7 @@ const HomeVideoGrid = (props: {
           {
             modelId && videos &&
             videos.map( (video, index) => {
-              return <VideoPreviewBox videos={videos} video={video} modelId={modelId} key={index}/>
+              return <VideoPreviewBox video={video} modelId={modelId} key={index}/>
             })
           }
         </Grid>

@@ -5,18 +5,31 @@ import VideoTag from "../VideoTag";
 import { useEffect, useState } from "react";
 
 const VideoPreviewBox = (props: {
-  videos: Video[],
   video: Video,
-  modelId: number
+  modelId: number,
 }) => {
   const navigate = useNavigate();
   const [entities, setEntities] = useState<string[]>();
+
+  const handleVideoClick = () => {
+    api.videos.getAll()
+      .then( videos => {
+        navigate('/search-detail', {
+          state: {
+            videoList: videos,
+            currentVideoId: props.video.videoId,
+            currentEntities: entities,
+            modelId: props.modelId
+          }
+        })
+      });
+  }
 
   useEffect( () => {
     api.videos.getEntities(props.video.youtubeId, props.modelId)
       .then((entities) => setEntities(entities.map( entity => entity.entityName)))
       .catch(console.error)
-  }, [])
+  }, [props.video])
 
   return (
     <>
@@ -24,14 +37,7 @@ const VideoPreviewBox = (props: {
       props.video &&
       <Flex
         direction="column"
-        onClick={() => navigate('/search-detail', {
-          state: {
-            videoList: props.videos,
-            currentVideo: props.video,
-            currentEntities: entities,
-            modelId: props.modelId
-          }
-        })}
+        onClick={handleVideoClick}
         gap="1"
       >
         <img

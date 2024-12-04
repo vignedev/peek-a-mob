@@ -27,7 +27,7 @@ const SearchHeader = () => {
           navigate('/search-detail', {
             state: {
               videoList: videos,
-              currentVideo: videos[0],
+              currentVideoId: videos[0].videoId,
               currentEntities: selectedEntities,
               modelId: modelId
             }
