@@ -4,10 +4,10 @@ import HomeVideoGrid from "../components/home/HomeVideoGrid"
 
 const HomePage = () => {
   const maxHomePageVideos = 12;
-  return(
+  return (
     <Flex
       direction='column'
-      gap='4'  
+      gap='4'
     >
       <Flex
         height='calc(100vh - 11.5rem)'

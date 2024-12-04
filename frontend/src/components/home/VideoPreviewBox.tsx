@@ -13,7 +13,7 @@ const VideoPreviewBox = (props: {
 
   const handleVideoClick = () => {
     api.videos.getAll(entities, props.modelId)
-      .then( videos => {
+      .then(videos => {
         navigate('/search-detail', {
           state: {
             videoList: videos,
@@ -25,38 +25,42 @@ const VideoPreviewBox = (props: {
       });
   }
 
-  useEffect( () => {
+  useEffect(() => {
     api.videos.getEntities(props.video.youtubeId, props.modelId)
-      .then((entities) => setEntities(entities.map( entity => entity.entityName)))
+      .then((entities) => setEntities(entities.map(entity => entity.entityName)))
       .catch(console.error)
   }, [props.video, props.modelId])
 
   return (
     <>
-    {
-      props.video &&
-      <Flex
-        direction="column"
-        onClick={handleVideoClick}
-        gap="1"
-      >
-        <img
-          src={`https://img.youtube.com/vi/${props.video.youtubeId}/mqdefault.jpg`}
-          width="100%"
+      {
+        props.video &&
+        <Flex
+          direction="column"
+          onClick={handleVideoClick}
+          gap="1"
           style={{
-            borderRadius: "max(var(--radius-2), var(--radius-full))"
+            cursor: 'pointer'
           }}
-        />
-        <Text>{props.video.videoTitle}</Text>
-        <Flex gap="2" wrap="wrap">
-          {
-            entities && entities.map( (entity, index) => {
-              return <VideoTag tagText={entity} key={index}/>
-            })
-          }
+          className='videoPreviewBox'
+        >
+          <img
+            src={`https://img.youtube.com/vi/${props.video.youtubeId}/mqdefault.jpg`}
+            width="100%"
+            style={{
+              borderRadius: "max(var(--radius-2), var(--radius-full))"
+            }}
+          />
+          <Text>{props.video.videoTitle}</Text>
+          <Flex gap="1" wrap="wrap">
+            {
+              entities && entities.map((entity, index) => {
+                return <VideoTag tagText={entity} key={index} />
+              })
+            }
+          </Flex>
         </Flex>
-      </Flex>
-    }
+      }
     </>
   )
 }

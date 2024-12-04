@@ -1,19 +1,21 @@
 import { Text } from "@radix-ui/themes"
+import { RandomColorFromString } from "../libs/utils";
 
 const VideoTag = (props: {
   tagText: string;
 }) => {
-  return ( 
+  return (
     <Text style={{
       borderStyle: "solid",
-      borderColor: "grey",
-      borderWidth: "2px",
+      borderColor: RandomColorFromString(props.tagText, 0.5),
+      background: RandomColorFromString(props.tagText, 0.1),
+      borderWidth: "1px",
       borderRadius: "max(var(--radius-2), var(--radius-full))",
-      padding: "0px 8px"
-    }}>
+      padding: "0 0.25rem"
+    }} size='1'>
       {props.tagText}
     </Text>
   );
 }
- 
+
 export default VideoTag;

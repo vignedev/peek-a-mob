@@ -56,3 +56,11 @@ export async function invokeDownload(url: string, filename: string) {
 export function formatDuration(time: number, duration?: number) {
   return new Date(time * 1000.0).toISOString().substring(((duration || time) >= 3_600) ? 11 : 14, 19) + (time - Math.floor(time)).toFixed(2).substring(1)
 }
+
+export const RandomColorFromString = (text: string, alpha: number = 0.03) => {
+  let value = 0
+  for (let i = 0; i < text.length; ++i)
+    value += Math.pow(text.charCodeAt(i), 2.6)
+
+  return `hsla(${value % 360}, 80%, 45%, ${alpha})`
+}

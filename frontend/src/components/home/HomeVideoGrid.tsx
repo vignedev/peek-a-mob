@@ -10,11 +10,11 @@ const HomeVideoGrid = (props: {
   const [videos, setVideos] = useState<Video[]>([])
   const [modelId, setModelId] = useState<number>();
 
-  useEffect( () => {
+  useEffect(() => {
     api.videos.getAll()
       .then((video) => setVideos(
         video
-          .sort( () => Math.random() - 0.5 )
+          .sort(() => Math.random() - 0.5)
           .slice(0, props.maxHomePageVideos)
       ))
       .catch(console.error);
@@ -28,18 +28,16 @@ const HomeVideoGrid = (props: {
   }, [])
 
   return (
-    <Box style={{ width: "100%", height: "100%" }}>
-      <ScrollArea>
-        <Grid columns="4" rows="repeat(2)" gapX="4" gapY="4" height="100%" pr="3">
-          {
-            modelId && videos &&
-            videos.map( (video, index) => {
-              return <VideoPreviewBox video={video} modelId={modelId} key={index}/>
-            })
-          }
-        </Grid>
-      </ScrollArea>
-    </Box>
+    <ScrollArea>
+      <Grid p='2' columns="4" rows="repeat(2)" gapX="4" gapY="4" height="100%" pr="3">
+        {
+          modelId && videos &&
+          videos.map((video, index) => {
+            return <VideoPreviewBox video={video} modelId={modelId} key={index} />
+          })
+        }
+      </Grid>
+    </ScrollArea>
   )
 }
 

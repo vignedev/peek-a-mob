@@ -3,19 +3,13 @@ import YouTube, { YouTubePlayer } from 'react-youtube'
 import { Canvas, CanvasDrawingFunction } from './Canvas'
 import { Box, Flex, Spinner } from '@radix-ui/themes'
 import { EntityDetection, Video, api, groupDetections } from '../libs/api'
-import { formatDuration, lowerBound, wait } from '../libs/utils'
+import { formatDuration, lowerBound, wait, RandomColorFromString } from '../libs/utils'
 import { expandContext } from '../libs/canvasEx'
 
 type TimeInfo = [currentTime: number, duration: number]
 type ValidRange = [start: number, end: number]
 
-export const RandomColorFromString = (text: string, alpha: number = 0.03) => {
-  let value = 0
-  for (let i = 0; i < text.length; ++i)
-    value += Math.pow(text.charCodeAt(i), 2.6)
 
-  return `hsla(${value % 360}, 80%, 45%, ${alpha})`
-}
 
 export const VideoTimeline = (props: { player?: YouTubePlayer, videoInfo: Video, timeInfo: TimeInfo, detections: EntityDetection, style?: React.CSSProperties }) => {
   const { player, detections, timeInfo, videoInfo } = props
