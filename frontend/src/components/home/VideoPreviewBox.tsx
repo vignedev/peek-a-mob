@@ -12,7 +12,7 @@ const VideoPreviewBox = (props: {
   const [entities, setEntities] = useState<string[]>();
 
   const handleVideoClick = () => {
-    api.videos.getAll()
+    api.videos.getAll(entities, props.modelId)
       .then( videos => {
         navigate('/search-detail', {
           state: {
@@ -29,7 +29,7 @@ const VideoPreviewBox = (props: {
     api.videos.getEntities(props.video.youtubeId, props.modelId)
       .then((entities) => setEntities(entities.map( entity => entity.entityName)))
       .catch(console.error)
-  }, [props.video])
+  }, [props.video, props.modelId])
 
   return (
     <>
