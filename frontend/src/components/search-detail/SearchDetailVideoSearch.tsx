@@ -1,4 +1,4 @@
-import { Box, Container } from "@radix-ui/themes";
+import { Box, ScrollArea } from "@radix-ui/themes";
 import api, { DetailedVideo, Video } from "../../libs/api";
 import { YouTubeWithTimeline } from "../YouTube";
 import { useEffect, useState } from "react";
@@ -26,7 +26,7 @@ const SearchDetailVideoSearch = (props: {
       borderRadius: "max(var(--radius-2), var(--radius-full))",
       background: "var(--gray-a2)"
     }}>
-      <Container style={{ height: "100%" }}>
+      <ScrollArea>
         {
           videoInfo && props.modelId &&
           <YouTubeWithTimeline
@@ -35,7 +35,7 @@ const SearchDetailVideoSearch = (props: {
             entities={props.entities}
           />
         }
-      </Container>
+      </ScrollArea>
     </Box>
   );
 }

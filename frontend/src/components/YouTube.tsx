@@ -355,11 +355,13 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
   return (
     <Flex direction='column' gap='1'>
       <Box style={{
-        position: 'relative',
+        position: fullScreenWidth ? 'relative' : 'sticky',
+        top: 0,
         borderRadius: 'max(var(--radius-2), var(--radius-full))',
         overflow: 'hidden',
         boxShadow: 'var(--shadow-2)',
-        aspectRatio: videoInfo.aspectRatio
+        aspectRatio: videoInfo.aspectRatio,
+        zIndex: 2,
       }}>
         <YouTube
           className='youtubeEmbed'
