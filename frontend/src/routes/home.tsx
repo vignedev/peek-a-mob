@@ -16,7 +16,6 @@ const HomePage = () => {
         justify='center'
         gap="4"
       >
-        <HomeConfigBar />
         <HomeVideoGrid maxHomePageVideos={maxHomePageVideos} />
       </Flex>
       <VigTheorem />
