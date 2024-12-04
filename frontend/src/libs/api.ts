@@ -115,7 +115,7 @@ async function getDetections(youtubeId: string, modelId: number | null = null, q
   const searchQuery = Object.entries({
     ss: query.start || 0,
     to: query.end || Infinity,
-    conf: query.confidence || 0.7,
+    // conf: query.confidence || 0.7,
     e: query.entities || []
   }).map(([key, value]) =>
     Array.isArray(value) ?
