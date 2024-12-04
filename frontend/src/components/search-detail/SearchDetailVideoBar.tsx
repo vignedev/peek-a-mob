@@ -15,13 +15,13 @@ const SearchDetailVideoBar = (props: {
   useEffect( () => {
     if (props.entities) {
       api.videos.getAll(props.entities, props.modelId).then( videos => {
-        setVideos(videos)
-      })
+        setVideos(videos);
+      });
     }
     else {
       api.videos.getAll().then( videos => {
-        setVideos(videos)
-      })
+        setVideos(videos);
+      });
     }
   }, [])
 
