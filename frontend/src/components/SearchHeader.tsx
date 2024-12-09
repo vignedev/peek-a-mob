@@ -16,7 +16,7 @@ const HeaderButton = ({ style, ...props }: ButtonProps) => (
 )
 
 const SearchHeader = () => {
-  const { theme, setTheme, resolvedTheme } = useTheme()
+  const { setTheme, resolvedTheme } = useTheme()
   const navigate = useNavigate();
   const [options, setOptions] = useState<{ value: string, label: string }[]>([]);
   const [selectedEntities, setSelectedEntities] = useState<string[]>([])
