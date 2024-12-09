@@ -1,10 +1,11 @@
 import { Button, ButtonProps, Flex } from "@radix-ui/themes";
 import { PeekAMobHeading } from "./Branding";
-import { MagnifyingGlassIcon, FilePlusIcon, RocketIcon, CameraIcon } from "@radix-ui/react-icons"
+import { MagnifyingGlassIcon, FilePlusIcon, RocketIcon, CameraIcon, Half2Icon } from "@radix-ui/react-icons"
 import Search from "./Search";
 import { api } from "../libs/api"
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 
 const HeaderButton = ({ style, ...props }: ButtonProps) => (
   <Button
@@ -15,6 +16,7 @@ const HeaderButton = ({ style, ...props }: ButtonProps) => (
 )
 
 const SearchHeader = () => {
+  const { theme, setTheme, resolvedTheme } = useTheme()
   const navigate = useNavigate();
   const [options, setOptions] = useState<{ value: string, label: string }[]>([]);
   const [selectedEntities, setSelectedEntities] = useState<string[]>([])
@@ -72,6 +74,10 @@ const SearchHeader = () => {
 
         <HeaderButton color='red' onClick={() => navigate('/debug')}>
           <RocketIcon /> Debug
+        </HeaderButton>
+
+        <HeaderButton color='gray' onClick={() => setTheme(resolvedTheme == 'dark' ? 'light' : 'dark')}>
+          <Half2Icon />
         </HeaderButton>
       </Flex>
     </Flex>

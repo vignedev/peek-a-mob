@@ -99,7 +99,7 @@ function DebugPage() {
             backgroundBlendMode: 'darken'
           }}>
             <Flex justify='center' align='center' height='100%'>
-              <Text style={{ opacity: 0.2 }} size='8'>
+              <Text style={{ opacity: 0.2, color: 'white' }} size='8'>
                 pick a video nya~
               </Text>
             </Flex>
