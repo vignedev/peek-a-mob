@@ -12,6 +12,7 @@ body {
   cursor: pointer !important;
 }
 
+.searchDetailVideoSuggestion,
 .videoPreviewBox * {
   transition: all .125s;
 }
@@ -24,4 +25,8 @@ body {
 .videoPreviewBox:active>img {
   transform: scale(0.985);
   box-shadow: unset;
+}
+
+.searchDetailVideoSuggestion:hover {
+  background: var(--gray-3);
 }

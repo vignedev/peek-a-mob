@@ -43,6 +43,7 @@ const SearchDetailVideoBar = (props: {
                       borderRadius: "max(var(--radius-2), var(--radius-full))",
                       cursor: "pointer"
                     }}
+                    className='searchDetailVideoSuggestion'
                   >
                     <img
                       src={`https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
