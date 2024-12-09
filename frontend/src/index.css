@@ -16,12 +16,12 @@ body {
   transition: all .125s;
 }
 
-.videoPreviewBox>img:hover {
+.videoPreviewBox:hover>img {
   transform: scale(1.025);
   box-shadow: #fff2 0rem 0.125rem 1rem;
 }
 
-.videoPreviewBox>img:active {
+.videoPreviewBox:active>img {
   transform: scale(0.985);
   box-shadow: unset;
 }
