@@ -58,7 +58,7 @@ const SearchHeader = () => {
   }, [])
 
   return (
-    <Flex gap="8" width="auto" pt='4'>
+    <Flex gap={{ sm: "8", initial: '2' }} width="auto" pt='4'>
       <PeekAMobHeading />
       <Flex gap="2" width="100%">
         <Search options={options} setSelectedEntities={setSelectedEntities} />
