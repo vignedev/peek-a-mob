@@ -28,21 +28,29 @@ export const Canvas = (props: CanvasProps) => {
     if (!canvas) return
     const ctx = expandContext(canvas.getContext('2d')!)
 
-    const updateMousePosition = (e: MouseEvent) => setMouse({ x: e.offsetX, y: e.offsetY })
+    const updateMousePosition = (e: PointerEvent) => setMouse({ x: e.offsetX, y: e.offsetY })
     const handleMouseLeave = () => setMouse(null)
-    const handleClick = (e: MouseEvent) => {
-      props.onMouseDown?.(e, ctx)
+    const handleClick = (e: PointerEvent) => {
+      if (e.pointerType != 'touch') // pen and touch have hover, click immediately
+        props.onMouseDown?.(e, ctx)
+      props.onDraw?.(ctx, mouse) // invoke re-draw when click
+    }
+    const handleClickTouch = (e: PointerEvent) => {
+      if (e.pointerType == 'touch') // touch has no hover, act the "drag" as hover
+        props.onMouseDown?.(e, ctx)
       props.onDraw?.(ctx, mouse) // invoke re-draw when click
     }
 
-    ctx.canvas.addEventListener('mousemove', updateMousePosition)
-    ctx.canvas.addEventListener('mouseleave', handleMouseLeave)
-    ctx.canvas.addEventListener('mousedown', handleClick)
+    ctx.canvas.addEventListener('pointermove', updateMousePosition)
+    ctx.canvas.addEventListener('pointerleave', handleMouseLeave)
+    ctx.canvas.addEventListener('pointerdown', handleClick)
+    ctx.canvas.addEventListener('pointerup', handleClickTouch)
 
     return () => {
-      ctx.canvas.removeEventListener('mousemove', updateMousePosition)
-      ctx.canvas.removeEventListener('mouseleave', handleMouseLeave)
-      ctx.canvas.removeEventListener('mousedown', handleClick)
+      ctx.canvas.removeEventListener('pointermove', updateMousePosition)
+      ctx.canvas.removeEventListener('pointerleave', handleMouseLeave)
+      ctx.canvas.removeEventListener('pointerdown', handleClick)
+      ctx.canvas.removeEventListener('pointerup', handleClickTouch)
     }
   }, [canvas, props.onMouseDown, props.onDraw])
 
