@@ -1,5 +1,4 @@
 import Select, { MultiValue } from 'react-select'
-import { grayDark } from "@radix-ui/colors";
 import { useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
@@ -41,17 +40,17 @@ const Search = (props: {
         styles={{
           control: (baseStyles) => ({
             ...baseStyles,
-            backgroundColor: grayDark.gray3,
-            borderColor: grayDark.gray8,
+            backgroundColor: 'var(--gray-3)',
+            borderColor: 'var(--gray-8)',
             borderRadius: "max(var(--radius-2), var(--radius-full))",
-            color: grayDark.gray11,
+            color: 'var(--gray-11)',
             "&:hover": {
-              borderColor: grayDark.gray10,
+              borderColor: 'var(--gray-10)',
             },
           }),
           menu: (baseStyles) => ({
             ...baseStyles,
-            backgroundColor: grayDark.gray4,
+            backgroundColor: 'var(--gray-4)',
             borderRadius: "max(var(--radius-2), var(--radius-full))",
             boxShadow: "var(--shadow-3)",
             zIndex: 3
@@ -60,33 +59,33 @@ const Search = (props: {
             ...baseStyles,
             borderRadius: "max(var(--radius-2), var(--radius-full))",
             backgroundColor: state.isFocused
-              ? grayDark.gray8
-              : grayDark.gray4,
+              ? 'var(--gray-8)'
+              : 'var(--gray-4)',
             "&:hover": {
-              backgroundColor: grayDark.gray8
+              backgroundColor: 'var(--gray-8)'
             },
           }),
           multiValue: (baseStyles) => ({
             ...baseStyles,
-            backgroundColor: grayDark.gray8,
+            backgroundColor: 'var(--gray-8)',
             borderRadius: "max(var(--radius-2), var(--radius-full))",
           }),
           multiValueLabel: (baseStyles) => ({
             ...baseStyles,
-            color: grayDark.gray12
+            color: 'var(--gray-12)'
           }),
           multiValueRemove: (baseStyles) => ({
             ...baseStyles,
             borderRadius: "max(var(--radius-2), var(--radius-full))",
             "&:hover": {
-              backgroundColor: grayDark.gray9,
-              color: grayDark.gray12,
+              backgroundColor: 'var(--gray-9)',
+              color: 'var(--gray-12)',
               cursor: "pointer"
             },
           }),
           input: (baseStyles) => ({
             ...baseStyles,
-            color: grayDark.gray12,
+            color: 'var(--gray-12)',
           })
         }} />
     </div>
