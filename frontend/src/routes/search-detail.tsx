@@ -19,19 +19,18 @@ const SearchDetailPage = () => {
       {
         currentVideo &&
         <Flex
-          height='calc(100vh - 10rem)'
+          height={{ sm: 'calc(100vh - 10rem)', initial: '' }}
           align='center'
           justify='center'
           gap="4"
+          direction={{ sm: 'row', initial: 'column-reverse' }}
         >
-          <Flex direction="column" gap="4" height="100%" width="40rem">
-            <SearchDetailVideoBar
-              currentVideoId={state.currentVideoId}
-              videoList={state.videoList}
-              modelId={state.modelId}
-              entities={state.currentEntities}
-            />
-          </Flex>
+          <SearchDetailVideoBar
+            currentVideoId={state.currentVideoId}
+            videoList={state.videoList}
+            modelId={state.modelId}
+            entities={state.currentEntities}
+          />
           <SearchDetailVideoSearch
             video={currentVideo}
             entities={state.currentEntities}

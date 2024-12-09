@@ -16,9 +16,10 @@ const SearchDetailVideoBar = (props: {
       style={{
         borderRadius: "max(var(--radius-2), var(--radius-full))",
         background: "var(--gray-a2)"
-      }}>
+      }}
+    >
       <ScrollArea>
-        <Flex direction="column" gap="1" pr="3" p="1">
+        <Flex direction="column" gap="1" p="1">
           <>
             {
               props.videoList &&
@@ -27,7 +28,7 @@ const SearchDetailVideoBar = (props: {
                   <Flex
                     key={index}
                     gap="3"
-                    pl="2" pt="1" pb="1"
+                    pl="1" pt="1" pb="1" pr='4'
                     onClick={() => navigate('/search-detail', {
                       state: {
                         videoList: props.videoList,

@@ -30,3 +30,9 @@ body {
 .searchDetailVideoSuggestion:hover {
   background: var(--gray-3);
 }
+
+@media only screen and (max-width: 768px) {
+  .hideOnPhones {
+    display: none;
+  }
+}

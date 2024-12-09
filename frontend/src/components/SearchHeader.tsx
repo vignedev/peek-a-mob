@@ -7,12 +7,15 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 
-const HeaderButton = ({ style, ...props }: ButtonProps) => (
+const HeaderButton = ({ style, text, children, ...props }: ButtonProps & { text?: string }) => (
   <Button
     variant={props.variant || 'surface'}
     style={{ height: 'auto', ...style }}
     {...props}
-  />
+  >
+    {children}
+    {!!text && <span className='hideOnPhones'>{text}</span>}
+  </Button>
 )
 
 const SearchHeader = () => {
@@ -60,20 +63,20 @@ const SearchHeader = () => {
       <Flex gap="2" width="100%">
         <Search options={options} setSelectedEntities={setSelectedEntities} />
 
-        <HeaderButton color='iris' onClick={handleSearch}>
-          <MagnifyingGlassIcon /> Search
+        <HeaderButton color='iris' onClick={handleSearch} text='Search'>
+          <MagnifyingGlassIcon />
         </HeaderButton>
 
-        <HeaderButton onClick={() => { navigate("/request") }}>
-          <FilePlusIcon /> Request
+        <HeaderButton onClick={() => { navigate("/request") }} text='Request'>
+          <FilePlusIcon />
         </HeaderButton>
 
-        <HeaderButton color='purple' onClick={() => navigate('/admin')}>
-          <CameraIcon /> Models
+        <HeaderButton color='purple' onClick={() => navigate('/admin')} text='Models'>
+          <CameraIcon />
         </HeaderButton>
 
-        <HeaderButton color='red' onClick={() => navigate('/debug')}>
-          <RocketIcon /> Debug
+        <HeaderButton color='red' onClick={() => navigate('/debug')} text='Debug'>
+          <RocketIcon />
         </HeaderButton>
 
         <HeaderButton color='gray' onClick={() => setTheme(resolvedTheme == 'dark' ? 'light' : 'dark')}>

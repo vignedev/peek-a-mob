@@ -379,7 +379,7 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
 
       {
         (detections) ? (
-          <Box height={`${Object.keys(detections).length * 3}rem`}>
+          <Box height={`${Object.keys(detections).length * 3}rem`} overflow='hidden'>
             <VideoTimeline
               player={player}
               videoInfo={videoInfo}
