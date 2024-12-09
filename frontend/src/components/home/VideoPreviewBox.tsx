@@ -1,7 +1,7 @@
 import { Flex, Text } from "@radix-ui/themes"
 import { useNavigate } from "react-router-dom"
 import { Video, api } from "../../libs/api";
-import VideoTag from "../VideoTag";
+import VideoTag, { SkeletonTag } from "../VideoTag";
 import { useEffect, useState } from "react";
 
 const VideoPreviewBox = (props: {
@@ -26,7 +26,7 @@ const VideoPreviewBox = (props: {
   }
 
   useEffect(() => {
-    setEntities([])
+    setEntities(undefined)
     api.videos.getEntities(props.video.youtubeId, props.modelId)
       .then((entities) => setEntities(entities.map(entity => entity.entityName)))
       .catch(console.error)
@@ -55,9 +55,16 @@ const VideoPreviewBox = (props: {
           <Text>{props.video.videoTitle}</Text>
           <Flex gap="1" wrap="wrap">
             {
-              entities && entities.map((entity, index) => {
+              entities ? entities.map((entity, index) => {
                 return <VideoTag tagText={entity} key={index} />
-              })
+              }) : <>
+                <SkeletonTag children={'wah wah wah!'} />
+                <SkeletonTag children={'Bibbidi'} />
+                <SkeletonTag children={'bobbidi'} />
+                <SkeletonTag children={'boowa'} />
+                <SkeletonTag children={'yeah'} />
+                <SkeletonTag children={'混絡がっても仕様が無い'} />
+              </>
             }
           </Flex>
         </Flex>

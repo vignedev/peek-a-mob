@@ -1,5 +1,6 @@
-import { Text } from "@radix-ui/themes"
+import { Skeleton, Text } from "@radix-ui/themes"
 import { RandomColorFromString } from "../libs/utils";
+import { ReactNode } from "react";
 
 const VideoTag = (props: {
   tagText: string;
@@ -16,6 +17,14 @@ const VideoTag = (props: {
       {props.tagText}
     </Text>
   );
+}
+
+export const SkeletonTag = (props: {
+  children: ReactNode | undefined
+}) => {
+  return <Skeleton>
+    <Text size='1' style={{ padding: '0 0.25rem' }}>{props.children}</Text>
+  </Skeleton>
 }
 
 export default VideoTag;
