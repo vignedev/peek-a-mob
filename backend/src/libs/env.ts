@@ -46,3 +46,15 @@ export const str = (key: string, defaultValue?: string): string => {
 
   return value
 }
+
+export const float = (key: string, defaultValue?: number): number => {
+  const value = process.env[key]
+  if (!value)
+    if (defaultValue) return defaultValue
+    else throw Error(`Environment variable ${key} is unset`)
+
+  const int = parseFloat(value)
+  if (isNaN(int)) throw Error(`Environment variable ${key} cannot be parsed as an integer`)
+
+  return int
+}

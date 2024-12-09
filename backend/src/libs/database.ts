@@ -3,6 +3,8 @@ import * as schema from '../db/schema'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { and, count, countDistinct, desc, eq, gte, inArray, lte } from 'drizzle-orm'
 
+const GLOBAL_CONFIDENCE_THRESHOLD = env.float('GLOBAL_CONFIDENCE_THRESHOLD', 0.7)
+
 const db = drizzle(env.str('DATABASE_URL'), { schema })
 export default db
 
@@ -54,7 +56,8 @@ export const videos = {
 
     const andConditions = [
       (entities && entities.length !== 0) ? inArray(schema.entities.entityName, entities) : null,
-      (typeof modelId !== 'undefined') ? eq(schema.detections.modelId, modelId) : null
+      (typeof modelId !== 'undefined') ? eq(schema.detections.modelId, modelId) : null,
+      gte(schema.detections.confidence, GLOBAL_CONFIDENCE_THRESHOLD)
     ].filter(x => !!x)
 
     const { videoId, youtubeId, videoTitle, duration, channelId, aspectRatio } = schema.videos
@@ -91,7 +94,8 @@ export const videos = {
       .where(
         and(
           eq(schema.videos.youtubeId, youtubeId),
-          eq(schema.detections.modelId, modelId)
+          eq(schema.detections.modelId, modelId),
+          gte(schema.detections.confidence, GLOBAL_CONFIDENCE_THRESHOLD)
         )
       )
       .groupBy(schema.entities.entityId)
@@ -157,7 +161,7 @@ export const detections = {
           inArray(schema.detections.entityId, entityIds),
           gte(schema.detections.time, options.timeStart || 0),
           lte(schema.detections.time, options.timeEnd || Infinity),
-          gte(schema.detections.confidence, options.confidence || 0.65),
+          gte(schema.detections.confidence, options.confidence || GLOBAL_CONFIDENCE_THRESHOLD),
           eq(schema.detections.modelId, model.modelId)
         )
       )
