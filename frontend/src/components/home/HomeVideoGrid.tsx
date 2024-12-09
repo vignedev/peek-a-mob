@@ -11,20 +11,17 @@ const HomeVideoGrid = (props: {
 
   useEffect(() => {
     api.models.getAll()
-      .then(models => models.find(x => x.modelIsPrimary)!)
-      .then(primary => api.videos.getAll([], primary.modelId))
+      .then(models => {
+        const primary = models.find(x => x.modelIsPrimary)! // enforce it - if not, admin had f'd up
+        setModelId(primary.modelId)
+
+        return api.videos.getAll([], primary.modelId)
+      })
       .then((video) => setVideos(
         video
           .sort(() => Math.random() - 0.5)
           .slice(0, props.maxHomePageVideos)
       ))
-      .catch(console.error);
-
-    api.models.getAll()
-      .then((models) => {
-        const primaryModelId = models.find(model => model.modelIsPrimary);
-        setModelId(primaryModelId?.modelId || models[0].modelId);
-      })
       .catch(console.error);
   }, [])
 
