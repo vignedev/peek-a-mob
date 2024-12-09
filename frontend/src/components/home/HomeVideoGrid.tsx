@@ -10,7 +10,9 @@ const HomeVideoGrid = (props: {
   const [modelId, setModelId] = useState<number>();
 
   useEffect(() => {
-    api.videos.getAll()
+    api.models.getAll()
+      .then(models => models.find(x => x.modelIsPrimary)!)
+      .then(primary => api.videos.getAll([], primary.modelId))
       .then((video) => setVideos(
         video
           .sort(() => Math.random() - 0.5)
