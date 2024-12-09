@@ -30,7 +30,7 @@ const HomeVideoGrid = (props: {
 
   return (
     <ScrollArea>
-      <Grid p='2' columns="4" rows="repeat(2)" gapX="4" gapY="4" height="100%" pr="3">
+      <Grid p='2' columns="4" rows="repeat(4, 1fr)" gapX="4" gapY="4" height="100%" pr="3">
         {
           modelId && videos &&
           videos.map((video, index) => {
