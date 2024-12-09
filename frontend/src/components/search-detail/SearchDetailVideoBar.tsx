@@ -1,6 +1,5 @@
-import { Flex, Text, Box } from "@radix-ui/themes";
+import { ScrollArea, Flex, Text, Box } from "@radix-ui/themes";
 import { Video } from "../../libs/api";
-import { ScrollArea } from "@radix-ui/themes/src/index.js";
 import { useNavigate } from "react-router-dom";
 
 const SearchDetailVideoBar = (props: {
@@ -12,21 +11,21 @@ const SearchDetailVideoBar = (props: {
   const navigate = useNavigate();
 
   return (
-    <Box 
+    <Box
       height="100%"
       style={{
         borderRadius: "max(var(--radius-2), var(--radius-full))",
         background: "var(--gray-a2)"
-    }}>
+      }}>
       <ScrollArea>
         <Flex direction="column" gap="1" pr="3" p="1">
           <>
             {
               props.videoList &&
-              props.videoList.map( (video, index) => {
+              props.videoList.map((video, index) => {
                 return (
-                  <Flex 
-                    key={index} 
+                  <Flex
+                    key={index}
                     gap="3"
                     pl="2" pt="1" pb="1"
                     onClick={() => navigate('/search-detail', {
@@ -38,9 +37,9 @@ const SearchDetailVideoBar = (props: {
                       }
                     })}
                     style={{
-                      backgroundColor: (props.currentVideoId == video.videoId) ? 
-                      "rgba(255,255,255,0.2)" : 
-                      "",
+                      backgroundColor: (props.currentVideoId == video.videoId) ?
+                        "rgba(255,255,255,0.2)" :
+                        "",
                       borderRadius: "max(var(--radius-2), var(--radius-full))",
                       cursor: "pointer"
                     }}
@@ -56,7 +55,7 @@ const SearchDetailVideoBar = (props: {
                       <Text>{video.videoTitle}</Text>
                     </Flex>
                   </Flex>
-                  )
+                )
               })
             }
           </>

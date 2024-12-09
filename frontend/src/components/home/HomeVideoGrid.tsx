@@ -1,8 +1,7 @@
-import { Box, Grid } from "@radix-ui/themes";
+import { ScrollArea, Grid } from "@radix-ui/themes";
 import VideoPreviewBox from "./VideoPreviewBox";
 import { useEffect, useState } from "react";
 import { api, Video } from "../../libs/api";
-import { ScrollArea } from "@radix-ui/themes/src/index.js";
 
 const HomeVideoGrid = (props: {
   maxHomePageVideos: number;
