@@ -82,7 +82,10 @@ export const Canvas = (props: CanvasProps) => {
   // the canvas, wowie
   return <canvas
     className={props.className}
-    style={props.style}
+    style={{
+      touchAction: 'none',
+      ...props.style
+    }}
     ref={obtainCanvas}
   ></canvas>
 }
