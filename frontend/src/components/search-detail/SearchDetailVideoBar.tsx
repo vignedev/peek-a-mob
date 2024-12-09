@@ -53,8 +53,9 @@ const SearchDetailVideoBar = (props: {
                         height: "4.5rem",
                       }}
                     />
-                    <Flex>
+                    <Flex direction='column'>
                       <Text>{video.videoTitle}</Text>
+                      <Text size='1' color='gray'>{video.channelName}</Text>
                     </Flex>
                   </Flex>
                 )

@@ -1,7 +1,7 @@
 import * as env from './env'
 import * as schema from '../db/schema'
 import { drizzle } from 'drizzle-orm/node-postgres'
-import { and, count, countDistinct, desc, eq, gte, inArray, lte } from 'drizzle-orm'
+import { and, count, countDistinct, desc, eq, getTableColumns, gte, inArray, lte } from 'drizzle-orm'
 
 const GLOBAL_CONFIDENCE_THRESHOLD = env.float('GLOBAL_CONFIDENCE_THRESHOLD', 0.7)
 
@@ -17,7 +17,14 @@ export type DetectionQuery = {
 
 export const videos = {
   async get(youtubeId: string) {
-    const videos = await db.select().from(schema.videos).where(eq(schema.videos.youtubeId, youtubeId)).limit(1)
+    const videos = await db.select({
+      ...getTableColumns(schema.videos),
+      ...getTableColumns(schema.channels)
+    })
+      .from(schema.videos)
+      .leftJoin(schema.channels, eq(schema.videos.channelId, schema.channels.channelId))
+      .where(eq(schema.videos.youtubeId, youtubeId))
+      .limit(1)
     const video = videos.length == 0 ? null : videos[0]
 
     if (!video) return video
@@ -43,7 +50,14 @@ export const videos = {
   },
   async getAll(entities?: string[], _modelId?: number) {
     if ((!entities || entities.length == 0) && (typeof _modelId === 'undefined'))
-      return await db.query.videos.findMany({ orderBy: schema.videos.videoId })
+      return await db
+        .select({
+          ...getTableColumns(schema.videos),
+          ...getTableColumns(schema.channels)
+        })
+        .from(schema.videos)
+        .leftJoin(schema.channels, eq(schema.videos.channelId, schema.channels.channelId))
+        .orderBy(schema.videos.videoId)
 
     let modelId = _modelId
     if (modelId == -1) {
@@ -60,14 +74,17 @@ export const videos = {
       gte(schema.detections.confidence, GLOBAL_CONFIDENCE_THRESHOLD)
     ].filter(x => !!x)
 
-    const { videoId, youtubeId, videoTitle, duration, channelId, aspectRatio } = schema.videos
     const query = db
-      .select({ videoId, youtubeId, videoTitle, duration, channelId, aspectRatio })
+      .select({
+        ...getTableColumns(schema.videos),
+        ...getTableColumns(schema.channels)
+      })
       .from(schema.detections)
       .fullJoin(schema.entities, eq(schema.detections.entityId, schema.entities.entityId))
       .fullJoin(schema.videos, eq(schema.detections.videoId, schema.videos.videoId))
+      .leftJoin(schema.channels, eq(schema.videos.channelId, schema.channels.channelId))
       .where(and(...andConditions))
-      .groupBy(schema.videos.videoId)
+      .groupBy(schema.videos.videoId, schema.channels.channelId)
       .orderBy(schema.videos.videoId)
 
     if (entities && entities.length != 0)

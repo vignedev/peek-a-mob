@@ -14,7 +14,11 @@ export type Video = {
   videoTitle: string,
   duration: number,
   aspectRatio: number,
-  frameRate: number
+  frameRate: number,
+
+  channelId: number,
+  channelName: string,
+  channelHandle?: string
 }
 export type Entity = {
   entityId: number,
