@@ -1,3 +1,4 @@
+import { EntityDetection } from "./api";
 
 /**
  * Performs the C++'s version of lower_bound. Assumes the array is sorted.-
@@ -63,4 +64,17 @@ export const RandomColorFromString = (text: string, alpha: number = 0.03) => {
     value += Math.pow(text.charCodeAt(i), 2.6)
 
   return `hsla(${value % 360}, 80%, 45%, ${alpha})`
+}
+
+export function sliceLowerBound<T>(array: T[], start: (a: T) => boolean, end: (b: T) => boolean): T[] {
+  const startIdx = Math.max(lowerBound(array, start), 0)
+  const endIdx = Math.max(Math.min(lowerBound(array, end), array.length - 1), 0)
+  return array.slice(startIdx, endIdx)
+}
+
+export function sliceDetections(detections: EntityDetection, start: number, end: number): EntityDetection {
+  const copy: EntityDetection = {}
+  for (const key in detections)
+    copy[key] = sliceLowerBound(detections[key], a => a.time < start, b => b.time < end)
+  return copy
 }

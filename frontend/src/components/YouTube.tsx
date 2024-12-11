@@ -3,7 +3,7 @@ import YouTube, { YouTubePlayer } from 'react-youtube'
 import { Canvas, CanvasDrawingFunction } from './Canvas'
 import { Box, Flex, Spinner } from '@radix-ui/themes'
 import { EntityDetection, Video, api, groupDetections } from '../libs/api'
-import { formatDuration, lowerBound, wait, RandomColorFromString } from '../libs/utils'
+import { formatDuration, lowerBound, wait, RandomColorFromString, sliceDetections } from '../libs/utils'
 import { expandContext } from '../libs/canvasEx'
 
 type TimeInfo = [currentTime: number, duration: number]
@@ -329,13 +329,9 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
     const loop = async () => {
       while (condition) {
         const newTime = await player!.getCurrentTime()
-        if (!rollingDetections || newTime <= rollingDetections.range[0] || newTime >= rollingDetections.range[1]) {
+        if (detections && (!rollingDetections || newTime <= rollingDetections.range[0] || newTime >= rollingDetections.range[1])) {
           setRollingDetections({
-            detections: await api.videos.getDetections(videoInfo.youtubeId, modelId, {
-              start: newTime - 10,
-              end: newTime + 10,
-              entities
-            }),
+            detections: sliceDetections(detections, newTime - 10, newTime + 10),
             range: [newTime - 7, newTime + 7] // the "valid range" where this cached are is for
           })
         }
@@ -344,7 +340,7 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
     }
     loop()
     return () => { condition = false }
-  }, [player, videoInfo, rollingDetections, modelId])
+  }, [player, videoInfo, rollingDetections, modelId, detections])
 
   return (
     <Flex direction='column' gap='1'>
