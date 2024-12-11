@@ -161,4 +161,8 @@ Lines which begin with `#` are comments and should be ignored. All files have a 
 }
 ```
 
+## Code of Interest
+
+[`./coi.md`](./coi.md)
+
 [^1]: Unlike YOLO's dataset format, which specifies `(x, y)` as the center of the bounding box.
