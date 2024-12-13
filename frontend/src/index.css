@@ -36,3 +36,20 @@ body {
     display: none;
   }
 }
+
+.youtubeWithTimeline:fullscreen {
+  display: block;
+  height: fit-content;
+  overflow-y: auto;
+}
+
+.youtubeWithTimeline:fullscreen>.playerCombo {
+  position: relative !important;
+  width: 100vw;
+  height: 100vh;
+}
+
+.youtubeWithTimeline:fullscreen>.playerTimeline>canvas {
+  left: 0 !important;
+  width: 100% !important;
+}

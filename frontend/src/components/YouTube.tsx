@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import YouTube, { YouTubePlayer } from 'react-youtube'
 import { Canvas, CanvasDrawingFunction } from './Canvas'
 import { Box, Flex, Spinner } from '@radix-ui/themes'
@@ -342,17 +342,112 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
     return () => { condition = false }
   }, [player, videoInfo, rollingDetections, modelId, detections])
 
+  // silly fullscreen using F
+  const refPlayerCombo = useRef<HTMLDivElement>(null)
+  const refPlayer = useRef<YouTube>(null)
+  useEffect(() => {
+    if (!refPlayerCombo.current) return
+
+    // https://github.com/radix-ui/themes/blob/2dfb565cf077a1f78a7f9f824a4afe1e2f25c5b5/packages/radix-ui-themes/src/components/theme-panel.tsx#L123C5-L131C7
+    const keyboardInputElement = `
+      [contenteditable],
+      [role="combobox"],
+      [role="listbox"],
+      [role="menu"],
+      input:not([type="radio"], [type="checkbox"]),
+      select,
+      textarea
+    `
+    const onkeydown = (e: KeyboardEvent) => {
+      if (document.activeElement?.closest(keyboardInputElement) || !refPlayer.current?.internalPlayer)
+        return
+
+      switch (e.code) {
+        // fullscreen
+        case 'KeyF': {
+          if (document.fullscreenElement) document.exitFullscreen()
+          else refPlayerCombo.current?.requestFullscreen()
+        } break
+
+        case 'Space':
+        case 'KeyK': {
+          if (!player) break
+          player.getPlayerState().then(state => {
+            if ([YouTube.PlayerState.PAUSED, YouTube.PlayerState.UNSTARTED, YouTube.PlayerState.CUED].includes(state))
+              return player.playVideo()
+            else if (state == YouTube.PlayerState.PLAYING)
+              return player.pauseVideo()
+          }).catch(console.error)
+        } break
+
+        // seek -10
+        case 'KeyJ': {
+          if (!player) break
+          player.getCurrentTime().then(time => {
+            return player.seekTo(Math.max(time - 10, 0), true)
+          }).catch(console.error)
+        } break
+
+        // seek +10
+        case 'KeyL': {
+          if (!player) break
+          player.getCurrentTime().then(time => {
+            return player.seekTo(time + 10, true)
+          }).catch(console.error)
+        } break
+
+        // seek -5
+        case 'ArrowLeft': {
+          if (!player) break
+          player.getCurrentTime().then(time => {
+            return player.seekTo(Math.max(time - 5, 0), true)
+          }).catch(console.error)
+        } break
+
+        // seek +5
+        case 'ArrowRight': {
+          if (!player) break
+          player.getCurrentTime().then(time => {
+            return player.seekTo(time + 5, true)
+          }).catch(console.error)
+        } break
+
+        // frame back
+        case 'Comma': {
+          if (!player || !videoInfo) break
+          player.getCurrentTime().then(time => {
+            return player.seekTo(time - 1.0 / videoInfo.frameRate, true)
+          }).catch(console.error)
+        } break
+
+        // frame forward
+        case 'Period': {
+          if (!player || !videoInfo) break
+          player.getCurrentTime().then(time => {
+            return player.seekTo(time - 1.0 / videoInfo.frameRate, true)
+          }).catch(console.error)
+        } break
+      }
+    }
+
+    document.addEventListener('keydown', onkeydown)
+    return () => document.removeEventListener('keydown', onkeydown)
+  }, [refPlayerCombo, refPlayer, videoInfo])
+
   return (
-    <Flex direction='column' gap='1'>
-      <Box style={{
-        position: fullScreenWidth ? 'relative' : 'sticky',
-        top: 0,
-        borderRadius: 'max(var(--radius-2), var(--radius-full))',
-        overflow: 'hidden',
-        boxShadow: 'var(--shadow-2)',
-        aspectRatio: videoInfo.aspectRatio,
-        zIndex: 2,
-      }}>
+    <Flex direction='column' gap='1' ref={refPlayerCombo} className='youtubeWithTimeline'>
+      <Box
+        className='playerCombo'
+        style={{
+          position: fullScreenWidth ? 'relative' : 'sticky',
+          top: 0,
+          borderRadius: 'max(var(--radius-2), var(--radius-full))',
+          overflow: 'hidden',
+          boxShadow: 'var(--shadow-2)',
+          aspectRatio: videoInfo.aspectRatio,
+          zIndex: 2,
+        }}
+      >
         <YouTube
           className='youtubeEmbed'
           videoId={videoInfo.youtubeId}
@@ -364,6 +459,7 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
               fs: 0
             }
           }}
+          ref={refPlayer}
         />
         <VideoOverlay
           player={player}
@@ -375,7 +471,7 @@ export const YouTubeWithTimeline = (props: { videoInfo: Video, modelId: number, 
 
       {
         (detections) ? (
-          <Box height={`${Object.keys(detections).length * 3}rem`} overflow='hidden'>
+          <Box height={`${Object.keys(detections).length * 3}rem`} overflow='hidden' className='playerTimeline'>
             <VideoTimeline
               player={player}
               videoInfo={videoInfo}
