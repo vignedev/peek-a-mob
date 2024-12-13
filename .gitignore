@@ -19,3 +19,5 @@ yolo11n.pt
 report/*.*
 !report/*.pdf
 !report/*.tex
+!report/*.bib
+!report/csn690.bst
