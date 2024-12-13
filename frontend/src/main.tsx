@@ -2,7 +2,7 @@ import './index.css'
 import '@radix-ui/themes/styles.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Container, Theme, ThemePanel } from '@radix-ui/themes'
+import { Container, Theme } from '@radix-ui/themes'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { ThemeProvider } from 'next-themes'
 
@@ -51,7 +51,6 @@ createRoot(document.getElementById('root')!).render(
         <Container p="4" pt="2">
           <RouterProvider router={router} />
         </Container>
-        <ThemePanel defaultOpen={false} />
       </Theme>
     </ThemeProvider>
   </StrictMode>,
