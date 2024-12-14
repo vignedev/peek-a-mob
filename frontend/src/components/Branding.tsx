@@ -1,4 +1,4 @@
-import { Blockquote, Em, Heading, Text } from "@radix-ui/themes";
+import { Blockquote, Em, Heading, Text, Tooltip } from "@radix-ui/themes";
 import { useNavigate } from "react-router-dom";
 
 export const PeekAMobHeading = () => {
@@ -11,7 +11,14 @@ export const PeekAMobHeading = () => {
       cursor: "pointer",
     }}
       onClick={() => { navigate("/") }}>
-      Peek A Mob
+      <Tooltip content={(<>
+        <span>{__BUILD_INFO__.hash} {__BUILD_INFO__.message}</span><br />
+        <span>Build date: {new Date(__BUILD_INFO__.date).toLocaleString()}</span>
+      </>)} delayDuration={3000}>
+        <Text>
+          Peek A Mob
+        </Text>
+      </Tooltip>
     </Heading>
   );
 }
