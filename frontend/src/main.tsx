@@ -13,6 +13,7 @@ import RequestPage from './routes/request.tsx'
 import AdminPage from './routes/admin.tsx'
 import SearchDetailPage from './routes/search-detail.tsx'
 import { ErrorRouteCallout } from './components/ErrorCallouts.tsx'
+import Error404 from './routes/error404.tsx'
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
       {
         path: 'search-detail',
         element: <SearchDetailPage />
+      },
+      {
+        path: '*',
+        element: <Error404 />
       }
     ]
   }
