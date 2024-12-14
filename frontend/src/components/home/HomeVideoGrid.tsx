@@ -1,13 +1,15 @@
-import { ScrollArea, Grid } from "@radix-ui/themes";
+import { ScrollArea, Grid, Spinner, Flex } from "@radix-ui/themes";
 import VideoPreviewBox from "./VideoPreviewBox";
 import { useEffect, useState } from "react";
 import { api, Video } from "../../libs/api";
+import ErrorCallout from "../ErrorCallouts";
 
 const HomeVideoGrid = (props: {
   maxHomePageVideos: number;
 }) => {
   const [videos, setVideos] = useState<Video[]>([])
   const [modelId, setModelId] = useState<number>();
+  const [error, setError] = useState<any>();
 
   useEffect(() => {
     api.models.getAll()
@@ -22,7 +24,10 @@ const HomeVideoGrid = (props: {
           .sort(() => Math.random() - 0.5)
           .slice(0, props.maxHomePageVideos)
       ))
-      .catch(console.error);
+      .catch(err => {
+        setError(err)
+        console.error(err)
+      });
   }, [])
 
   return (
@@ -32,10 +37,17 @@ const HomeVideoGrid = (props: {
         gridAutoRows: 'max-content'
       }}>
         {
-          modelId && videos &&
-          videos.map((video, index) => {
-            return <VideoPreviewBox video={video} modelId={modelId} key={index} />
-          })
+          (modelId && videos) ?
+            videos.map((video, index) => {
+              return <VideoPreviewBox video={video} modelId={modelId} key={index} />
+            }) :
+            (
+              error ? <ErrorCallout error={error} /> : (
+                <Flex justify='center' align='center' height='calc(100vh - 20rem)'>
+                  <Spinner size='3' />
+                </Flex>
+              )
+            )
         }
       </Grid>
     </ScrollArea>
