@@ -3,6 +3,8 @@ import { errorLogger, logger } from './middlewares/logger'
 import * as env from './libs/env'
 import { error, info } from './libs/log'
 import getApiRouter from './middlewares/api'
+import { createStaticServer } from './middlewares/static'
+import path from 'path'
 
 async function main() {
   const
@@ -11,7 +13,10 @@ async function main() {
 
   const server = restana({ errorHandler: errorLogger })
   server.use(logger)
-  server.use('/api', getApiRouter(server.getRouter()))
+  server.use('/api', getApiRouter(server.newRouter()))
+  server.use(createStaticServer(
+    path.join(env.str('PROJECT_ROOT'), 'frontend', 'dist'), 'index.html'
+  ))
 
   server.start(port, host)
     .then(() => info(`Server is listening on http://${host}:${port}`))
