@@ -1,9 +1,8 @@
 import { createReadStream } from 'fs'
-import { readFile } from 'fs/promises'
 import db from '../libs/database'
 import * as schema from '../db/schema'
 import { createInterface } from 'readline/promises'
-import { and, eq, or } from 'drizzle-orm'
+import { eq, or } from 'drizzle-orm'
 
 const argv = process.argv.slice(2)
 if (argv.length == 0) {

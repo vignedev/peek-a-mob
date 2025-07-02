@@ -1,4 +1,4 @@
-import { Protocol, RequestHandler, Response } from "restana";
+import { Protocol, RequestHandler } from "restana";
 import { stat } from "fs/promises";
 import path from "node:path";
 import { createReadStream, Stats } from "fs";

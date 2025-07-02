@@ -1,4 +1,3 @@
-import { buffer } from "node:stream/consumers";
 import { Protocol, Request, Response } from "restana";
 import { createGzip } from "zlib";
 
