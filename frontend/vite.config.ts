@@ -31,7 +31,8 @@ export default defineConfig(({ mode }) => {
         hash: commitHash,
         message: commitMessage,
         date: new Date().toISOString()
-      }
+      },
+      __IS_STATIC__: !!env['IS_STATIC']
     }
   }
 })

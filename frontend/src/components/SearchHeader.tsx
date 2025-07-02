@@ -67,13 +67,18 @@ const SearchHeader = () => {
           <MagnifyingGlassIcon />
         </HeaderButton>
 
-        <HeaderButton onClick={() => { navigate("/request") }} text='Request'>
-          <FilePlusIcon />
-        </HeaderButton>
-
-        <HeaderButton color='purple' onClick={() => navigate('/admin')} text='Models'>
-          <CameraIcon />
-        </HeaderButton>
+        {
+          !__IS_STATIC__ && (
+            <>
+              <HeaderButton onClick={() => { navigate("/request") }} text='Request'>
+                <FilePlusIcon />
+              </HeaderButton>
+              <HeaderButton color='purple' onClick={() => navigate('/admin')} text='Models'>
+                <CameraIcon />
+              </HeaderButton>
+            </>
+          )
+        }
 
         <HeaderButton color='red' onClick={() => navigate('/debug')} text='Debug'>
           <RocketIcon />

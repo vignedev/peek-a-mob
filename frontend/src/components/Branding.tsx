@@ -13,7 +13,8 @@ export const PeekAMobHeading = () => {
       onClick={() => { navigate("/") }}>
       <Tooltip content={(<>
         <span>{__BUILD_INFO__.hash} {__BUILD_INFO__.message}</span><br />
-        <span>Build date: {new Date(__BUILD_INFO__.date).toLocaleString()}</span>
+        <span>Build date: {new Date(__BUILD_INFO__.date).toLocaleString()}</span><br/>
+        <span>Static: {__IS_STATIC__ ? 'true' : 'false'}</span>
       </>)} delayDuration={3000}>
         <Text>
           Peek A Mob
