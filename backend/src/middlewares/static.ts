@@ -1,6 +1,6 @@
 import { Protocol, RequestHandler, Response } from "restana";
 import { stat } from "fs/promises";
-import path from "path";
+import path from "node:path";
 import { createReadStream, Stats } from "fs";
 // @ts-ignore
 import mime from 'mime'
@@ -22,7 +22,11 @@ export const createStaticServer = (root: string, spa: string): RequestHandler<Pr
     if (req.method != 'GET')
       return next()
 
-    let localPath = path.join(root, req.originalUrl)
+    const absRoot = path.normalize(path.resolve(root))
+    let localPath = path.normalize(path.join(root, req.originalUrl))
+    if (!localPath.startsWith(absRoot))
+      return next()
+
     let fileStat = await statNoEnoent(localPath)
 
     if (!fileStat || !fileStat.isFile())
