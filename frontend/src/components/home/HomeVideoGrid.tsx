@@ -7,8 +7,8 @@ import ErrorCallout from "../ErrorCallouts";
 const HomeVideoGrid = (props: {
   maxHomePageVideos: number;
 }) => {
-  const [videos, setVideos] = useState<Video[]>([])
-  const [modelId, setModelId] = useState<number>();
+  const [videos, setVideos] = useState<Video[] | null>(null)
+  const [modelId, setModelId] = useState<number | null>(null);
   const [error, setError] = useState<any>();
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const HomeVideoGrid = (props: {
         gridAutoRows: 'max-content'
       }}>
         {
-          (modelId && videos) ?
+          (modelId != null && videos != null) ?
             videos.map((video, index) => {
               return <VideoPreviewBox video={video} modelId={modelId} key={index} />
             }) :

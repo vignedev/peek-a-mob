@@ -6,8 +6,6 @@ import { DownloadIcon, Pencil1Icon } from "@radix-ui/react-icons"
 import { NavLink, useNavigate } from "react-router-dom"
 import { invokeDownload } from "../libs/utils"
 
-const TableRowSpinner = () => <Table.Row><Table.Cell><Spinner /></Table.Cell></Table.Row>
-
 const UploadButtonDialog = (props: { onUpload: () => void }) => {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -184,7 +182,9 @@ const ModelTable = (props: { models?: Model[], onUpdate: () => void }) => {
               busy={busy}
               setBusy={setBusy}
             />
-          )) : <TableRowSpinner />
+          )) : (
+            <Table.Row><Table.Cell><Spinner /></Table.Cell></Table.Row>
+          )
         }
       </Table.Body>
     </Table.Root>
