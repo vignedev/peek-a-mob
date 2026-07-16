@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ComponentPropsWithoutRef, type ComponentPropsWithRef } from 'react';
+import { useEffect, useRef, type ComponentPropsWithoutRef } from 'react';
 
 type TProps = ComponentPropsWithoutRef<'canvas'> & {
   onRender: (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, width: number, height: number) => void

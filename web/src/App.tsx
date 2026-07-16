@@ -1,19 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import './App.css'
-import screenshot from './assets/img/screenshot.avif'
 import { Section } from './components/Section'
 import { Select } from './components/Select'
 import { Heading } from './components/Heading'
-import { Canvas } from './components/Canvas'
 import { Timeline } from './components/Timeline'
 import { Video, type VideoInfoRetrieval } from './components/Video'
 import { YouTube } from './components/YouTube'
 
-type TProps = {
-
-}
-const App = (props: TProps) => {
-  const [currentVideo, setCurrentVideo] = useState<string | null>(null)
+const App = () => {
+  const [currentVideo, setCurrentVideo] = useState<string>()
   const videoInfoRef = useRef<VideoInfoRetrieval>(null)
 
   const [type, src] = currentVideo?.split(':') ?? []
@@ -52,10 +47,10 @@ const App = (props: TProps) => {
                   value: 'yt:3m15lUh0WP4',
                   title: '【ORIGINAL MV】enough - Gigi Murin'
                 },
-                {
-                  value: 'local:/assets/video/hoyohoyo.mkv',
-                  title: 'hoyohoyo.mkv'
-                }
+                // {
+                //   value: 'local:/assets/video/hoyohoyo.mkv',
+                //   title: 'hoyohoyo.mkv'
+                // }
               ]}
             />
 

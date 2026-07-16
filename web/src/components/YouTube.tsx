@@ -15,7 +15,7 @@ export const YouTube = forwardRef<VideoInfoRetrieval, TProps>(
     const ytRef = useRef<YT.Player | null>(null)
 
     useEffect(() => {
-      if (!yt)
+      if (!yt || !replRef.current)
         return
 
       const player = new yt.Player(replRef.current, {

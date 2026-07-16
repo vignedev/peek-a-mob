@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, type ComponentPropsWithRef, type MouseEvent, type PropsWithoutRef, type RefObject } from 'react'
+import { useCallback, useRef, type ComponentPropsWithRef, type MouseEvent, type RefObject } from 'react'
 import { Canvas } from './Canvas'
 import type { VideoInfoRetrieval } from './Video'
 
@@ -15,7 +15,7 @@ type TProps = ComponentPropsWithRef<'canvas'> & {
 }
 
 export const Timeline = (props: TProps) => {
-  const { videoInfo, detections } = props
+  const { videoInfo } = props
 
   const mousePos = useRef<{ x: number, y: number } | null>(null)
   const extractPosition = (e: MouseEvent<HTMLCanvasElement>) => {
@@ -31,7 +31,7 @@ export const Timeline = (props: TProps) => {
   }
 
   const onMouseDown = useCallback((e: MouseEvent<HTMLCanvasElement>) => {
-    if (!videoInfo.current)
+    if (!videoInfo || !videoInfo.current)
       return
 
     const relativeX = extractPosition(e).x / e.currentTarget.clientWidth
@@ -49,7 +49,7 @@ export const Timeline = (props: TProps) => {
     ctx.strokeRect(0, 0, width, height)
 
     ctx.fillStyle = '#f004'
-    if (videoInfo.current)
+    if (videoInfo?.current)
       ctx.fillRect(0, 0, videoInfo.current.getCurrentTime() / videoInfo.current.getDuration() * width, height)
 
     if (mouse) {
@@ -70,7 +70,7 @@ export const Timeline = (props: TProps) => {
       `virtual: w:${width} h:${height} dpr:${window.devicePixelRatio}`,
       `canvas:  w:${canvas.width} h:${canvas.height}`,
       `mouse:   ${mouse ? `x:${mouse?.x} y:${mouse?.y}` : ''}`,
-      videoInfo.current ? `video:   ${videoInfo.current.getPlaying() ? 'play' : 'pause'}, ${videoInfo.current.getCurrentTime().toFixed(4)} / ${videoInfo.current.getDuration()}` : '<missing videoInfo>'
+      videoInfo?.current ? `video:   ${videoInfo.current.getPlaying() ? 'play' : 'pause'}, ${videoInfo.current.getCurrentTime().toFixed(4)} / ${videoInfo.current.getDuration()}` : '<missing videoInfo>'
     ]
     lines.forEach((line, idx) => {
       ctx.fillText(line, 16, 8 + 16 + 16 * idx)

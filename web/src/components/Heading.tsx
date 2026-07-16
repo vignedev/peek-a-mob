@@ -8,14 +8,14 @@ type TProps = ComponentProps<'h1' | 'h2' | 'h3'> & {
 export const Heading = (props: TProps) => {
   const { size = '1', ...common } = props
 
-  const elemMap: Record<TProps['size'], keyof JSX.IntrinsicElements> = {
+  const elemMap: Record<'1' | '2' | '3', keyof JSX.IntrinsicElements> = {
     '1': 'h1',
     '2': 'h2',
     '3': 'h3',
   } as const
   const Element = elemMap[size] as ElementType<ComponentProps<'h1' | 'h2' | 'h3'>>
 
-  const sizeMap: Record<TProps['size'], ClassValue> = {
+  const sizeMap: Record<'1' | '2' | '3', ClassValue> = {
     '1': 'text-3xl',
     '2': 'text-2xl',
     '3': 'text-xl',
