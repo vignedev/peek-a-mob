@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    font-family: 'Inter';
+    font-size: 14px;
+  }
+}
+
+html {
+  @apply bg-slate-100 text-gray-800 dark:bg-slate-900 dark:text-gray-200
+}
+
+
+p:not(:first-of-type) {
+  @apply indent-3
+}
+
+section>p {
+  text-align: justify;
+}
