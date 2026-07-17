@@ -37,7 +37,6 @@ export const YouTube = forwardRef<VideoInfoRetrieval, TProps>(
     useImperativeHandle(ref, () => {
       return {
         getPlaying: () => {
-          console.log(ytRef?.current)
           return ytRef.current?.getPlayerState?.() === YT.PlayerState.PLAYING
         },
         getCurrentTime: () => ytRef.current?.getCurrentTime?.() ?? 0,
