@@ -1,0 +1,73 @@
+import { useCallback, type ComponentProps, type RefObject } from 'react'
+import { Canvas, type CanvasRenderFunction } from './Canvas'
+import { ID_TO_ENTITY_MAP, type Detection } from '../utils/binreader'
+import type { VideoInfoRetrieval } from './Video'
+import { lowerBound } from '../utils/lowerbound'
+
+type TProps = ComponentProps<'canvas'> & {
+  videoInfo: RefObject<VideoInfoRetrieval | null>
+  detections?: Detection[]
+}
+
+export const Overlay = (props: TProps) => {
+  const { videoInfo, detections, ...rest } = props
+
+  const renderFn = useCallback<CanvasRenderFunction>((_canvas, ctx, width, height) => {
+    ctx.font = '12px Fira Mono'
+    ctx.clearRect(0, 0, width, height)
+
+    if (!videoInfo.current || !detections)
+      return
+
+    const currentTime = videoInfo.current.getCurrentTime()
+
+    // get the smallest
+    ctx.fillStyle = '#fff'
+    const closestIdx = lowerBound(detections, (det) => det.time < currentTime)
+    // ctx.fillText(`idx: ${closestIdx}`, 16, 32)
+
+    for (let i = closestIdx; i < detections.length; ++i) {
+      const det = detections[i]
+
+      if (det.time - currentTime >= (1 / 60 - Number.EPSILON))
+        break
+
+      // ctx.fillStyle = '#fff'
+      // ctx.fillText(`[${i}] ${det.time.toFixed(2)} ${ID_TO_ENTITY_MAP[det.classIdx]}`, 16, 48 + 16 * (i - closestIdx))
+
+      ctx.fillStyle = '#ff04'
+      ctx.strokeStyle = '#ff0'
+      ctx.lineWidth = 2
+      const [x, w] = [det.x, det.w].map(v => v * width)
+      const [y, h] = [det.y, det.h].map(v => v * height)
+
+      ctx.fillRect(x, y, w, h)
+      ctx.strokeRect(x, y, w, h)
+
+      const clsLabel = `${ID_TO_ENTITY_MAP[det.classIdx]} (${(det.conf * 100).toFixed(1)}%)`
+      const measure = ctx.measureText(clsLabel)
+      const textHeight = measure.actualBoundingBoxAscent - measure.actualBoundingBoxDescent
+
+      ctx.fillStyle = ctx.strokeStyle
+      ctx.fillRect(x - ctx.lineWidth / 2, y - textHeight - ctx.lineWidth / 2, measure.width + ctx.lineWidth, textHeight + ctx.lineWidth)
+      ctx.fillStyle = '#000'
+      ctx.fillText(clsLabel, x, y)
+    }
+
+    // // debug boundaries
+    // ctx.fillStyle = '#00f'
+    // ctx.fillRect(0, height - 8, width, 8)
+
+    // ctx.fillStyle = '#0f0'
+    // ctx.fillRect(0, height - 8, relX * width, 8)
+
+    // ctx.strokeStyle = 'red'
+    // ctx.lineWidth = 4
+    // ctx.strokeRect(0, 0, width, height)
+  }, [videoInfo, detections])
+
+  return <Canvas
+    onRender={renderFn}
+    {...rest}
+  />
+}

@@ -6,12 +6,15 @@ import { Heading } from './components/Heading'
 import { Timeline } from './components/Timeline'
 import { Video, type VideoInfoRetrieval } from './components/Video'
 import { YouTube } from './components/YouTube'
+import { Overlay } from './components/Overlay'
+import { useDetections } from './utils/binreader'
 
 const App = () => {
   const [currentVideo, setCurrentVideo] = useState<string>()
   const videoInfoRef = useRef<VideoInfoRetrieval>(null)
 
   const [type, src] = currentVideo?.split(':') ?? []
+  const det = useDetections('/detections/J1nAArnhFzU.bin')
 
   return (
     <div className='w-full flex justify-center p-2 py-8'>
@@ -23,15 +26,21 @@ const App = () => {
 
         <Section className='p-0 overflow-hidden'>
           <div className='flex flex-col [&>*:nth-child(2)]:border-y-2 [&>*:nth-child(2)]:border-violet-200 dark:[&>*:nth-child(2)]:border-slate-700'>
-            {
-              src ? (
-                type === 'local' ?
-                  (<Video src={src} ref={videoInfoRef} controls className='aspect-video' />) :
-                  (<YouTube videoId={src} ref={videoInfoRef} className='*:size-full *:outline-0 *:aspect-video' />)
-              ) : <div className='bg-black size-full aspect-video flex justify-center items-center'>
-                nyaa
+            <div className='relative aspect-video size-full'>
+              {
+                src ? (
+                  type === 'local' ?
+                    (<Video src={src} ref={videoInfoRef} controls className='aspect-video' />) :
+                    (<YouTube videoId={src} ref={videoInfoRef} className='size-full *:size-full *:outline-0' />)
+                ) : <div className='bg-black size-full aspect-video flex justify-center items-center'>
+                  ey select the video below mate
+                </div>
+              }
+
+              <div className='size-full absolute inset-0 pointer-events-none'>
+                <Overlay className='size-full' videoInfo={videoInfoRef} detections={det.detections} />
               </div>
-            }
+            </div>
 
             <Select
               className='h-10'
@@ -39,14 +48,22 @@ const App = () => {
               value={currentVideo}
               onValueChange={(val) => setCurrentVideo(val)}
               items={[
+                // {
+                //   value: 'yt:J9-bakUEJyo',
+                //   title: 'Daydreaming in Darkness - Chrono Gear: Warden of Time (OST) | BobTheGUYYYYY (ft. tryptech)'
+                // },
+                // {
+                //   value: 'yt:3m15lUh0WP4',
+                //   title: '【ORIGINAL MV】enough - Gigi Murin'
+                // },
+                // {
+                //   value: 'local:/detections/J1nAArnhFzU.mkv',
+                //   title: 'Ina mistook the chicken as Subaru【HoloEN】(local)'
+                // },
                 {
-                  value: 'yt:J9-bakUEJyo',
-                  title: 'Daydreaming in Darkness - Chrono Gear: Warden of Time (OST) | BobTheGUYYYYY (ft. tryptech)'
-                },
-                {
-                  value: 'yt:3m15lUh0WP4',
-                  title: '【ORIGINAL MV】enough - Gigi Murin'
-                },
+                  value: 'yt:J1nAArnhFzU',
+                  title: 'Ina mistook the chicken as Subaru【HoloEN】'
+                }
                 // {
                 //   value: 'local:/assets/video/hoyohoyo.mkv',
                 //   title: 'hoyohoyo.mkv'
@@ -54,7 +71,7 @@ const App = () => {
               ]}
             />
 
-            <Timeline videoInfo={videoInfoRef} />
+            <Timeline videoInfo={videoInfoRef} detections={det.detections} />
           </div>
         </Section>
 
