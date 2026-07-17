@@ -1,14 +1,17 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { useYouTube } from '../utils/useYouTube'
 import type { VideoInfoRetrieval } from './Video'
+import type { ClassValue } from 'clsx'
+import { cn } from '../utils/combine'
 
 type TProps = {
-  videoId: string
+  videoId: string,
+  className?: ClassValue
 }
 
 export const YouTube = forwardRef<VideoInfoRetrieval, TProps>(
   (props, ref) => {
-    const { videoId } = props
+    const { videoId, className } = props
     const yt = useYouTube()
 
     const replRef = useRef<HTMLDivElement>(null)
@@ -44,8 +47,8 @@ export const YouTube = forwardRef<VideoInfoRetrieval, TProps>(
       }
     }, [ytRef])
 
-    return <div>
-      <div ref={replRef} className='size-full outline-0 aspect-video' />
+    return <div className={cn('size-full outline-0 aspect-video', className).split(' ').map(x => `*:${x}`).join(' ')}>
+      <div ref={replRef} />
     </div>
   }
 )
