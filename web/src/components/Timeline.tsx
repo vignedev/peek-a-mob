@@ -38,7 +38,7 @@ export const Timeline = (props: TProps) => {
     videoInfo.current.seekTo(relativeX * videoInfo.current.getDuration())
   }, [videoInfo])
 
-  const renderFn = useCallback((canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, width: number, height: number) => {
+  const renderFn = useCallback<CanvasRenderFunction>((canvas, ctx, width, height) => {
     let mouse = mousePos.current
 
     ctx.clearRect(0, 0, width, height)

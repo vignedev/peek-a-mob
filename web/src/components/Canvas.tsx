@@ -4,6 +4,8 @@ type TProps = ComponentPropsWithoutRef<'canvas'> & {
   onRender: (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, width: number, height: number) => void
   onResize?: (width: number, height: number) => void
 }
+export type CanvasRenderFunction = TProps['onRender']
+
 export const Canvas = (props: TProps) => {
   const { onRender, onResize, ...rest } = props
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
