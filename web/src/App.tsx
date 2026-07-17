@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import './App.css'
 import { Section } from './components/Section'
 import { Select } from './components/Select'
@@ -13,8 +13,8 @@ const App = () => {
   const [currentVideo, setCurrentVideo] = useState<string>()
   const videoInfoRef = useRef<VideoInfoRetrieval>(null)
 
-  const [type, src] = currentVideo?.split(':') ?? []
-  const det = useDetections('/detections/J1nAArnhFzU.bin')
+  const [type, src] = useMemo(() => currentVideo?.split(':') ?? [], [currentVideo])
+  const det = useDetections(`/detections/${src}.bin`)
 
   return (
     <div className='w-full flex justify-center p-2 py-8'>
@@ -63,6 +63,10 @@ const App = () => {
                 {
                   value: 'yt:J1nAArnhFzU',
                   title: 'Ina mistook the chicken as Subaru【HoloEN】'
+                },
+                {
+                  value: 'yt:0tVhT-m6Eq4',
+                  title: '\u3010Minecraft\u3011 What Happens when Takotime Ends?'
                 }
                 // {
                 //   value: 'local:/assets/video/hoyohoyo.mkv',
