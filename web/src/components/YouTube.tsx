@@ -47,7 +47,7 @@ export const YouTube = forwardRef<VideoInfoRetrieval, TProps>(
       }
     }, [ytRef])
 
-    return <div className={cn('size-full outline-0 aspect-video', className).split(' ').map(x => `*:${x}`).join(' ')}>
+    return <div className={cn(className)}>
       <div ref={replRef} />
     </div>
   }

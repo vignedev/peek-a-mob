@@ -27,7 +27,7 @@ const App = () => {
               src ? (
                 type === 'local' ?
                   (<Video src={src} ref={videoInfoRef} controls className='aspect-video' />) :
-                  (<YouTube videoId={src} ref={videoInfoRef} />)
+                  (<YouTube videoId={src} ref={videoInfoRef} className='*:size-full *:outline-0 *:aspect-video' />)
               ) : <div className='bg-black size-full aspect-video flex justify-center items-center'>
                 nyaa
               </div>
