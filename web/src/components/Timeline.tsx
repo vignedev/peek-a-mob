@@ -104,19 +104,10 @@ export const Timeline = (props: TProps) => {
         renderHeatmap(detections, classes, duration)
     }
 
-    // layer 2: swimlines + labels
+    // layer 2: swimlines
     if (heatmapMemo.current) {
       const rowHeight = height / heatmapMemo.current.length
-      heatmapMemo.current?.forEach(({ name }, idx) => {
-        ctx.fillStyle = '#fff'
-
-        const metrics = ctx.measureText(name)
-        ctx.fillText(
-          name,
-          10,
-          rowHeight * idx + rowHeight / 2 + (metrics.fontBoundingBoxDescent + metrics.fontBoundingBoxAscent) / 4.0
-        )
-
+      heatmapMemo.current?.forEach((_, idx) => {
         if (idx > 0) {
           const y = Math.floor(rowHeight * idx) + 0.5
           ctx.strokeStyle = '#fff7'
@@ -132,10 +123,38 @@ export const Timeline = (props: TProps) => {
     // layer 3: mouse highlight
     if (mouse) {
       ctx.strokeStyle = '#0f0f'
+      ctx.lineWidth = 1
       ctx.beginPath()
-      ctx.moveTo(mouse.x, 0)
-      ctx.lineTo(mouse.x, height)
+      ctx.moveTo(mouse.x + 0.5, 0)
+      ctx.lineTo(mouse.x + 0.5, height)
       ctx.stroke()
+    }
+
+    // layer 4: labels
+    if (heatmapMemo.current) {
+      const rowHeight = height / heatmapMemo.current.length
+      heatmapMemo.current?.forEach(({ name }, idx) => {
+        const metrics = ctx.measureText(name)
+        let x = 10
+        let y = rowHeight * idx + rowHeight / 2 + (metrics.fontBoundingBoxDescent + metrics.fontBoundingBoxAscent) / 4.0
+        let padding = 6
+        let bbHeight = 10
+
+        ctx.fillStyle = '#000b'
+        ctx.strokeStyle = '#fff3'
+        ctx.lineWidth = 1.5
+        ctx.beginPath()
+        ctx.roundRect(
+          x - padding,
+          rowHeight * idx + (rowHeight - bbHeight) / 2.0 - padding,
+          metrics.width + padding * 2, bbHeight + padding * 2,
+          4
+        )
+        ctx.fill()
+        ctx.stroke()
+        ctx.fillStyle = '#fff'
+        ctx.fillText(name, x, y)
+      })
     }
 
     // debug output
