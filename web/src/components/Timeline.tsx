@@ -61,7 +61,7 @@ export const Timeline = (props: TProps) => {
     let mouse = mousePos.current
 
     ctx.clearRect(0, 0, width, height)
-    ctx.font = '12px Fira Mono'
+    ctx.font = '12px sans-serif'
 
     if (heatmapMemo.current)
       ctx.drawImage(heatmapMemo.current, 0, 0, width, height)

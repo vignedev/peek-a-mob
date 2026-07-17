@@ -13,7 +13,7 @@ export const Overlay = (props: TProps) => {
   const { videoInfo, detections, ...rest } = props
 
   const renderFn = useCallback<CanvasRenderFunction>((_canvas, ctx, width, height) => {
-    ctx.font = '12px Fira Mono'
+    ctx.font = '12px sans-serif'
     ctx.clearRect(0, 0, width, height)
 
     if (!videoInfo.current || !detections)
@@ -49,9 +49,12 @@ export const Overlay = (props: TProps) => {
       const textHeight = measure.actualBoundingBoxAscent - measure.actualBoundingBoxDescent
 
       ctx.fillStyle = ctx.strokeStyle
-      ctx.fillRect(x - ctx.lineWidth / 2, y - textHeight - ctx.lineWidth / 2, measure.width + ctx.lineWidth, textHeight + ctx.lineWidth)
+      ctx.fillRect(
+        x - ctx.lineWidth / 2, y - textHeight - ctx.lineWidth * 2,
+        measure.width + ctx.lineWidth, textHeight + ctx.lineWidth * 2
+      )
       ctx.fillStyle = '#000'
-      ctx.fillText(clsLabel, x, y)
+      ctx.fillText(clsLabel, x, y - ctx.lineWidth)
     }
 
     // // debug boundaries
