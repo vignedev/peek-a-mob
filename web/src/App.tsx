@@ -67,11 +67,35 @@ const App = () => {
                 {
                   value: 'yt:0tVhT-m6Eq4',
                   title: '\u3010Minecraft\u3011 What Happens when Takotime Ends?'
-                }
+                },
                 // {
                 //   value: 'local:/assets/video/hoyohoyo.mkv',
                 //   title: 'hoyohoyo.mkv'
                 // }
+                {
+                  value: 'yt:yGPKGeGlMIc',
+                  title: '【Minecraft】 Chilling with Reine-chan! #REINAFF'
+                },
+                {
+                  value: 'yt:uEvwuvod2F4',
+                  title: '【Minecraft】 Together As One!!! #MythOneblock'
+                },
+                {
+                  value: 'yt:KRIYhMfxzeM',
+                  title: '【Minecraft】The Search for Bradley'
+                },
+                {
+                  value: 'yt:INzUhj9SRX8',
+                  title: '【Minecraft】 Into the UnknOWNNNNNNNN #MythOneblock'
+                },
+                {
+                  value: 'yt:4Vs1wKjNuUw',
+                  title: '【Minecraft】 Roof Where???!?'
+                },
+                {
+                  value: 'yt:4HHlMgBSdYU',
+                  title: '𝗧𝗵𝗶𝘀 𝗜𝘀 𝗢𝗻𝗲 𝗢𝗳 𝗧𝗵𝗲 𝗠𝗼𝘀𝘁 𝗕𝗲𝗮𝘂𝘁𝗶𝗳𝘂𝗹 𝗣𝗲𝗿𝗳𝗲𝗰𝘁 𝗧𝗶𝗺𝗶𝗻𝗴 𝗢𝗳 𝗜𝗻𝗮 𝗔𝗻𝗱 𝗔𝗺𝗲 𝗘𝘃𝗲𝗿'
+                },
               ]}
             />
 
