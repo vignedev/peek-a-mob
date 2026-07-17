@@ -40,7 +40,7 @@ export const Timeline = (props: TProps) => {
     if (!ctx)
       return
 
-    const lineWidth = Math.ceil(canvas.width / duration / 60.0)
+    const lineWidth = Math.max(Math.ceil(canvas.width / duration / 60.0), 2.0)
     ctx.fillStyle = '#00ffff0f'
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     for (const d of detections) {
@@ -101,7 +101,7 @@ export const Timeline = (props: TProps) => {
       `canvas:  w:${canvas.width} h:${canvas.height}`,
       `mouse:   ${mouse ? `x:${mouse?.x} y:${mouse?.y}` : ''}`,
       `heatmapMemo: ${!!heatmapMemo.current}`,
-      `detections: ${!!detections}`,
+      `detections: ${!!detections} ${detections ? detections.length : '?'}`,
       videoInfo.current ? `video:   ${videoInfo.current.getPlaying() ? 'play' : 'pause'}, ${videoInfo.current.getCurrentTime().toFixed(4)} / ${videoInfo.current.getDuration()}` : '<missing videoInfo>'
     ]
     lines.forEach((line, idx) => {
