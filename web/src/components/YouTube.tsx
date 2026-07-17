@@ -1,5 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
-import { useYouTube } from '../utils/useYouTube'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { VideoInfoRetrieval } from './Video'
 import type { ClassValue } from 'clsx'
 import { cn } from '../utils/combine'
@@ -11,6 +10,7 @@ type TProps = {
 
 export const YouTube = forwardRef<VideoInfoRetrieval, TProps>(
   (props, ref) => {
+
     const { videoId, className } = props
     const yt = useYouTube()
 
@@ -31,7 +31,6 @@ export const YouTube = forwardRef<VideoInfoRetrieval, TProps>(
         }
       })
       ytRef.current = player
-      console.log(player.getCurrentTime)
       return () => player.destroy()
     }, [yt, videoId])
 
@@ -52,3 +51,18 @@ export const YouTube = forwardRef<VideoInfoRetrieval, TProps>(
     </div>
   }
 )
+
+// basically to await for youtube api to be loaded properly
+const useYouTube = () => {
+  const [isReady, setIsReady] = useState(!!window.YT && window.isYouTubeLoaded)
+  useEffect(() => {
+    if (isReady)
+      return
+
+    const callback = () => setIsReady(true)
+    window.addEventListener('youtube-load', callback)
+    return () => window.removeEventListener('youtube-load', callback)
+  }, [isReady])
+
+  return isReady ? window.YT : null
+}
