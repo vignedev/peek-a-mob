@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ComponentPropsWithRef, type MouseEvent, type RefObject } from 'react'
+import { useCallback, useEffect, useRef, useState, type ComponentPropsWithRef, type MouseEvent, type RefObject } from 'react'
 import { Canvas, type CanvasRenderFunction } from './Canvas'
 import type { VideoInfoRetrieval } from './Video'
 import { type Detection } from '../utils/binreader'
@@ -47,7 +47,7 @@ export const Timeline = (props: TProps) => {
       if (!ctx)
         throw new Error('failed to get drawing context, for some reason...')
 
-      idToCanvasMap[classIdx] = idx
+      idToCanvasMap[+classIdx] = idx
       return { name: cls, canvas: canvas, ctx: ctx }
     })
 
