@@ -41,7 +41,7 @@ export const Timeline = (props: TProps) => {
       return
 
     const lineWidth = Math.max(Math.ceil(canvas.width / duration / 60.0), 2.0)
-    ctx.fillStyle = '#00ffff0f'
+    ctx.fillStyle = '#00aaff0f'
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     for (const d of detections) {
       const relX = d.time / duration
@@ -55,7 +55,7 @@ export const Timeline = (props: TProps) => {
   }, [])
   useEffect(() => {
     heatmapMemo.current = null
-  }, [renderHeatmap])
+  }, [detections, renderHeatmap])
 
   const renderFn = useCallback<CanvasRenderFunction>((canvas, ctx, width, height) => {
     let mouse = mousePos.current
