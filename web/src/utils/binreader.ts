@@ -21,7 +21,7 @@ export const ID_TO_ENTITY_MAP: Record<number, string> = {
   7: 'cow',
 }
 
-export const getDetections = async (binUrl: string, signal?: AbortSignal): Promise<Detection[]> => {
+export const getDetections = async (binUrl: string, signal?: AbortSignal): Promise<{ detections: Detection[], classes: Record<number, string> }> => {
   const resp = await fetch(binUrl, { signal })
   if (!resp.ok)
     throw new Error(`Failed to retrieve: ${resp.status}`)
@@ -30,6 +30,8 @@ export const getDetections = async (binUrl: string, signal?: AbortSignal): Promi
     throw new Error(`where's the body`)
 
   const bucket: Detection[] = []
+  const classes: Record<number, string> = {}
+
   const reader = resp.body.getReader()
   let buffer = new Uint8Array(0)
 
@@ -45,7 +47,7 @@ export const getDetections = async (binUrl: string, signal?: AbortSignal): Promi
     let needle = 0
     const view = new DataView(temp.buffer)
     while (needle + DETECTION_SIZE <= temp.length) {
-      bucket.push({
+      const occurence = {
         classIdx: view.getUint16(needle, true),
         time: view.getFloat32(needle + 2 + 4 * 0, true),
         conf: view.getFloat32(needle + 2 + 4 * 1, true),
@@ -53,28 +55,38 @@ export const getDetections = async (binUrl: string, signal?: AbortSignal): Promi
         y: view.getFloat32(needle + 2 + 4 * 3, true),
         w: view.getFloat32(needle + 2 + 4 * 4, true),
         h: view.getFloat32(needle + 2 + 4 * 5, true)
-      })
+      }
+      bucket.push(occurence)
       needle += DETECTION_SIZE
+
+      if (!classes[occurence.classIdx])
+        classes[occurence.classIdx] = ID_TO_ENTITY_MAP[occurence.classIdx]
     }
 
     buffer = temp.slice(needle)
   }
 
-  return bucket
+  return {
+    detections: bucket,
+    classes: classes
+  }
 }
 
 
 type DetectionsHook = {
   state: 'loading',
   detections: undefined,
+  classes: undefined
   error: undefined
 } | {
   state: 'error',
   detections: undefined,
+  classes: undefined
   error: Error
 } | {
   state: 'success',
   detections: Detection[],
+  classes: Record<number, string>
   error: undefined
 }
 
@@ -82,6 +94,7 @@ export const useDetections = (binUrl: string): DetectionsHook => {
   const [data, setData] = useState<DetectionsHook>({
     state: 'loading',
     detections: undefined,
+    classes: undefined,
     error: undefined
   })
 
@@ -89,16 +102,17 @@ export const useDetections = (binUrl: string): DetectionsHook => {
     setData({
       state: 'loading',
       detections: undefined,
+      classes: undefined,
       error: undefined
     })
 
     const abort = new AbortController()
     getDetections(binUrl, abort.signal)
-      .then((det) => setData({ state: 'success', detections: det, error: undefined }))
+      .then(({ detections, classes }) => setData({ state: 'success', detections, classes, error: undefined }))
       .catch((err) => {
         if (abort.signal.aborted) // it was our abortion
           return
-        setData({ state: 'error', detections: undefined, error: err })
+        setData({ state: 'error', detections: undefined, classes: undefined, error: err })
       })
 
     return () => { abort.abort() }

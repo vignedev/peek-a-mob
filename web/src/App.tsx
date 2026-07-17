@@ -14,7 +14,7 @@ const App = () => {
   const videoInfoRef = useRef<VideoInfoRetrieval>(null)
 
   const [type, src] = useMemo(() => currentVideo?.split(':') ?? [], [currentVideo])
-  const det = useDetections(`/detections/${src}.bin`)
+  const { detections, classes } = useDetections(`/detections/${src}.bin`)
 
   return (
     <div className='w-full flex justify-center p-2 py-8'>
@@ -38,7 +38,7 @@ const App = () => {
               }
 
               <div className='size-full absolute inset-0 pointer-events-none'>
-                <Overlay className='size-full' videoInfo={videoInfoRef} detections={det.detections} />
+                <Overlay className='size-full' videoInfo={videoInfoRef} detections={detections} />
               </div>
             </div>
 
@@ -75,7 +75,7 @@ const App = () => {
               ]}
             />
 
-            <Timeline videoInfo={videoInfoRef} detections={det.detections} />
+            <Timeline videoInfo={videoInfoRef} detections={detections} classes={classes} />
           </div>
         </Section>
 
