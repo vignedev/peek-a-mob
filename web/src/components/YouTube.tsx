@@ -33,7 +33,7 @@ export const YouTube = forwardRef<VideoInfoRetrieval, TProps>(
       ytRef.current = player
       console.log(player.getCurrentTime)
       return () => player.destroy()
-    }, [yt])
+    }, [yt, videoId])
 
     useImperativeHandle(ref, () => {
       return {
