@@ -42,19 +42,24 @@ export const Overlay = (props: TProps) => {
       const [y, h] = [det.y, det.h].map(v => v * height)
 
       ctx.fillRect(x, y, w, h)
-      ctx.strokeRect(x, y, w, h)
+      ctx.strokeRect(
+        x - ctx.lineWidth / 2, y - ctx.lineWidth / 2,
+        w + ctx.lineWidth, h + ctx.lineWidth
+      )
 
       const clsLabel = `${ID_TO_ENTITY_MAP[det.classIdx]} (${(det.conf * 100).toFixed(1)}%)`
       const measure = ctx.measureText(clsLabel)
       const textHeight = measure.actualBoundingBoxAscent - measure.actualBoundingBoxDescent
 
+      let vertOffset = (y - textHeight <= 0) ? (h + textHeight + ctx.lineWidth * 4) : 0
+
       ctx.fillStyle = ctx.strokeStyle
       ctx.fillRect(
-        x - ctx.lineWidth / 2, y - textHeight - ctx.lineWidth * 2,
-        measure.width + ctx.lineWidth, textHeight + ctx.lineWidth * 2
+        x - ctx.lineWidth, y - textHeight - ctx.lineWidth * 4 + vertOffset,
+        measure.width + ctx.lineWidth * 2, textHeight + ctx.lineWidth * 4
       )
       ctx.fillStyle = '#000'
-      ctx.fillText(clsLabel, x, y - ctx.lineWidth)
+      ctx.fillText(clsLabel, x, y - ctx.lineWidth * 2 + vertOffset)
     }
 
     // // debug boundaries
