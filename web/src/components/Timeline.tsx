@@ -53,8 +53,9 @@ export const Timeline = (props: TProps) => {
 
     const lineWidth = Math.max(Math.ceil(HEATMAP_RESOLUTION / duration / 60.0), 3.0)
     for (const d of detections) {
-      const { canvas, ctx } = canvases[idToCanvasMap[d.classIdx]]
-      const relX = d.time / duration
+      const [classIdx, time] = d
+      const { canvas, ctx } = canvases[idToCanvasMap[classIdx]]
+      const relX = time / duration
 
       ctx.fillStyle = '#00aaff2a'
       ctx.fillRect(

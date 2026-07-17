@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 
-export type Detection = {
-  time: number,
+export type Detection = [
   classIdx: number,
-  x: number, y: number,
-  w: number, h: number,
+  time: number,
   conf: number,
-}
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+]
 
 const DETECTION_SIZE = 26 as const // keep in sync with csvpack.cjs
 export const ID_TO_ENTITY_MAP: Record<number, string> = {
@@ -47,20 +49,21 @@ export const getDetections = async (binUrl: string, signal?: AbortSignal): Promi
     let needle = 0
     const view = new DataView(temp.buffer)
     while (needle + DETECTION_SIZE <= temp.length) {
-      const occurence = {
-        classIdx: view.getUint16(needle, true),
-        time: view.getFloat32(needle + 2 + 4 * 0, true),
-        conf: view.getFloat32(needle + 2 + 4 * 1, true),
-        x: view.getFloat32(needle + 2 + 4 * 2, true),
-        y: view.getFloat32(needle + 2 + 4 * 3, true),
-        w: view.getFloat32(needle + 2 + 4 * 4, true),
-        h: view.getFloat32(needle + 2 + 4 * 5, true)
-      }
+      const occurence = [
+        view.getUint16(needle, true), // classIdx
+        view.getFloat32(needle + 2 + 4 * 0, true), // time
+        view.getFloat32(needle + 2 + 4 * 1, true), // conf
+        view.getFloat32(needle + 2 + 4 * 2, true), // x
+        view.getFloat32(needle + 2 + 4 * 3, true), // y
+        view.getFloat32(needle + 2 + 4 * 4, true), // w
+        view.getFloat32(needle + 2 + 4 * 5, true) // h
+      ] as Detection
+
       bucket.push(occurence)
       needle += DETECTION_SIZE
 
-      if (!classes[occurence.classIdx])
-        classes[occurence.classIdx] = ID_TO_ENTITY_MAP[occurence.classIdx]
+      if (!classes[occurence[0]])
+        classes[occurence[0]] = ID_TO_ENTITY_MAP[occurence[0]]
     }
 
     buffer = temp.slice(needle)

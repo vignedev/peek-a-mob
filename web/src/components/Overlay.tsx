@@ -23,13 +23,13 @@ export const Overlay = (props: TProps) => {
 
     // get the smallest
     ctx.fillStyle = '#fff'
-    const closestIdx = lowerBound(detections, (det) => det.time < currentTime)
+    const closestIdx = lowerBound(detections, ([, time]) => time < currentTime)
     // ctx.fillText(`idx: ${closestIdx}`, 16, 32)
 
     for (let i = closestIdx; i < detections.length; ++i) {
-      const det = detections[i]
+      const [classIdx, time, conf, x, y, w, h] = detections[i]
 
-      if (det.time - currentTime >= (1 / 60 - Number.EPSILON))
+      if (time - currentTime >= (1 / 60 - Number.EPSILON))
         break
 
       // ctx.fillStyle = '#fff'
@@ -38,16 +38,16 @@ export const Overlay = (props: TProps) => {
       ctx.fillStyle = '#ff04'
       ctx.strokeStyle = '#ff0'
       ctx.lineWidth = 2
-      const [x, w] = [det.x, det.w].map(v => v * width)
-      const [y, h] = [det.y, det.h].map(v => v * height)
+      const [bbx, bbw] = [x, w].map(v => v * width)
+      const [bby, bbh] = [y, h].map(v => v * height)
 
-      ctx.fillRect(x, y, w, h)
+      ctx.fillRect(bbx, bby, bbw, bbh)
       ctx.strokeRect(
-        x - ctx.lineWidth / 2, y - ctx.lineWidth / 2,
-        w + ctx.lineWidth, h + ctx.lineWidth
+        bbx - ctx.lineWidth / 2, bby - ctx.lineWidth / 2,
+        bbw + ctx.lineWidth, bbh + ctx.lineWidth
       )
 
-      const clsLabel = `${ID_TO_ENTITY_MAP[det.classIdx]} (${(det.conf * 100).toFixed(1)}%)`
+      const clsLabel = `${ID_TO_ENTITY_MAP[classIdx]} (${(conf * 100).toFixed(1)}%)`
       const measure = ctx.measureText(clsLabel)
       const textHeight = measure.actualBoundingBoxAscent - measure.actualBoundingBoxDescent
 
