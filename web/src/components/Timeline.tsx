@@ -37,6 +37,8 @@ export const Timeline = (props: TProps) => {
     const canvas = heatmapMemo.current ?? document.createElement('canvas')
     canvas.width = canvas.height = 1024
     const ctx = canvas.getContext('2d')
+    if (!ctx)
+      return
 
     const lineWidth = Math.ceil(canvas.width / duration / 60.0)
     ctx.fillStyle = '#00ffff0f'

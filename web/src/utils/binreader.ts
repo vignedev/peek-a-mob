@@ -26,6 +26,9 @@ export const getDetections = async (binUrl: string, signal?: AbortSignal): Promi
   if (!resp.ok)
     throw new Error(`Failed to retrieve: ${resp.status}`)
 
+  if (!resp.body)
+    throw new Error(`where's the body`)
+
   const bucket: Detection[] = []
   const reader = resp.body.getReader()
   let buffer = new Uint8Array(0)
