@@ -56,7 +56,7 @@ export const Timeline = (props: TProps) => {
       const { canvas, ctx } = canvases[idToCanvasMap[d.classIdx]]
       const relX = d.time / duration
 
-      ctx.fillStyle = '#00aaff2a'
+      ctx.fillStyle = '#00aaff1a'
       ctx.fillRect(
         Math.floor(relX * canvas.width - lineWidth / 2), 0,
         lineWidth, canvas.height

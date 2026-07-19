@@ -9,7 +9,8 @@ export type Detection = {
 }
 
 const DETECTION_SIZE = 26 as const // keep in sync with csvpack.cjs
-export const ID_TO_ENTITY_MAP: Record<number, string> = {
+export type RecognizedEntities = 'skeleton' | 'zombie' | 'wolf' | 'creeper' | 'spider' | 'chicken' | 'enderman' | 'pig' | 'cow'
+export const ID_TO_ENTITY_MAP: Record<number, RecognizedEntities> = {
   0: 'skeleton',
   1: 'zombie',
   2: 'wolf',
