@@ -3,7 +3,7 @@ import { Canvas, type CanvasRenderFunction } from './Canvas'
 import { ID_TO_ENTITY_MAP, type Detection } from '../utils/binreader'
 import type { VideoInfoRetrieval } from './Video'
 import { lowerBound } from '../utils/lowerbound'
-import { EntityColorMapping, type EntityColor } from '../utils/entityColors'
+import { EntityColorMapping } from '../utils/entityColors'
 
 type TProps = ComponentProps<'canvas'> & {
   videoInfo: RefObject<VideoInfoRetrieval | null>
