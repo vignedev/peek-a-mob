@@ -14,7 +14,7 @@ const App = () => {
   const videoInfoRef = useRef<VideoInfoRetrieval>(null)
 
   const [type, src] = useMemo(() => currentVideo?.split(':') ?? [], [currentVideo])
-  const { detections, classes } = useDetections(`/detections/${src}.bin`)
+  const { detections, state, classes } = useDetections(src ? `/detections/${src}.bin` : undefined)
 
   return (
     <div className='w-full flex justify-center p-2 py-8'>
@@ -52,10 +52,10 @@ const App = () => {
                 //   value: 'yt:J9-bakUEJyo',
                 //   title: 'Daydreaming in Darkness - Chrono Gear: Warden of Time (OST) | BobTheGUYYYYY (ft. tryptech)'
                 // },
-                // {
-                //   value: 'yt:3m15lUh0WP4',
-                //   title: '【ORIGINAL MV】enough - Gigi Murin'
-                // },
+                {
+                  value: 'yt:3m15lUh0WP4',
+                  title: '【ORIGINAL MV】enough - Gigi Murin'
+                },
                 // {
                 //   value: 'local:/detections/J1nAArnhFzU.mkv',
                 //   title: 'Ina mistook the chicken as Subaru【HoloEN】(local)'
@@ -96,10 +96,29 @@ const App = () => {
                   value: 'yt:4HHlMgBSdYU',
                   title: '𝗧𝗵𝗶𝘀 𝗜𝘀 𝗢𝗻𝗲 𝗢𝗳 𝗧𝗵𝗲 𝗠𝗼𝘀𝘁 𝗕𝗲𝗮𝘂𝘁𝗶𝗳𝘂𝗹 𝗣𝗲𝗿𝗳𝗲𝗰𝘁 𝗧𝗶𝗺𝗶𝗻𝗴 𝗢𝗳 𝗜𝗻𝗮 𝗔𝗻𝗱 𝗔𝗺𝗲 𝗘𝘃𝗲𝗿'
                 },
+
+                {
+                  value: 'yt:yyyyyyyyyyyy',
+                  title: 'bad video test'
+                },
               ]}
             />
 
-            <Timeline videoInfo={videoInfoRef} detections={detections} classes={classes} />
+            <div className='relative'>
+              <Timeline className='size-full' videoInfo={videoInfoRef} detections={detections} classes={classes} />
+              {
+                (state === 'loading' || state === 'error') ? (
+                  <div className='font-extrabold text-2xl italic size-full absolute inset-0 text-white/40 flex justify-center items-center bg-black/60'>
+                    {
+                      state === 'loading' ?
+                        <span >NOW LOADING!!!</span> :
+                        <span className='text-red-600/90'>oh nyo, error occured</span>
+                    }
+                  </div>
+                ) : null
+              }
+            </div>
+
           </div>
         </Section>
 
