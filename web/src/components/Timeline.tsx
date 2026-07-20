@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ComponentPropsWithRef, t
 import { Canvas, type CanvasRenderFunction } from './Canvas'
 import type { VideoInfoRetrieval } from './Video'
 import { type Detection } from '../utils/binreader'
+import { cn } from '../utils/combine'
 
 type TProps = ComponentPropsWithRef<'canvas'> & {
   videoInfo: RefObject<VideoInfoRetrieval | null>
@@ -15,7 +16,8 @@ export const Timeline = (props: TProps) => {
   const [canvasHeight, setCanvasHeight] = useState(3 * 24)
   const mousePos = useRef<{ x: number, y: number } | null>(null)
   const extractPosition = (e: MouseEvent<HTMLCanvasElement>) => {
-    return { x: e.pageX - e.currentTarget.offsetLeft, y: e.pageY - e.currentTarget.offsetTop }
+    const bb = e.currentTarget.getBoundingClientRect()
+    return { x: e.clientX - bb.left, y: e.clientY - bb.top }
   }
 
   const onMouseTrack = (e: MouseEvent<HTMLCanvasElement>) => {
@@ -174,7 +176,7 @@ export const Timeline = (props: TProps) => {
 
   return (
     <Canvas
-      className='bg-slate-950'
+      className={cn('bg-slate-950', props.className)}
       style={{
         height: `${canvasHeight}px`
       }}
