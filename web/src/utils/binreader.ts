@@ -60,8 +60,11 @@ export const getDetections = async (binUrl: string, signal?: AbortSignal): Promi
       bucket.push(occurence)
       needle += DETECTION_SIZE
 
-      if (!classes[occurence.classIdx])
-        classes[occurence.classIdx] = ID_TO_ENTITY_MAP[occurence.classIdx]
+      if (!classes[occurence.classIdx]) {
+        if (!(classes[occurence.classIdx] = ID_TO_ENTITY_MAP[occurence.classIdx])) {
+          throw new Error('unknown entity?')
+        }
+      }
     }
 
     buffer = temp.slice(needle)
@@ -75,7 +78,7 @@ export const getDetections = async (binUrl: string, signal?: AbortSignal): Promi
 
 
 type DetectionsHook = {
-  state: 'loading',
+  state: 'loading' | 'idle',
   detections: undefined,
   classes: undefined
   error: undefined
@@ -91,15 +94,18 @@ type DetectionsHook = {
   error: undefined
 }
 
-export const useDetections = (binUrl: string): DetectionsHook => {
+export const useDetections = (binUrl?: string): DetectionsHook => {
   const [data, setData] = useState<DetectionsHook>({
-    state: 'loading',
+    state: 'idle',
     detections: undefined,
     classes: undefined,
     error: undefined
   })
 
   useEffect(() => {
+    if (!binUrl)
+      return
+
     setData({
       state: 'loading',
       detections: undefined,
