@@ -21,3 +21,8 @@ report/*.*
 !report/*.tex
 !report/*.bib
 !report/csn690.bst
+
+# some internal things
+models/*
+sandbox.sh
+venv.squashfs
