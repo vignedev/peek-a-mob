@@ -11,7 +11,7 @@ export const PlayerSection = () => {
   const [currentVideo, setCurrentVideo] = useState<string>()
   const videoInfoRef = useRef<VideoInfoRetrieval>(null)
   const [type, src] = useMemo(() => currentVideo?.split(':') ?? [], [currentVideo])
-  const { detections, state, classes } = useDetections(src ? `/detections/${src}.bin` : undefined)
+  const { detections, state, classes } = useDetections(src ? `./detections/${src}.bin` : undefined)
 
   return <Section className='p-0 overflow-hidden'>
     <div className='flex flex-col [&>*:not(:nth-child(1))]:border-t [&>*:not(:nth-child(1))]:border-violet-200 dark:[&>*:not(:nth-child(1))]:border-slate-700'>
