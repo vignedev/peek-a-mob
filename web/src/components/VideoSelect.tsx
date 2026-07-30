@@ -5,7 +5,7 @@ import { useFetch } from '../utils/fetch'
 
 type TProps = {
   className?: ComponentProps<'select'>['className'],
-  currentVideo: string,
+  currentVideo?: string,
   setCurrentVideo: (value: string) => void
 }
 export const VideoSelect = (props: TProps) => {
