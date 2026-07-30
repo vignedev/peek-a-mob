@@ -3,6 +3,7 @@ import { Section } from './components/Section'
 import { Heading } from './components/Heading'
 import { DescriptionSection } from './components/sections/Description'
 import { PlayerSection } from './components/sections/Player'
+import { FooterSection } from './components/sections/Footer'
 
 const App = () => {
   return (
@@ -15,10 +16,7 @@ const App = () => {
 
         <PlayerSection />
         <DescriptionSection />
-
-        <Section>
-          what's sleep for 30$
-        </Section>
+        <FooterSection />
       </div>
     </div>
   )
