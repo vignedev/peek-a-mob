@@ -10,7 +10,7 @@ type TProps = {
 }
 export const VideoSelect = (props: TProps) => {
   const { className, currentVideo, setCurrentVideo } = props
-  const { state, data } = useFetch<{ title: string, value: string }[]>('/detections/index.json')
+  const { state, data } = useFetch<{ title: string, value: string }[]>('./detections/index.json')
 
   return <Select
     className={cn('h-10', className)}
