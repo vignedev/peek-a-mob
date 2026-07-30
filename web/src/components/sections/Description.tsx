@@ -21,7 +21,7 @@ export const DescriptionSection = () => {
       </p>
 
       <div className='my-4 flex flex-col items-center text-sm'>
-        <img src='/assets/images/shader.png' loading='lazy' className='w-full max-w-2xl' />
+        <img src='./assets/images/shader.png' loading='lazy' className='w-full max-w-2xl' />
         <i>Example of the segmentation shader in use</i>
       </div>
 
@@ -43,7 +43,7 @@ export const DescriptionSection = () => {
       </p>
 
       <div className='my-4 flex flex-col items-center text-sm'>
-        <img src='/assets/images/shader-chicken.png' loading='lazy' className='w-full max-w-2xl' />
+        <img src='./assets/images/shader-chicken.png' loading='lazy' className='w-full max-w-2xl' />
         <i>The segmentation shader in action, however applied in Complementary Shader</i>
       </div>
 
