@@ -1,0 +1,38 @@
+name: deploy minimal web
+on:
+  push:
+    branches: [ "minimal" ]
+  pull_request:
+    branches: [ "minimal" ]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: nodejs setup
+        uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: 'npm'
+      - name: build
+        working-directory: ./web
+        run: |
+          npm ci
+          npm run build
+      - name: deployment
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          path: './web/dist'
