@@ -32,8 +32,18 @@ jobs:
         run: |
           npm ci
           npm run build
+      - name: upload
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './web/dist'
+  deployment:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: deployment
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          path: './web/dist'
