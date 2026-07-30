@@ -1,39 +1,13 @@
 # `peek-a-mob`
 
-## Backend
-
-```sh
-cd backend
-npm install
-cp .env.example .env
-# vim .env -- edit the .env file approapriately
-npm run drizzle-push
-npm run dev 
-```
-
-Within the `.env` file, you have to specfify the connection to a PostgreSQL database ***and*** the `MODEL_ROOT_PATH` path, where the uploaded models would be stored. Oh, ***and also*** the `PROJECT_ROOT`, which should point to the cloned *repository*, where all the projects are. You can use a Docker image for that as such:
-
-```sh
-docker run --name vmm-db -e POSTGRES_USER=vignette -e POSTGRES_PASSWORD=wah --restart=unless-stopped -p 127.0.0.1:5432:5432 -d postgres:alpine
-```
-
-To add videos from the `scripts/analyze-youtube.csv`, use `npm run import_csv <csv file>`, like so:
-
-```sh
-npm run import_csv '../yt_uEvwuvod2F4_[pam_20241115_200607].csv'
-```
-
 ## Frontend
 
-```sh
-cd frontend
-npm install
-npm run dev
-```
+In this repository, there are essentialy *two frontends*: 
 
-The server proxies requests from `/api` to `http://127.0.0.1:8080`, the location where the backend is supposedly running, so ideally, both projects should be running at the same time. 
-
-If it is running elsewhere, change the `PROXY_API` environmental variable in `.env`.
+- [`./frontend`](./frontend/), which is older and directly tied to the backend, neither of which is maintained
+- [`./web`](./web/), which is a complete rewrite to move the functionality to be purely client-side
+  
+In order to add more detections, follow the YouTube analysis section [below](#youtube-videos) to get the detections, and then run it by [`./scripts/csvpack.cjs`](./scripts/csvpack.cjs) to pack it to a binary form. After that, place it into the [`web/public/detections`](./web/public/detections/) and update the `index.json` inside there accordingly.
 
 ## Minecraft Shader
 
@@ -160,9 +134,5 @@ Lines which begin with `#` are comments and should be ignored. All files have a 
   }
 }
 ```
-
-## Code of Interest
-
-[`./coi.md`](./coi.md)
 
 [^1]: Unlike YOLO's dataset format, which specifies `(x, y)` as the center of the bounding box.
